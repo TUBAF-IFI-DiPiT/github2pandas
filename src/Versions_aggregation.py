@@ -68,13 +68,6 @@ def generatePandasTables(data_dir, git_repo_name):
     pdCommits = pd.read_sql_query("SELECT * FROM commits", db)
     pdEdits = pd.read_sql_query("SELECT * FROM edits", db)
 
-    pdCommits.drop(["committer_name", "committer_date", "committer_email",
-                    "author_timezone", "committer_timezone"],
-                    inplace=True,  axis=1)
-
-    pdCommits['timestamp'] = pd.to_datetime(
-        pdCommits['author_date'], format="%Y-%m-%d %H:%M:%S")
-
     pd_commits_file = Path(data_dir, "pdCommits" + ".p")
     with open(pd_commits_file, "wb") as f:
         pickle.dump(pdCommits, f)
@@ -83,11 +76,28 @@ def generatePandasTables(data_dir, git_repo_name):
     with open(pd_edits_file, "wb") as f:
         pickle.dump(pdEdits, f)
 
-    return [pdCommits, pdEdits]
+    return True
+
+
+def getCommitRawPandasTable(data_dir):
+    pd_commits_file = Path(data_dir, "pdCommits" + ".p")
+    if pd_commits_file.is_file():
+        return pd.read_pickle(pd_commits_file)
+    else:
+        return pd.DataFrame()
+
+
+def getEditRawPandasTable(data_dir):
+    pd_edits_file = Path(data_dir, "pdEdits" + ".p")
+    if pd_edits_file.is_file():
+        return pd.read_pickle(pd_edits_file)
+    else:
+        return pd.DataFrame()
+
 
 if __name__ == "__main__":
 
-    secret_path = Path("..", "secret.yml")
+    secret_path = Path("secret.yml")
     with open(secret_path, "r") as ymlfile:
         sct = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
@@ -109,5 +119,8 @@ if __name__ == "__main__":
                      git_repo_name=git_repo_name)
 
     generatePandasTables(data_dir=default_data_folder,
-                        git_repo_name=git_repo_name,
-                        )
+                        git_repo_name=git_repo_name)
+
+    result = getCommitRawPandasTable(default_data_folder)
+
+    print(result.columns)

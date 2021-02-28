@@ -30,4 +30,4 @@ jobs:
     - name: Run tests
       run: |
         cd src
-        pipenv run python ./tests/test_CommitAggregation.py 
+        pipenv run python ./tests/test_VersionsAggregation.py 

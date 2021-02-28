@@ -7,9 +7,11 @@ import sys
 from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.Commits_aggregation import cloneRepository,\
+from src.Versions_aggregation import cloneRepository,\
                                     generateDataBase,\
-                                    generatePandasTables
+                                    generatePandasTables,\
+                                    getCommitRawPandasTable,\
+                                    getEditRawPandasTable
 
 class Test_CommitExtractionPublic(unittest.TestCase):
 
@@ -27,8 +29,8 @@ class Test_CommitExtractionPublic(unittest.TestCase):
         result = cloneRepository(git_repo_owner=self.git_repo_owner,
                                  git_repo_name=self.git_repo_name,
                                  git_repo_dir=self.default_repo_folder)
-       
         self.assertTrue( result, "Cloning throws exception")
+
 
     def test_generate_commit_database(self):
         """
@@ -37,17 +39,32 @@ class Test_CommitExtractionPublic(unittest.TestCase):
         result = generateDataBase(git_repo_dir=self.default_repo_folder,
                                   data_dir=self.default_data_folder,
                                   git_repo_name=self.git_repo_name)
-
         self.assertTrue( result, "Git2Net throws exception")
 
-    def test_generate_commit_pandas_files(self):
+
+    def test_generate_pandas_files(self):
         """
         Extract commit history for small open source project
         """
-        pdCommits, pdEdits = generatePandasTables(data_dir=self.default_data_folder,
-                                                  git_repo_name=self.git_repo_name)
+        result  = generatePandasTables(data_dir=self.default_data_folder,
+                                       git_repo_name=self.git_repo_name)
+        self.assertTrue( result, "Pandas data frame empty")
 
-        self.assertTrue( not pdCommits.empty, "Pandas data frame empty")
+
+    def test_get_commit_pandas_files(self):
+        """
+        Extract commit history for small open source project
+        """
+        pdCommits = getCommitRawPandasTable(data_dir=self.default_data_folder)
+        self.assertTrue( not pdCommits.empty, "Pandas commit data frame empty")
+
+
+    def test_get_edit_pandas_files(self):
+        """
+        Extract commit history for small open source project
+        """
+        pdEdits = getEditRawPandasTable(data_dir=self.default_data_folder)
+        self.assertTrue( not pdEdits.empty, "Pandas edits data frame empty")
 
 
 class Test_CommitExtractionPrivate(unittest.TestCase):
@@ -74,8 +91,8 @@ class Test_CommitExtractionPrivate(unittest.TestCase):
                                 git_repo_name=self.git_repo_name,
                                 git_repo_dir=self.default_repo_folder,
                                 GitHubToken=github_token)
-
         self.assertTrue( result, "Cloning throws exception")
+
 
 if "__main__" == __name__:
     unittest.main()
