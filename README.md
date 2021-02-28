@@ -1,6 +1,7 @@
 # Extract GitHub Activities
 
-The package aggregates Python functions for aggregation and preprocessing of GitHub activities. These are structured in files as follows.
+This package is being developed by the participating partners (TU Bergakademie Freiberg, OVGU Magdeburg and HU Berlin) as part of the DiP-iT project.
+The package implements Python functions for aggregation and preprocessing of GitHub activities. These are structured in files as follows.
 
 | Aspect              | Aggregation         | Preprocessing |
 |:--------------------|:--------------------|:--------------|
