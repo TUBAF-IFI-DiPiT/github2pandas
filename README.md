@@ -3,10 +3,10 @@
 This package is being developed by the participating partners (TU Bergakademie Freiberg, OVGU Magdeburg and HU Berlin) as part of the DiP-iT project.
 The package implements Python functions for aggregation and preprocessing of GitHub activities. These are structured in files as follows.
 
-| Aspect              | Aggregation         | Preprocessing |
-|:--------------------|:--------------------|:--------------|
-| Commits & Edits     | [Commits_aggregation.py](https://github.com/TUBAF-IFI-DiPiT/Extract_Git_Activities/blob/main/src/Commits_aggregation.py) |               |
-| Workflows / Actions |                     |               |
+| Aspect              | Aggregation         | Preprocessing | Testing |
+|:--------------------|:--------------------|:--------------|:--------|
+| Commits & Edits     | [Versions_aggregation.py](https://github.com/TUBAF-IFI-DiPiT/Extract_Git_Activities/blob/main/src/Versions_aggregation.py) | [Versions_processing.py](https://github.com/TUBAF-IFI-DiPiT/Extract_Git_Activities/blob/main/src/Versions_processing.py)                | [test_VersionsAggregation.py](https://github.com/TUBAF-IFI-DiPiT/Extract_Git_Activities/blob/main/tests/test_VersionsAggregation.py)  
+| Workflows / Actions |                     |               | 
 | Issues              |                     |               |
 | Discussions         |                     |               |
 
