@@ -58,22 +58,22 @@ class Test_CommitExtractionPrivate(unittest.TestCase):
     default_repo_folder = Path("repos", git_repo_name)
     default_data_folder = Path("data", git_repo_name)
 
-    secret_path = Path("secret.yml")
-    with open(secret_path, "r") as ymlfile:
-        sct = yaml.load(ymlfile, Loader=yaml.FullLoader)
-
-    github_token = sct["github"]["token"]
-
     @unittest.skip("Skiped for GitHub-Actions")
     def test_clone_private_repository(self):
         """
         Test cloning with private open source project
         """
 
+        secret_path = Path("secret.yml")
+        with open(secret_path, "r") as ymlfile:
+            sct = yaml.load(ymlfile, Loader=yaml.FullLoader)
+
+        github_token = sct["github"]["token"]
+
         result = cloneRepository(git_repo_owner=self.git_repo_owner,
                                 git_repo_name=self.git_repo_name,
                                 git_repo_dir=self.default_repo_folder,
-                                GitHubToken=self.github_token)
+                                GitHubToken=github_token)
 
         self.assertTrue( result, "Cloning throws exception")
 
