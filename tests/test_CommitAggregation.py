@@ -58,7 +58,7 @@ class Test_CommitExtractionPrivate(unittest.TestCase):
     default_repo_folder = Path("repos", git_repo_name)
     default_data_folder = Path("data", git_repo_name)
 
-    if os.gentenv(['GH_TOKEN']):
+    if os.getenv(['GH_TOKEN']):
         github_token = os.environ['GH_TOKEN']
     else:
         secret_path = Path("secret.yml")
