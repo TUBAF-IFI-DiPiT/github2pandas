@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pygit2 = "*"
+pyyaml = "*"
+requests = "*"
+uuid = "*"
+datetime = "*"
+pygithub = "*"
+pandas = "*"
+argparse = "*"
+pydriller = "<=1.15.2"
+git2net = "*"
+pysqlite3 = "*"
+selenium = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"
