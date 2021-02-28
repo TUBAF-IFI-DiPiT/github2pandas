@@ -27,3 +27,7 @@ jobs:
       run: |
         cd src
         pipenv install
+    - name: Run tests
+      run: |
+        cd src
+        pipenv run python ./tests/test_CommitAggregation.py 
