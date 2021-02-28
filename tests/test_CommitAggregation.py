@@ -58,11 +58,14 @@ class Test_CommitExtractionPrivate(unittest.TestCase):
     default_repo_folder = Path("repos", git_repo_name)
     default_data_folder = Path("data", git_repo_name)
 
-    secret_path = Path("secret.yml")
-    with open(secret_path, "r") as ymlfile:
-        sct = yaml.load(ymlfile, Loader=yaml.FullLoader)
+    if os.gentenv(['GH_TOKEN']):
+        github_token = os.environ['GH_TOKEN']
+    else:
+        secret_path = Path("secret.yml")
+        with open(secret_path, "r") as ymlfile:
+            sct = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
-    github_token = sct["github"]["token"]
+        github_token = sct["github"]["token"]
 
     def test_clone_private_repository(self):
         """
