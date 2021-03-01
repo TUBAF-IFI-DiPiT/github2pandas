@@ -6,6 +6,7 @@ secret.yml
 *.p
 
 .vscode/
+.vs/
 /repo/
 secret.yml
 *.txt
