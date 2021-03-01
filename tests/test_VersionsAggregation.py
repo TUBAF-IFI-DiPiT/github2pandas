@@ -81,11 +81,7 @@ class Test_CommitExtractionPrivate(unittest.TestCase):
         Test cloning with private open source project
         """
 
-        secret_path = Path("secret.yml")
-        with open(secret_path, "r") as ymlfile:
-            sct = yaml.load(ymlfile, Loader=yaml.FullLoader)
-
-        github_token = sct["github"]["token"]
+        github_token = os.environ['TOKEN']
 
         result = cloneRepository(git_repo_owner=self.git_repo_owner,
                                 git_repo_name=self.git_repo_name,
