@@ -97,11 +97,7 @@ def getEditRawPandasTable(data_dir):
 
 if __name__ == "__main__":
 
-    secret_path = Path("secret.yml")
-    with open(secret_path, "r") as ymlfile:
-        sct = yaml.load(ymlfile, Loader=yaml.FullLoader)
-
-    github_token = sct["github"]["token"]
+    github_token = os.environ['TOKEN']
 
     git_repo_name = "xAPI_for_GitHubData"
     git_repo_owner = "TUBAF-IFI-DiPiT"
