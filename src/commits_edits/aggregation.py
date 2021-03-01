@@ -9,55 +9,9 @@ import git2net
 import sqlite3
 import pickle
 import pandas as pd
+from src.utility import clone_repository, generate_data_base, readonly_handler
 
 
-# getting os permissions to remove (write) readonly files
-def readonly_handler(func, local_directory, execinfo):
-    os.chmod(local_directory, stat.S_IWRITE)
-    func(local_directory)
-
-
-def cloneRepository(git_repo_owner, git_repo_name, git_repo_dir,
-                    GitHubToken=None):
-
-    if os.path.exists(git_repo_dir):
-        shutil.rmtree(git_repo_dir, onerror=readonly_handler)
-    callbacks = git2.RemoteCallbacks(
-        git2.UserPass(GitHubToken, 'x-oauth-basic'))
-    repo_ref = f"https://github.com/{git_repo_owner}/{git_repo_name}"
-    if GitHubToken:
-        repo = git2.clone_repository(repo_ref, git_repo_dir, callbacks=callbacks)
-    else:
-        repo = git2.clone_repository(repo_ref, git_repo_dir, callbacks=None)
-
-    existing_branches = list(repo.branches)
-    r = git.Repo.init(git_repo_dir)
-
-    for ref in repo.references:
-        branch_name = ref.split('/')[-1]
-        if branch_name != 'HEAD' and branch_name not in existing_branches:
-            print("  ", branch_name, sep=", ", end="")
-            try:
-                r.git.branch('--track', branch_name,
-                             'remotes/origin/'+branch_name)
-            except Exception:
-                print("An exception occurred")
-                print(" ")
-
-    return True
-
-def generateDataBase(git_repo_dir, data_dir, git_repo_name):
-
-    p = Path(data_dir)
-    p.mkdir(parents=True, exist_ok=True)
-    sqlite_db_file = Path(data_dir, git_repo_name + ".db")
-    if os.path.exists(sqlite_db_file):
-        os.remove(sqlite_db_file)
-    git2net.mine_git_repo(git_repo_dir, sqlite_db_file,
-                          no_of_processes=1,
-                          max_modifications=1000)
-
-    return True
 
 
 def generatePandasTables(data_dir, git_repo_name):
@@ -95,6 +49,7 @@ def getEditRawPandasTable(data_dir):
         return pd.DataFrame()
 
 
+# should be moved to execute.py?
 if __name__ == "__main__":
 
     github_token = os.environ['TOKEN']
@@ -105,12 +60,12 @@ if __name__ == "__main__":
     default_repo_folder = Path("repos", git_repo_name)
     default_data_folder = Path("data", git_repo_name)
 
-    cloneRepository(git_repo_owner=git_repo_owner,
+    clone_repository(git_repo_owner=git_repo_owner,
                         git_repo_name=git_repo_name,
                         git_repo_dir=default_repo_folder,
                         GitHubToken=github_token)
 
-    generateDataBase(git_repo_dir=default_repo_folder,
+    generate_data_base(git_repo_dir=default_repo_folder,
                      data_dir=default_data_folder,
                      git_repo_name=git_repo_name)
 
