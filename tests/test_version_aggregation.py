@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.commits_edits.aggregation import generatePandasTables,\
+from src.version.aggregation import generatePandasTables,\
                                     getCommitRawPandasTable,\
                                     getEditRawPandasTable
 from src.utility import clone_repository,\
