@@ -7,11 +7,11 @@ import sys
 from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.Versions_aggregation import cloneRepository,\
-                                    generateDataBase,\
-                                    generatePandasTables,\
+from src.version.aggregation import generatePandasTables,\
                                     getCommitRawPandasTable,\
                                     getEditRawPandasTable
+from src.utility import clone_repository,\
+                        generate_data_base
 
 class Test_CommitExtractionPublic(unittest.TestCase):
 
@@ -26,7 +26,7 @@ class Test_CommitExtractionPublic(unittest.TestCase):
         Test cloning with small open source project
         """
 
-        result = cloneRepository(git_repo_owner=self.git_repo_owner,
+        result = clone_repository(git_repo_owner=self.git_repo_owner,
                                  git_repo_name=self.git_repo_name,
                                  git_repo_dir=self.default_repo_folder)
         self.assertTrue( result, "Cloning throws exception")
@@ -36,7 +36,7 @@ class Test_CommitExtractionPublic(unittest.TestCase):
         """
         Extract commit history for small open source project
         """
-        result = generateDataBase(git_repo_dir=self.default_repo_folder,
+        result = generate_data_base(git_repo_dir=self.default_repo_folder,
                                   data_dir=self.default_data_folder,
                                   git_repo_name=self.git_repo_name)
         self.assertTrue( result, "Git2Net throws exception")
@@ -81,13 +81,9 @@ class Test_CommitExtractionPrivate(unittest.TestCase):
         Test cloning with private open source project
         """
 
-        secret_path = Path("secret.yml")
-        with open(secret_path, "r") as ymlfile:
-            sct = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        github_token = os.environ['TOKEN']
 
-        github_token = sct["github"]["token"]
-
-        result = cloneRepository(git_repo_owner=self.git_repo_owner,
+        result = clone_repository(git_repo_owner=self.git_repo_owner,
                                 git_repo_name=self.git_repo_name,
                                 git_repo_dir=self.default_repo_folder,
                                 GitHubToken=github_token)
