@@ -28,6 +28,8 @@ jobs:
         cd src
         pipenv install
     - name: Run tests
+      env:
+        TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd src
         pipenv run python ./tests/test_VersionsAggregation.py 
