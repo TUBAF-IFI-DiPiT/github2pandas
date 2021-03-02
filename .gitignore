@@ -4,7 +4,7 @@ secret.yml
 *.pyc
 *.db
 *.p
-
+.env
 .vscode/
 .vs/
 /repo/
