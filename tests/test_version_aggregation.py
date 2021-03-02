@@ -7,9 +7,9 @@ import sys
 from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.version.aggregation import generatePandasTables,\
-                                    getCommitRawPandasTable,\
-                                    getEditRawPandasTable
+from src.version.aggregation import generate_pandas_tables,\
+                                    get_commit_raw_pandas_table,\
+                                    get_edit_raw_pandas_table
 from src.utility import clone_repository,\
                         generate_data_base
 
@@ -46,7 +46,7 @@ class Test_CommitExtractionPublic(unittest.TestCase):
         """
         Extract commit history for small open source project
         """
-        result  = generatePandasTables(data_dir=self.default_data_folder,
+        result  = generate_pandas_tables(data_dir=self.default_data_folder,
                                        git_repo_name=self.git_repo_name)
         self.assertTrue( result, "Pandas data frame empty")
 
@@ -55,7 +55,7 @@ class Test_CommitExtractionPublic(unittest.TestCase):
         """
         Extract commit history for small open source project
         """
-        pdCommits = getCommitRawPandasTable(data_dir=self.default_data_folder)
+        pdCommits = get_commit_raw_pandas_table(data_dir=self.default_data_folder)
         self.assertTrue( not pdCommits.empty, "Pandas commit data frame empty")
 
 
@@ -63,7 +63,7 @@ class Test_CommitExtractionPublic(unittest.TestCase):
         """
         Extract commit history for small open source project
         """
-        pdEdits = getEditRawPandasTable(data_dir=self.default_data_folder)
+        pdEdits = get_edit_raw_pandas_table(data_dir=self.default_data_folder)
         self.assertTrue( not pdEdits.empty, "Pandas edits data frame empty")
 
 

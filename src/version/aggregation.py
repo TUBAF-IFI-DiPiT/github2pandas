@@ -1,20 +1,12 @@
-import stat
-import pygit2 as git2
-import git
 import os
-import shutil
-import yaml
 from pathlib import Path
-import git2net
 import sqlite3
 import pickle
 import pandas as pd
 from src.utility import clone_repository, generate_data_base, readonly_handler
 
 
-
-
-def generatePandasTables(data_dir, git_repo_name):
+def generate_pandas_tables(data_dir, git_repo_name):
 
     sqlite_db_file = Path(data_dir, git_repo_name + ".db")
 
@@ -33,7 +25,7 @@ def generatePandasTables(data_dir, git_repo_name):
     return True
 
 
-def getCommitRawPandasTable(data_dir):
+def get_commit_raw_pandas_table(data_dir):
     pd_commits_file = Path(data_dir, "pdCommits" + ".p")
     if pd_commits_file.is_file():
         return pd.read_pickle(pd_commits_file)
@@ -41,7 +33,7 @@ def getCommitRawPandasTable(data_dir):
         return pd.DataFrame()
 
 
-def getEditRawPandasTable(data_dir):
+def get_edit_raw_pandas_table(data_dir):
     pd_edits_file = Path(data_dir, "pdEdits" + ".p")
     if pd_edits_file.is_file():
         return pd.read_pickle(pd_edits_file)
@@ -49,7 +41,7 @@ def getEditRawPandasTable(data_dir):
         return pd.DataFrame()
 
 
-# should be moved to execute.py?
+# For fast local testing. Can be removed when module is done.
 if __name__ == "__main__":
 
     github_token = os.environ['TOKEN']
@@ -63,15 +55,15 @@ if __name__ == "__main__":
     clone_repository(git_repo_owner=git_repo_owner,
                         git_repo_name=git_repo_name,
                         git_repo_dir=default_repo_folder,
-                        GitHubToken=github_token)
+                        git_hub_token=github_token)
 
     generate_data_base(git_repo_dir=default_repo_folder,
                      data_dir=default_data_folder,
                      git_repo_name=git_repo_name)
 
-    generatePandasTables(data_dir=default_data_folder,
+    generate_pandas_tables(data_dir=default_data_folder,
                         git_repo_name=git_repo_name)
 
-    result = getCommitRawPandasTable(default_data_folder)
+    result = get_commit_raw_pandas_table(default_data_folder)
 
     print(result.columns)
