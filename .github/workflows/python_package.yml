@@ -32,4 +32,4 @@ jobs:
         TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd src
-        pipenv run python ./tests/test_VersionsAggregation.py 
+        pipenv run python ./tests/test_version_aggregation.py
