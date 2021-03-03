@@ -23,6 +23,9 @@ class TestUtility(unittest.TestCase):
         repo = utility.get_repo(repo_name=self.git_repo_name, token=self.github_token)
         self.assertIsNotNone(repo)
 
+    def test_github_token_availability(self):
+        self.assertTrue( "TOKEN" in os.environ , "No Token available")
+
 
 if __name__ == "__main__":
     unittest.main()
