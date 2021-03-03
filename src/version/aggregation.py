@@ -8,10 +8,8 @@ import stat
 import git
 import shutil
 import git2net
-import sys
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from src.utility import look_for_github_token
+from .. import utility
 
 def clone_repository(git_repo_owner, git_repo_name, git_repo_dir,
                     git_hub_token=None):

@@ -13,7 +13,10 @@ from src.version.aggregation import clone_repository,\
                                     get_commit_raw_pandas_table,\
                                     get_edit_raw_pandas_table
 
-from src.utility import look_for_github_token
+from src.version.processing import identify_commits_in_branches
+
+from src.utility import replace_dublicates,\
+                        apply_python_date_format
 
 class Test_CommitExtractionPublic(unittest.TestCase):
 
@@ -68,6 +71,46 @@ class Test_CommitExtractionPublic(unittest.TestCase):
         self.assertTrue( not pdEdits.empty, "Pandas edits data frame empty")
 
 
+class Test_Processing(unittest.TestCase):
+
+    git_repo_name = "WillkommenAufLiaScript"
+    git_repo_owner = "SebastianZug"
+
+    default_repo_folder = Path("repos", git_repo_name)
+    default_data_folder = Path("data", git_repo_name)
+
+    def test_Pandas_pipeline(self):
+
+        clone_repository(git_repo_owner=self.git_repo_owner,
+                                 git_repo_name=self.git_repo_name,
+                                 git_repo_dir=self.default_repo_folder)
+
+        generate_data_base(git_repo_dir=self.default_repo_folder,
+                           data_dir=self.default_data_folder,
+                           git_repo_name=self.git_repo_name)
+     
+        generate_pandas_tables(data_dir=self.default_data_folder,
+                               git_repo_name=self.git_repo_name)
+
+
+        dublicate_names = [
+            ('SebastianZug', 'Sebastian Zug')
+        ]
+        dublicate_emails = [
+            ('zug@pop-os.localdomain', 'Sebastian.Zug@informatik.tu-freiberg.de')
+        ]
+ 
+        pdCommits = (
+        get_commit_raw_pandas_table(self.default_data_folder)
+           .pipe(apply_python_date_format, 'author_date', 'timestamp')
+           .pipe(replace_dublicates, "author_name", dublicate_names)
+           .pipe(replace_dublicates, "author_email", dublicate_emails)
+           .pipe(identify_commits_in_branches)
+        )
+
+        self.assertTrue( not pdCommits.empty, "Processed data frame empty")
+
+
 class Test_CommitExtractionPrivate(unittest.TestCase):
 
     git_repo_name = "xAPI_for_GitHubData"
@@ -82,7 +125,6 @@ class Test_CommitExtractionPrivate(unittest.TestCase):
         Test cloning with private open source project
         """
 
-        look_for_github_token()
         github_token = os.environ['TOKEN']
 
         result = clone_repository(git_repo_owner=self.git_repo_owner,
