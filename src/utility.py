@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os
+
 from pathlib import Path
 import pygit2 as git2
 import stat
@@ -8,6 +9,7 @@ import git
 import shutil
 import git2net
 import pandas as pd
+import github
 
 def clone_repository(git_repo_owner, git_repo_name, git_repo_dir,
                     git_hub_token=None):
@@ -36,6 +38,12 @@ def clone_repository(git_repo_owner, git_repo_name, git_repo_dir,
 
     return True
 
+def get_repo(repo_name, token):
+    g = github.Github(token)
+    for repo in g.get_user().get_repos():
+        if repo_name == repo.name: 
+            return repo
+    
 # getting os permissions to remove (write) readonly files
 def readonly_handler(func, local_directory, execinfo):
     os.chmod(local_directory, stat.S_IWRITE)
