@@ -9,7 +9,10 @@ import pickle
 
 from .. import utility
 
-def generateWorkflowHistory(repo_name, github_token, data_dir):
+def generate_workflow_history(repo_name, github_token, data_dir):
+
+    p = Path(data_dir)
+    p.mkdir(parents=True, exist_ok=True)
 
     valid = False
     repo = utility.get_repo(repo_name, github_token)
@@ -38,24 +41,25 @@ def generateWorkflowHistory(repo_name, github_token, data_dir):
     return valid
 
 
-def requestLogFiles(owner, repo, github_token, workflow_id, folder='temp'):
+def request_log_files(owner, repo_name, github_token, workflow_id, folder='temp'):
     # Motivated from https://curl.trillworks.com/
     headers = {
         'Accept': 'application/vnd.github.v3+json',
     }
-    query_url = f"https://api.github.com/repos/{owner}/{repo}/actions/runs/{workflow_id}/logs"
+    query_url = f"https://api.github.com/repos/{owner}/{repo_name}/actions/runs/{workflow_id}/logs"
     response = requests.get(query_url, headers=headers,
                             auth=('username', github_token))
+    print(query_url)
     print(response.headers['Content-Type'])
     if 'zip' in response.headers['Content-Type']:
         zipObj = zipfile.ZipFile(io.BytesIO(response.content))
-        zipObj.extractall(f"{folder}/{repo}/{workflow_id}")
+        zipObj.extractall(f"{folder}/{repo_name}/{workflow_id}")
         return len(zipObj.namelist())
     else:
         return None
 
 
-def getWorkflowPandasTable(data_dir):
+def get_workflow_pandas_table(data_dir):
 
     pd_wfh_file = Path(data_dir, "pdWorkflows" + ".p")
     if pd_wfh_file.is_file:
