@@ -4,8 +4,7 @@ import unittest
 import sys
 import os
 from pathlib import Path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from src.utility import get_repo
+from src import utility
 
 class TestUtility(unittest.TestCase):
     
@@ -21,7 +20,7 @@ class TestUtility(unittest.TestCase):
         """
         Test generating pandas table
         """
-        repo = get_repo(repo_name=self.git_repo_name, token=self.github_token)
+        repo = utility.get_repo(repo_name=self.git_repo_name, token=self.github_token)
         self.assertIsNotNone(repo)
 
 

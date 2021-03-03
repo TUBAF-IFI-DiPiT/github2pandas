@@ -4,9 +4,8 @@ import unittest
 import sys
 import os
 from pathlib import Path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from src.utility import get_repo
-from src.issues.aggregation import generate_pandas_tables
+from src import utility
+from src.issues import aggregation
 
 class TestIssueAggregation(unittest.TestCase):
     
@@ -22,11 +21,17 @@ class TestIssueAggregation(unittest.TestCase):
         """
         Test generating pandas table
         """
-        repo = get_repo(repo_name=self.git_repo_name, token=self.github_token)
-        result = generate_pandas_tables(data_dir=self.default_data_folder,
+        repo = utility.get_repo(repo_name=self.git_repo_name, token=self.github_token)
+        result = aggregation.generate_pandas_tables(data_dir=self.default_data_folder,
                            git_repo_name=self.git_repo_name, repo=repo)
         self.assertTrue( result, "generate_pandas_tables throws exception")
-
+        
+    def test_get_raw_issues(self):
+        """
+        Test to get raw issue pandas Tables
+        """
+        data_folder = Path("data", self.git_repo_name)
+        aggregation.get_raw_issues(data_folder,aggregation.RawIssuesFilenames.PD_ISSUES)
 
 
 if __name__ == "__main__":

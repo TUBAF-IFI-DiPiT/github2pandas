@@ -4,10 +4,10 @@ import pickle
 import enum
 
 class RawIssuesFilenames(enum.Enum):
-    PD_ISSUES = 1
-    PD_ISSUES_COMMENTS = 2
-    PD_ISSUES_EVENTS = 3
-    PD_ISSUES_REACTIONS = 4
+    PD_ISSUES = "pdIssues.p"
+    PD_ISSUES_COMMENTS = "pdIssuesComments.p"
+    PD_ISSUES_EVENTS = "pdIssuesEvents.p"
+    PD_ISSUES_REACTIONS = "pdIssuesReactions.p"
 
 # https://pygithub.readthedocs.io/en/latest/github_objects/NamedUser.html
 def extract_user_data(author):
@@ -106,6 +106,7 @@ def extract_issue_event_data(event, issue_id):
 
 def generate_pandas_tables(data_dir, git_repo_name, repo):
     data_dir_ = Path(data_dir, "Issues")
+    Path(data_dir_).mkdir(parents=True, exist_ok=True)
     issues = repo.get_issues(state="all") 
     issue_list = list()
     issue_comment_list = list()
@@ -132,15 +133,15 @@ def generate_pandas_tables(data_dir, git_repo_name, repo):
             issue_reaction_data = extract_reaction_data(reaction,issue_id=issue.id)
             issue_reaction_list.append(issue_reaction_data)    
     # Save lists
-    save_list_to_raw_issues(data_dir, RawIssuesFilenames.PD_ISSUES, issue_list)
-    save_list_to_raw_issues(data_dir, RawIssuesFilenames.PD_ISSUES_COMMENTS, issue_comment_list)
-    save_list_to_raw_issues(data_dir, RawIssuesFilenames.PD_ISSUES_EVENTS, issue_event_list)
-    save_list_to_raw_issues(data_dir, RawIssuesFilenames.PD_ISSUES_REACTIONS, issue_reaction_list)
+    save_list_to_raw_issues(data_dir_, RawIssuesFilenames.PD_ISSUES, issue_list)
+    save_list_to_raw_issues(data_dir_, RawIssuesFilenames.PD_ISSUES_COMMENTS, issue_comment_list)
+    save_list_to_raw_issues(data_dir_, RawIssuesFilenames.PD_ISSUES_EVENTS, issue_event_list)
+    save_list_to_raw_issues(data_dir_, RawIssuesFilenames.PD_ISSUES_REACTIONS, issue_reaction_list)
 
     return True
 
 def get_raw_issues(data_dir, raw_issue_filename = RawIssuesFilenames.PD_ISSUES):
-    pd_issues_file = Path(data_dir, raw_issue_filename + ".p")
+    pd_issues_file = Path(data_dir, raw_issue_filename.value)
     if pd_issues_file.is_file():
         return pd.read_pickle(pd_issues_file)
     else:
@@ -148,11 +149,7 @@ def get_raw_issues(data_dir, raw_issue_filename = RawIssuesFilenames.PD_ISSUES):
 
 def save_list_to_raw_issues(data_dir, raw_issue_filename, data_list):
     data_frame_ = pd.DataFrame(data_list)
-    pd_file = Path(data_dir, raw_issue_filename.name)
+    pd_file = Path(data_dir, raw_issue_filename.value)
     with open(pd_file, "wb") as f:
         pickle.dump(data_frame_, f)
-
-
-
-
 
