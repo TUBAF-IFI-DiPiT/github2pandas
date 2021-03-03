@@ -19,16 +19,31 @@ def replace_dublicates(pd_table, column_name, dublicates):
 
     return pd_table
 
+
+def check_if_repo_exists(owner, repo):
+
+    repo_ref = f"{owner}/{repo}"
+    valid = True 
+    try:
+        repo = g.get_repo(repo_ref)
+    except:
+        valid = False 
+    return valid
+
 def get_repo(repo_name, token):
+
     g = github.Github(token)
     for repo in g.get_user().get_repos():
         if repo_name == repo.name:
             return repo
     return None
+
 # getting os permissions to remove (write) readonly files
 def readonly_handler(func, local_directory, execinfo):
+
     os.chmod(local_directory, stat.S_IWRITE)
     func(local_directory)
+
 
 def apply_python_date_format(pd_table, source_colum, destination_column):
 
