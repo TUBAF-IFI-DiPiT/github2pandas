@@ -16,6 +16,7 @@ pydriller = "<=1.15.2"
 git2net = "*"
 pysqlite3 = "*"
 selenium = "*"
+python-dotenv = "*"
 
 [dev-packages]
 

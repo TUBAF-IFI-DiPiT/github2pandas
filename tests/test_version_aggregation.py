@@ -7,11 +7,13 @@ import sys
 from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.version.aggregation import generate_pandas_tables,\
+from src.version.aggregation import clone_repository,\
+                                    generate_data_base,\
+                                    generate_pandas_tables,\
                                     get_commit_raw_pandas_table,\
                                     get_edit_raw_pandas_table
-from src.utility import clone_repository,\
-                        generate_data_base
+
+from src.utility import look_for_github_token
 
 class Test_CommitExtractionPublic(unittest.TestCase):
 
@@ -30,7 +32,6 @@ class Test_CommitExtractionPublic(unittest.TestCase):
                                  git_repo_name=self.git_repo_name,
                                  git_repo_dir=self.default_repo_folder)
         self.assertTrue( result, "Cloning throws exception")
-
 
     def test_generate_commit_database(self):
         """
@@ -81,12 +82,13 @@ class Test_CommitExtractionPrivate(unittest.TestCase):
         Test cloning with private open source project
         """
 
+        look_for_github_token()
         github_token = os.environ['TOKEN']
 
         result = clone_repository(git_repo_owner=self.git_repo_owner,
                                 git_repo_name=self.git_repo_name,
                                 git_repo_dir=self.default_repo_folder,
-                                GitHubToken=github_token)
+                                git_hub_token=github_token)
         self.assertTrue( result, "Cloning throws exception")
 
 
