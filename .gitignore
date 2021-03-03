@@ -1,4 +1,5 @@
-/repo/
+/repos/
+/data/
 secret.yml
 *.txt
 *.pyc
