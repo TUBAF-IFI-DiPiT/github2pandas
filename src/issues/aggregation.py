@@ -137,6 +137,8 @@ def generate_pandas_tables(data_dir, git_repo_name, repo):
     save_list_to_raw_issues(data_dir, RawIssuesFilenames.PD_ISSUES_EVENTS, issue_event_list)
     save_list_to_raw_issues(data_dir, RawIssuesFilenames.PD_ISSUES_REACTIONS, issue_reaction_list)
 
+    return True
+
 def get_raw_issues(data_dir, raw_issue_filename = RawIssuesFilenames.PD_ISSUES):
     pd_issues_file = Path(data_dir, raw_issue_filename + ".p")
     if pd_issues_file.is_file():

@@ -41,9 +41,9 @@ def clone_repository(git_repo_owner, git_repo_name, git_repo_dir,
 def get_repo(repo_name, token):
     g = github.Github(token)
     for repo in g.get_user().get_repos():
-        if repo_name == repo.name: 
+        if repo_name == repo.name:
             return repo
-    
+    return None
 # getting os permissions to remove (write) readonly files
 def readonly_handler(func, local_directory, execinfo):
     os.chmod(local_directory, stat.S_IWRITE)
