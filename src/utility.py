@@ -5,9 +5,6 @@ import os
 from pathlib import Path
 import pygit2 as git2
 import stat
-import git
-import shutil
-import git2net
 import pandas as pd
 import github
 
@@ -19,16 +16,6 @@ def replace_dublicates(pd_table, column_name, dublicates):
 
     return pd_table
 
-
-def check_if_repo_exists(owner, repo):
-
-    repo_ref = f"{owner}/{repo}"
-    valid = True 
-    try:
-        repo = g.get_repo(repo_ref)
-    except:
-        valid = False 
-    return valid
 
 def get_repo(repo_name, token):
 
