@@ -25,6 +25,20 @@ def get_repo(repo_name, token):
             return repo
     return None
 
+def extract_assignees(github_object):
+    assignees_count = 0
+    assignees = ""
+    for assignee in github_object.assignees:
+        assignees_count += 1
+        assignees += extract_user_data(assignee) + "&"
+    if len(assignees) > 0:
+        assignees = assignees[:-1]
+    return assignees, assignees_count
+
+# https://pygithub.readthedocs.io/en/latest/github_objects/NamedUser.html
+def extract_user_data(author):
+    return author.name
+
 # getting os permissions to remove (write) readonly files
 def readonly_handler(func, local_directory, execinfo):
 

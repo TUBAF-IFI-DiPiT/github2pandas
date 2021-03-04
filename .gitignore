@@ -14,5 +14,6 @@ secret.yml
 *.pyc
 *.db
 *.p
-
+*.toml
 .vscode/
+/github2pandas.egg-info

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "4cfc61d7afc7e33902873cb116e051597e7dfa8be06f09f46ce69e4a2f0fae8b"
+            "sha256": "0e8d16f4f92a8eed0e30bb7c8004787d12ee7d7cfd910888263fc539c828dfb8"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -393,13 +393,6 @@
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'",
             "version": "==1.26.3"
         },
-        "uuid": {
-            "hashes": [
-                "sha256:1f87cc004ac5120466f36c5beae48b4c48cc411968eed0eaecd3da82aa96193f"
-            ],
-            "index": "pypi",
-            "version": "==1.30"
-        },
         "wrapt": {
             "hashes": [
                 "sha256:b62ffa81fb85f4332a4f609cab4ac40709470da05643a082ec1eb88e6d9b97d7"
@@ -465,5 +458,10 @@
             "version": "==5.2.0"
         }
     },
-    "develop": {}
+    "develop": {
+        "github2pandas": {
+            "editable": true,
+            "path": "."
+        }
+    }
 }

@@ -7,18 +7,18 @@ name = "pypi"
 pygit2 = "*"
 pyyaml = "*"
 requests = "*"
-uuid = "*"
 datetime = "*"
 pygithub = "*"
-pandas = "*"
 argparse = "*"
 pydriller = "<=1.15.2"
 git2net = "*"
 pysqlite3 = "*"
 selenium = "*"
 python-dotenv = "*"
+pandas = "*"
 
 [dev-packages]
+github2pandas = {editable = true, path = "."}
 
 [requires]
 python_version = "3.8"

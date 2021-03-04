@@ -4,7 +4,7 @@ import unittest
 import sys
 import os
 from pathlib import Path
-from src import utility
+from github2pandas import utility
 
 class TestUtility(unittest.TestCase):
     
