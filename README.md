@@ -26,8 +26,8 @@ Due to the early stage of development the DiP-iT package is not yet available as
 
 Naming conventions: https://namingconvention.org/python/
 
-Installation: pipenv install --dev
-Run: pipenv run python file.py
-Run all Tests: pipenv run python -m unittest
-Run all tests in a specific folder: pipenv run python -m unittest discover -s 'tests'
-Run all tests with specific filename: pipenv run python -m unittest discover -p 'test_*.py''
+* Installation: pipenv install --dev
+* Run: pipenv run python file.py
+* Run all Tests: pipenv run python -m unittest
+* Run all tests in a specific folder: pipenv run python -m unittest discover -s 'tests'
+* Run all tests with specific filename: pipenv run python -m unittest discover -p 'test_*.py''
