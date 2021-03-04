@@ -5,17 +5,16 @@ import os
 import yaml
 import sys
 from pathlib import Path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.version.aggregation import clone_repository,\
+from github2pandas.version.aggregation import clone_repository,\
                                     generate_data_base,\
                                     generate_pandas_tables,\
                                     get_commit_raw_pandas_table,\
                                     get_edit_raw_pandas_table
 
-from src.version.processing import identify_commits_in_branches
+from github2pandas.version.processing import identify_commits_in_branches
 
-from src.utility import replace_dublicates,\
+from github2pandas.utility import replace_dublicates,\
                         apply_python_date_format
 
 class Test_CommitExtractionPublic(unittest.TestCase):

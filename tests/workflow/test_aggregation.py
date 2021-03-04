@@ -4,9 +4,8 @@ import unittest
 import os
 import sys
 from pathlib import Path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.workflows.aggregation import generate_workflow_history,\
+from github2pandas.workflows.aggregation import generate_workflow_history,\
                                       get_workflow_pandas_table
 
 class Test_Workflow(unittest.TestCase):

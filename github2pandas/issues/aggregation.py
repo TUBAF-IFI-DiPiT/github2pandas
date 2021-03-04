@@ -3,30 +3,24 @@ from pathlib import Path
 import pickle
 import enum
 
+from .. import utility
+
 class RawIssuesFilenames(enum.Enum):
     PD_ISSUES = "pdIssues.p"
     PD_ISSUES_COMMENTS = "pdIssuesComments.p"
     PD_ISSUES_EVENTS = "pdIssuesEvents.p"
     PD_ISSUES_REACTIONS = "pdIssuesReactions.p"
 
-# https://pygithub.readthedocs.io/en/latest/github_objects/NamedUser.html
-def extract_user_data(author):
-    return author.name
+
 
 # https://pygithub.readthedocs.io/en/latest/github_objects/Issue.html
 def extract_issue_data(issue):
     issue_data = dict()  
-    issue_data["assignees_count"] = 0
-    issue_data["assignees"] = ""
-    for assignee in issue.assignees:
-        issue_data["assignees_count"] += 1
-        issue_data["assignees"] += extract_user_data(assignee) + "&"
-    if len(issue_data["assignees"]) > 0:
-        issue_data["assignees"] = issue_data["assignees"][:-1]
+    issue_data["assignees"], issue_data["assignees_count"] = utility.extract_assignees(issue)
     issue_data["body"] = issue.body
     issue_data["closed_at"] = issue.closed_at
     if issue.closed_by:
-        issue_data["closedBy"] = extract_user_data(issue.closed_by)
+        issue_data["closedBy"] = utility.extract_user_data(issue.closed_by)
     issue_data["comments"] = issue.comments
     issue_data["created_at"] = issue.created_at
     issue_data["id"] = issue.id
@@ -47,7 +41,7 @@ def extract_issue_data(issue):
     issue_data["title"] = issue.title
     issue_data["updated_at"] = issue.updated_at
     if issue.user:
-        issue_data["author"] = extract_user_data(issue.user)
+        issue_data["author"] = utility.extract_user_data(issue.user)
     issue_data["status"] = issue.state
     issue_data["comments_count"] = issue.get_comments().totalCount
     issue_data["event_count"] = issue.get_events().totalCount
@@ -63,7 +57,7 @@ def extract_issue_comment_data(comment, issue_id):
     issue_comment_data["id"] = comment.id
     issue_comment_data["updated_at"] = comment.updated_at
     if comment.user:
-        issue_comment_data["author"] = extract_user_data(comment.user)
+        issue_comment_data["author"] = utility.extract_user_data(comment.user)
     issue_comment_data["reactions"] = comment.get_reactions().totalCount
     return issue_comment_data
 
@@ -78,7 +72,7 @@ def extract_reaction_data(reaction, comment_id = None, issue_id = None):
     reaction_data["created_at"] = reaction.created_at
     reaction_data["id"] = reaction.id
     if reaction.user:
-        reaction_data["author"] = extract_user_data(reaction.user)
+        reaction_data["author"] = utility.extract_user_data(reaction.user)
     return reaction_data
 
 # https://pygithub.readthedocs.io/en/latest/github_objects/IssueEvent.html
@@ -86,7 +80,7 @@ def extract_issue_event_data(event, issue_id):
     issue_event_data = dict()
     issue_event_data["issue_id"] = issue_id
     if event.actor:
-        issue_event_data["author"] = extract_user_data(event.actor)
+        issue_event_data["author"] = utility.extract_user_data(event.actor)
     issue_event_data["commit_id"] = event.commit_id
     issue_event_data["created_at"] = event.created_at
     issue_event_data["event"] = event.event
@@ -95,13 +89,13 @@ def extract_issue_event_data(event, issue_id):
     if event.label:
         issue_event_data["label"] = event.label.name
     if event.assignee:
-        issue_event_data["assignee"] = extract_user_data(event.assignee)
+        issue_event_data["assignee"] = utility.extract_user_data(event.assignee)
     if event.assigner:
-        issue_event_data["assigner"] = extract_user_data(event.assigner)
+        issue_event_data["assigner"] = utility.extract_user_data(event.assigner)
     if event.review_requester:
-        issue_event_data["review_requester"] = extract_user_data(event.review_requester)
+        issue_event_data["review_requester"] = utility.extract_user_data(event.review_requester)
     if event.requested_reviewer:
-        issue_event_data["requested_reviewer"] = extract_user_data(event.requested_reviewer)
+        issue_event_data["requested_reviewer"] = utility.extract_user_data(event.requested_reviewer)
     return issue_event_data
 
 def generate_pandas_tables(data_dir, git_repo_name, repo):
