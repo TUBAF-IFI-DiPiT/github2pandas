@@ -59,10 +59,10 @@ def extract_reaction_data(reaction, parent_id, parent_name):
         reaction_data["author"] = extract_user_data(reaction.user)
     return reaction_data
 
-def save_list_to_pandas_table(data_dir, filename, data_list):
-    Path(data_dir).mkdir(parents=True, exist_ok=True)
+def save_list_to_pandas_table(dir, filename, data_list):
+    Path(dir).mkdir(parents=True, exist_ok=True)
     data_frame_ = pd.DataFrame(data_list)
-    pd_file = Path(data_dir, filename)
+    pd_file = Path(dir, filename)
     with open(pd_file, "wb") as f:
         pickle.dump(data_frame_, f)
 

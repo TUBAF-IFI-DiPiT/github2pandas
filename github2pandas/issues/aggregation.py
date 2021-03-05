@@ -2,6 +2,8 @@ import pandas as pd
 from pathlib import Path
 import pickle
 import enum
+import os
+import shutil
 from .. import utility
 
 ISSUES_DIR = "Issues"
@@ -90,6 +92,8 @@ def generate_pandas_tables(data_dir, git_repo_name, repo):
                 issue_reaction_data = utility.extract_reaction_data(reaction,issue.id, "issue")
                 issue_reaction_list.append(issue_reaction_data)    
     # Save lists
+    if os.path.isdir(data_dir_):
+        shutil.rmtree(data_dir_)
     utility.save_list_to_pandas_table(data_dir_, RawIssuesFilenames.PD_ISSUES.value, issue_list)
     utility.save_list_to_pandas_table(data_dir_, RawIssuesFilenames.PD_ISSUES_COMMENTS.value, issue_comment_list)
     utility.save_list_to_pandas_table(data_dir_, RawIssuesFilenames.PD_ISSUES_EVENTS.value, issue_event_list)

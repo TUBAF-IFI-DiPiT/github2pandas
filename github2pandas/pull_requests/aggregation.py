@@ -2,7 +2,8 @@ import pandas as pd
 from pathlib import Path
 import pickle
 import enum
-
+import os
+import shutil
 from .. import utility
 from ..issues.aggregation import extract_issue_event_data
 
@@ -102,6 +103,8 @@ def generate_pandas_tables(data_dir, git_repo_name, repo):
             pull_request_event_data = extract_issue_event_data(event, pull_request.id)
             pull_request_event_list.append(pull_request_event_data)
     # Save lists
+    if os.path.isdir(data_dir_):
+        shutil.rmtree(data_dir_)
     utility.save_list_to_pandas_table(data_dir_, RawPullRequestsFilenames.PD_PULL_REQUESTS.value, pull_request_list)
     utility.save_list_to_pandas_table(data_dir_, RawPullRequestsFilenames.PD_PULL_REQUESTS_COMMENTS.value, pull_request_comment_list)
     utility.save_list_to_pandas_table(data_dir_, RawPullRequestsFilenames.PD_PULL_REQUESTS_REACTIONS.value, pull_request_reaction_list)
