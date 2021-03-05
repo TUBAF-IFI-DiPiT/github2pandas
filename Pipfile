@@ -16,6 +16,7 @@ pysqlite3 = "*"
 selenium = "*"
 python-dotenv = "*"
 pandas = "*"
+jupyter = "*"
 
 [dev-packages]
 github2pandas = {editable = true, path = "."}
