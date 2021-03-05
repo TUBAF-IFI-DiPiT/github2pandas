@@ -96,8 +96,9 @@ def generate_pandas_tables(data_dir, git_repo_name, repo):
     utility.save_list_to_pandas_table(data_dir_, RawIssuesFilenames.PD_ISSUES_REACTIONS.value, issue_reaction_list)
     return True
 
-def get_raw_issues(data_dir, raw_issue_filename = RawIssuesFilenames.PD_ISSUES.value):
-    pd_issues_file = Path(data_dir, raw_issue_filename)
+def get_raw_issues(data_dir, raw_issue_filename = RawIssuesFilenames.PD_ISSUES):
+    data_dir_ = Path(data_dir, ISSUES_DIR)
+    pd_issues_file = Path(data_dir_, raw_issue_filename.value)
     if pd_issues_file.is_file():
         return pd.read_pickle(pd_issues_file)
     else:

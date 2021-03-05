@@ -108,3 +108,11 @@ def generate_pandas_tables(data_dir, git_repo_name, repo):
     utility.save_list_to_pandas_table(data_dir_, RawPullRequestsFilenames.PD_PULL_REQUESTS_REVIEWS.value, pull_request_review_list)
     utility.save_list_to_pandas_table(data_dir_, RawPullRequestsFilenames.PD_PULL_REQUESTS_EVENTS.value, pull_request_event_list)
     return True
+
+def get_raw_pull_requests(data_dir, raw_pull_request_filename = RawPullRequestsFilenames.PD_PULL_REQUESTS):
+    data_dir_ = Path(data_dir, PULL_REQUESTS_DIR)
+    pd_pull_requests_file = Path(data_dir_, raw_pull_request_filename.value)
+    if pd_pull_requests_file.is_file():
+        return pd.read_pickle(pd_pull_requests_file)
+    else:
+        return pd.DataFrame()
