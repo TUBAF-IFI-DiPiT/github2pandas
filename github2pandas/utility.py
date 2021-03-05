@@ -44,7 +44,9 @@ def extract_labels(github_labels):
 
 # https://pygithub.readthedocs.io/en/latest/github_objects/NamedUser.html
 def extract_user_data(author):
-    return author.name
+    if author:
+        return author.name
+    return None
 
 # https://pygithub.readthedocs.io/en/latest/github_objects/Reaction.html
 def extract_reaction_data(reaction, parent_id, parent_name):
@@ -54,7 +56,7 @@ def extract_reaction_data(reaction, parent_id, parent_name):
     reaction_data["created_at"] = reaction.created_at
     reaction_data["id"] = reaction.id
     if reaction.user:
-        reaction_data["author"] = utility.extract_user_data(reaction.user)
+        reaction_data["author"] = extract_user_data(reaction.user)
     return reaction_data
 
 def save_list_to_pandas_table(data_dir, filename, data_list):

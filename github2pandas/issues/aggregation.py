@@ -66,7 +66,6 @@ def extract_issue_event_data(event, issue_id):
     issue_event_data["created_at"] = event.created_at
     issue_event_data["event"] = event.event
     issue_event_data["id"] = event.id
-    issue_event_data["node_id"] = event.node_id
     if event.label:
         issue_event_data["label"] = event.label.name
     if event.assignee:
@@ -81,7 +80,7 @@ def extract_issue_event_data(event, issue_id):
 
 def generate_pandas_tables(data_dir, git_repo_name, repo):
     data_dir_ = Path(data_dir, ISSUES_DIR)
-    issues = repo.get_issues() 
+    issues = repo.get_issues(state='all') 
     issue_list = list()
     issue_comment_list = list()
     issue_event_list = list()
