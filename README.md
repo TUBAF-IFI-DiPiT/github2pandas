@@ -18,7 +18,7 @@ Due to the early stage of development the DiP-iT package is not yet available as
     git clone https://github.com/TUBAF-IFI-DiPiT/Extract_Git_Activities.git
     ```
 2. Include the specific folder to your python path 
-    ```python
+    ```
     pipenv install --dev
     ```
 
