@@ -1,4 +1,4 @@
-name: RunDataExtractor
+name: RunTests
 
 on:
   push:
@@ -32,4 +32,4 @@ jobs:
         TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd src
-        pipenv run python ./tests/test_version_aggregation.py
+        pipenv run python -m unittest
