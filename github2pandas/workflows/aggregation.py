@@ -66,11 +66,3 @@ def get_workflow_pandas_table(data_dir):
         return pd.read_pickle(pd_wfh_file)
     else: 
         return None
-
-
-    # print(getWorkflowForCommit(wf, '44564e9296c90b100d0a662583dd7310c1d33108'))
-
-    # r = requestLogFiles(owner = "TUBAF-IfI-LiaScript",
-    #                     repo = 'VL_EingebetteteSysteme',
-    #                     github_token = github_token,
-    #                     workflow_id = 347871334)
