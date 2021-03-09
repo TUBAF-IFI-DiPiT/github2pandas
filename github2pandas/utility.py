@@ -49,15 +49,13 @@ def extract_user_data(author):
     return None
 
 # https://pygithub.readthedocs.io/en/latest/github_objects/Reaction.html
-def extract_reaction_data(reaction, parent_id, parent_name):
-    reaction_data = dict() 
-    reaction_data[parent_name + "_id"] = parent_id
-    reaction_data["content"] = reaction.content
-    reaction_data["created_at"] = reaction.created_at
-    reaction_data["id"] = reaction.id
+def extract_reaction_data(reaction, module_data):
+    module_data["reaction_content"] = reaction.content
+    module_data["reaction_created_at"] = reaction.created_at
+    module_data["reaction_id"] = reaction.id
     if reaction.user:
-        reaction_data["author"] = extract_user_data(reaction.user)
-    return reaction_data
+        module_data["reaction_author"] = extract_user_data(reaction.user)
+    return module_data
 
 def save_list_to_pandas_table(dir, filename, data_list):
     Path(dir).mkdir(parents=True, exist_ok=True)

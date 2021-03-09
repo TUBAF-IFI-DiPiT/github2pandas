@@ -7,13 +7,7 @@ import shutil
 from .. import utility
 from ..issues.aggregation import extract_issue_event_data
 
-PULL_REQUESTS_DIR = "PullRequests"
-class RawPullRequestsFilenames(enum.Enum):
-    PD_PULL_REQUESTS = "pdPullRequests.p"
-    PD_PULL_REQUESTS_COMMENTS = "pdPullRequestsComments.p"
-    PD_PULL_REQUESTS_REACTIONS = "pdPullRequestsReactions.p"
-    PD_PULL_REQUESTS_REVIEWS = "pdPullRequestsReviews.p"
-    PD_PULL_REQUESTS_EVENTS = "pdPullRequestsEvents.p"
+PD_PULL_REQUESTS = "pdPullRequests.p"
 
 # https://pygithub.readthedocs.io/en/latest/github_objects/PullRequest.html
 def extract_pull_request_data(pull_request):
@@ -45,29 +39,24 @@ def extract_pull_request_data(pull_request):
     return pull_request_data
 
 # https://pygithub.readthedocs.io/en/latest/github_objects/PullRequestComment.html
-def extract_pull_request_comment_data(comment, pull_request_id):
-    comment_data = dict()
-    comment_data["pull_request_id"] = pull_request_id
-    comment_data["body"] = comment.body
-    comment_data["created_at"] = comment.created_at
-    comment_data["id"] = comment.id
-    comment_data["author"] = utility.extract_user_data(comment.user)
-    comment_data["reactions_count"] = comment.get_reactions().totalCount
+def extract_pull_request_comment_data(comment, comment_data):
+    comment_data["comment_body"] = comment.body
+    comment_data["comment_created_at"] = comment.created_at
+    comment_data["comment_id"] = comment.id
+    comment_data["comment_author"] = utility.extract_user_data(comment.user)
+    comment_data["comment_reactions_count"] = comment.get_reactions().totalCount
     return comment_data
 
 # https://pygithub.readthedocs.io/en/latest/github_objects/PullRequestReview.html
-def extract_pull_request_review_data(review, pull_request_id):
-    review_data = dict()
-    review_data["pull_request_id"] = pull_request_id
-    review_data["id"] = review.id
-    review_data["author"] = utility.extract_user_data(review.user)
-    review_data["body"] = review.body
-    review_data["state"] = review.state
-    review_data["submitted_at"] = review.submitted_at
+def extract_pull_request_review_data(review, review_data):
+    review_data["review_id"] = review.id
+    review_data["review_author"] = utility.extract_user_data(review.user)
+    review_data["review_body"] = review.body
+    review_data["review_state"] = review.state
+    review_data["review_submitted_at"] = review.submitted_at
     return review_data
 
 def generate_pandas_tables(data_dir, git_repo_name, repo):
-    data_dir_ = Path(data_dir, PULL_REQUESTS_DIR)
     pull_requests = repo.get_pulls(state='all') 
     pull_request_list = list()
     pull_request_comment_list = list()
@@ -77,44 +66,40 @@ def generate_pandas_tables(data_dir, git_repo_name, repo):
     # pull request data
     for pull_request in pull_requests:
         pull_request_data = extract_pull_request_data(pull_request)
-        pull_request_list.append(pull_request_data)
+        list_len = len(pull_request_list)
         # pull request comment data
         for comment in pull_request.get_comments():
-            pull_request_comment_data = extract_pull_request_comment_data(comment, pull_request.id)
-            pull_request_comment_list.append(pull_request_comment_data)
+            comment_data = extract_pull_request_comment_data(comment, pull_request_data.copy())
             # pull request reaction data
             for reaction in comment.get_reactions():
-                reaction_data = utility.extract_reaction_data(reaction,comment.id, "comment")
-                pull_request_reaction_list.append(reaction_data)
+                reaction_data = utility.extract_reaction_data(reaction, comment_data.copy())
+                pull_request_list.append(reaction_data)
+            if comment.get_reactions().totalCount == 0:
+                pull_request_list.append(comment_data)
         # pull request review data
         for review in pull_request.get_reviews():
-            pull_request_review_data = extract_pull_request_review_data(review, pull_request.id)
-            pull_request_review_list.append(pull_request_review_data)
+            review_data = extract_pull_request_review_data(review, pull_request_data.copy())
+            pull_request_list.append(review_data)
         # pull request issue comments data
         for comment in pull_request.get_issue_comments():
-            pull_request_comment_data = extract_pull_request_comment_data(comment, pull_request.id)
-            pull_request_comment_list.append(pull_request_comment_data)
+            comment_data = extract_pull_request_comment_data(comment, pull_request_data.copy())
             # pull request reaction data
             for reaction in comment.get_reactions():
-                reaction_data = utility.extract_reaction_data(reaction,comment.id, "comment")
-                pull_request_reaction_list.append(reaction_data)
+                reaction_data = utility.extract_reaction_data(reaction, comment_data.copy())
+                pull_request_list.append(reaction_data)
+            if comment.get_reactions().totalCount == 0:
+                pull_request_list.append(comment_data)
         # pull request issue events
         for event in pull_request.get_issue_events():
-            pull_request_event_data = extract_issue_event_data(event, pull_request.id)
-            pull_request_event_list.append(pull_request_event_data)
-    # Save lists
-    if os.path.isdir(data_dir_):
-        shutil.rmtree(data_dir_)
-    utility.save_list_to_pandas_table(data_dir_, RawPullRequestsFilenames.PD_PULL_REQUESTS.value, pull_request_list)
-    utility.save_list_to_pandas_table(data_dir_, RawPullRequestsFilenames.PD_PULL_REQUESTS_COMMENTS.value, pull_request_comment_list)
-    utility.save_list_to_pandas_table(data_dir_, RawPullRequestsFilenames.PD_PULL_REQUESTS_REACTIONS.value, pull_request_reaction_list)
-    utility.save_list_to_pandas_table(data_dir_, RawPullRequestsFilenames.PD_PULL_REQUESTS_REVIEWS.value, pull_request_review_list)
-    utility.save_list_to_pandas_table(data_dir_, RawPullRequestsFilenames.PD_PULL_REQUESTS_EVENTS.value, pull_request_event_list)
+            event_data = extract_issue_event_data(event, pull_request_data.copy())
+            pull_request_list.append(event_data)
+        if list_len == len(pull_request_list):
+            pull_request_list.append(pull_request_data)
+    utility.save_list_to_pandas_table(data_dir, PD_PULL_REQUESTS, pull_request_list)
     return True
 
-def get_raw_pull_requests(data_dir, raw_pull_request_filename = RawPullRequestsFilenames.PD_PULL_REQUESTS):
-    data_dir_ = Path(data_dir, PULL_REQUESTS_DIR)
-    pd_pull_requests_file = Path(data_dir_, raw_pull_request_filename.value)
+def get_raw_pull_requests(data_dir):
+    pd_pull_requests_file = Path(data_dir_, PD_PULL_REQUESTS)
     if pd_pull_requests_file.is_file():
         return pd.read_pickle(pd_pull_requests_file)
     else:

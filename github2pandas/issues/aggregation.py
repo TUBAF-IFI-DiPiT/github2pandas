@@ -48,19 +48,17 @@ def extract_issue_comment_data(comment, issue_id):
     return issue_comment_data
 
 # https://pygithub.readthedocs.io/en/latest/github_objects/IssueEvent.html
-def extract_issue_event_data(event, issue_id):
-    issue_event_data = dict()
-    issue_event_data["issue_id"] = issue_id
-    issue_event_data["author"] = utility.extract_user_data(event.actor)
-    issue_event_data["commit_id"] = event.commit_id
-    issue_event_data["created_at"] = event.created_at
-    issue_event_data["event"] = event.event
-    issue_event_data["id"] = event.id
+def extract_issue_event_data(event, event_data):
+    event_data["event_author"] = utility.extract_user_data(event.actor)
+    event_data["event_commit_id"] = event.commit_id
+    event_data["event_created_at"] = event.created_at
+    event_data["event_event"] = event.event
+    event_data["event_id"] = event.id
     if event.label:
-        issue_event_data["label"] = event.label.name
-    issue_event_data["assignee"] = utility.extract_user_data(event.assignee)
-    issue_event_data["assigner"] = utility.extract_user_data(event.assigner)
-    return issue_event_data
+        event_data["event_label"] = event.label.name
+    event_data["event_assignee"] = utility.extract_user_data(event.assignee)
+    event_data["event_assigner"] = utility.extract_user_data(event.assigner)
+    return event_data
 
 def generate_pandas_tables(data_dir, git_repo_name, repo):
     data_dir_ = Path(data_dir, ISSUES_DIR)
