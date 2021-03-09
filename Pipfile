@@ -17,6 +17,8 @@ selenium = "*"
 python-dotenv = "*"
 pandas = "*"
 jupyter = "*"
+sphinx = "*"
+m2r2 = "*"
 
 [dev-packages]
 github2pandas = {editable = true, path = "."}
