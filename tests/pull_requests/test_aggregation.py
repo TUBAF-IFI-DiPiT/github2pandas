@@ -4,8 +4,8 @@ import unittest
 import sys
 import os
 from pathlib import Path
-from github2pandas import utility
-from github2pandas.pull_requests import aggregation
+from github2pandas.utility import Utility
+from github2pandas.pull_requests.aggregation import AggPullRequest as AggPR
 
 class TestPullRequestAggregation(unittest.TestCase):
     
@@ -21,12 +21,17 @@ class TestPullRequestAggregation(unittest.TestCase):
         """
         Test generating pandas table
         """
-        repo = utility.get_repo(repo_name=self.git_repo_name, token=self.github_token)
-        result = aggregation.generate_pandas_tables(data_dir=self.default_data_folder,
-                           git_repo_name=self.git_repo_name, repo=repo)
+        repo = Utility.get_repo(repo_name=self.git_repo_name, token=self.github_token)
+        result = AggPR.generate_pandas_tables(data_dir=self.default_data_folder, repo=repo)
         self.assertTrue( result, "generate_pandas_tables throws exception")
         
-
+    def test_get_raw_pull_requests(self):
+        """
+        Test to get raw pull request pandas Tables
+        """
+        data_folder = Path("data", self.git_repo_name)
+        pull_requests = AggPR.get_raw_pull_requests(data_folder)
+        self.assertTrue( pull_requests.count()[0] > 0 , "pull requests have no data")
 
 if __name__ == "__main__":
     unittest.main()
