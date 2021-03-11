@@ -24,6 +24,14 @@ class AggIssues():
 
     Methods
     -------
+    extract_issue_data(issue)
+        Extracting general issue data.
+    extract_issue_comment_data(comment, issue_id)
+        Extracting general comment data from a issue.
+    generate_pandas_tables(data_dir, repo)
+        Extracting the complete issue data from a repository.
+    get_raw_issues(data_dir, filename)
+        Get the genearted pandas table.
     
     """
     ISSUES_DIR = "Issues"
@@ -78,25 +86,25 @@ class AggIssues():
     @staticmethod
     def extract_issue_comment_data(comment, issue_id):
         """
-        generate_pandas_tables(data_dir, repo)
+        extract_issue_comment_data(comment, issue_id)
 
-        Extracting the complete pull request data from a repository
+        Extracting general comment data from a issue.
 
         Parameters
         ----------
-        data_dir: str
-            Path to the data folder of the repository
-        repo: Repository
-            Repository object from pygithub.
+        comment: IssueComment
+            IssueComment object from pygithub.
+        issue_id: int
+            issue id as foreign key.
 
         Returns
         -------
-        bool
-            Code runs without errors 
-        
+        dict
+            Dictionary with the extracted data.
+
         Notes
         -----
-            Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
+            IssueComment object structure: https://pygithub.readthedocs.io/en/latest/github_objects/IssueComment.html
 
         """
         issue_comment_data = dict()  
@@ -113,7 +121,7 @@ class AggIssues():
         """
         generate_pandas_tables(data_dir, repo)
 
-        Extracting the complete issue data from a repository
+        Extracting the complete issue data from a repository.
 
         Parameters
         ----------
