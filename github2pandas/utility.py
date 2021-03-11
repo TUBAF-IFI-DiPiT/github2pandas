@@ -8,6 +8,7 @@ import stat
 import pandas as pd
 import github
 import pickle
+import uuid
 
 def replace_dublicates(pd_table, column_name, dublicates):
 
@@ -35,7 +36,7 @@ class Utility():
 
     Methods
     -------
-        extract_assignees(github_assignees)
+        extract_assignees(github_assignees, repo_dir)
             Get all assignees as one string.
         extract_labels(github_labels)
             Get all labels as one string.
@@ -51,10 +52,13 @@ class Utility():
             Get a repository by name and token.
     
     """
+
+    USERS = "Users.p"
+
     @staticmethod
-    def extract_assignees(github_assignees):
+    def extract_assignees(github_assignees, repo_dir):
         """
-        extract_assignees(github_assignees)
+        extract_assignees(github_assignees, repo_dir)
 
         Get all assignees as one string.
 
@@ -62,6 +66,8 @@ class Utility():
         ----------
         github_assignees: list
             List of NamedUser
+        repo_dir: str
+            Repo dir of the project.
 
         Returns
         -------
@@ -75,7 +81,7 @@ class Utility():
         """
         assignees = ""
         for assignee in github_assignees:
-            assignees += Utility.extract_user_data(assignee) + "&"
+            assignees += Utility.extract_user_data(assignee, repo_dir) + "&"
         if len(assignees) > 0:
             assignees = assignees[:-1]
         return assignees
@@ -110,9 +116,9 @@ class Utility():
         return labels
 
     @staticmethod
-    def extract_user_data(user):
+    def extract_user_data(user, repo_dir):
         """
-        extract_user_data(author)
+        extract_user_data(author, repo_dir)
 
         Extracting general user data.
 
@@ -120,23 +126,47 @@ class Utility():
         ----------
         user: NamedUser
             NamedUser object from pygithub.
-
+        repo_dir: str
+            Repo dir of the project.
         Returns
         -------
         str
-            Name of user.
+            Anonym uuid of user.
 
         Notes
         -----
             NamedUser object structure: https://pygithub.readthedocs.io/en/latest/github_objects/NamedUser.html
 
         """
-        if user:
-            return user.name
-        return None
+        if not user:
+            return None
+        users_file = Path(repo_dir, Utility.USERS)
+        users_df = pd.DataFrame({
+            "anonym_uuid": [],
+            "id": [],
+            "name": [],
+            "email": [],
+            "login": []
+        })
+        if users_file.is_file():
+            users_df = pd.read_pickle(users_file)
+        saved_user = users_df.loc[users_df['id'] == user.id]
+        if saved_user.empty:
+            user_data = dict()
+            user_data["anonym_uuid"] = str(uuid.uuid4())
+            user_data["id"] = user.id
+            user_data["name"] = user.name
+            user_data["email"] = user.email
+            user_data["login"] = user.login
+            users_df = users_df.append(user_data, ignore_index=True)
+            with open(users_file, "wb") as f:
+                pickle.dump(users_df, f)
+            return user_data["anonym_uuid"]
+        else:
+            return saved_user.iloc[0]["anonym_uuid"]
 
     @staticmethod
-    def extract_reaction_data(reaction, parent_id, parent_name):
+    def extract_reaction_data(reaction, parent_id, parent_name, repo_dir):
         """
         extract_reaction_data(reaction, parent_id, parent_name)
 
@@ -150,6 +180,8 @@ class Utility():
             Id from parent as foreign key.
         parent_name: str
             Name of the parent.
+        repo_dir: str
+            Repo dir of the project.
 
         Returns
         -------
@@ -167,11 +199,11 @@ class Utility():
         reaction_data["created_at"] = reaction.created_at
         reaction_data["id"] = reaction.id
         if reaction.user:
-            reaction_data["author"] = Utility.extract_user_data(reaction.user)
+            reaction_data["author"] = Utility.extract_user_data(reaction.user, repo_dir)
         return reaction_data
     
     @staticmethod
-    def extract_event_data(event, parent_id, parent_name):
+    def extract_event_data(event, parent_id, parent_name, repo_dir):
         """
         extract_event_data(event, id, parent_name)
 
@@ -185,6 +217,8 @@ class Utility():
             Id from parent as foreign key.
         parent_name: str
             Name of the parent.
+        repo_dir: str
+            Repo dir of the project.
 
         Returns
         -------
@@ -198,15 +232,15 @@ class Utility():
         """
         issue_event_data = dict()
         issue_event_data[parent_name + "_id"] = parent_id
-        issue_event_data["author"] = Utility.extract_user_data(event.actor)
+        issue_event_data["author"] = Utility.extract_user_data(event.actor, repo_dir)
         issue_event_data["commit_id"] = event.commit_id
         issue_event_data["created_at"] = event.created_at
         issue_event_data["event"] = event.event
         issue_event_data["id"] = event.id
         if event.label:
             issue_event_data["label"] = event.label.name
-        issue_event_data["assignee"] = Utility.extract_user_data(event.assignee)
-        issue_event_data["assigner"] = Utility.extract_user_data(event.assigner)
+        issue_event_data["assignee"] = Utility.extract_user_data(event.assignee, repo_dir)
+        issue_event_data["assigner"] = Utility.extract_user_data(event.assigner, repo_dir)
         return issue_event_data
     
     @staticmethod
