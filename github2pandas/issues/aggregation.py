@@ -3,7 +3,7 @@ from pathlib import Path
 import pickle
 import os
 import shutil
-from .. import utility
+from ..utility import Utility
 
 class AggIssues():
     """
@@ -63,21 +63,21 @@ class AggIssues():
 
         """
         issue_data = dict()  
-        issue_data["assignees"]  = utility.extract_assignees(issue.assignees)
+        issue_data["assignees"]  = Utility.extract_assignees(issue.assignees)
         issue_data["assignees_count"] = len(issue.assignees)
         issue_data["body"] = issue.body
         issue_data["closed_at"] = issue.closed_at
-        issue_data["closedBy"] = utility.extract_user_data(issue.closed_by)
+        issue_data["closedBy"] = Utility.extract_user_data(issue.closed_by)
         issue_data["created_at"] = issue.created_at
         issue_data["id"] = issue.id
-        issue_data["labels"]  = utility.extract_labels(issue.labels)
+        issue_data["labels"]  = Utility.extract_labels(issue.labels)
         issue_data["labels_count"] = len(issue.labels)
         if issue.milestone:
             issue_data["milestone_id"] = issue.milestone.id
         issue_data["state"] = issue.state
         issue_data["title"] = issue.title
         issue_data["updated_at"] = issue.updated_at
-        issue_data["author"] = utility.extract_user_data(issue.user)
+        issue_data["author"] = Utility.extract_user_data(issue.user)
         issue_data["comments_count"] = issue.get_comments().totalCount
         issue_data["event_count"] = issue.get_events().totalCount
         issue_data["reaction_count"] = issue.get_reactions().totalCount
@@ -112,7 +112,7 @@ class AggIssues():
         issue_comment_data["body"] = comment.body
         issue_comment_data["created_at"] = comment.created_at
         issue_comment_data["id"] = comment.id
-        issue_comment_data["author"] = utility.extract_user_data(comment.user)
+        issue_comment_data["author"] = Utility.extract_user_data(comment.user)
         issue_comment_data["reactions"] = comment.get_reactions().totalCount
         return issue_comment_data
 
@@ -158,23 +158,23 @@ class AggIssues():
                     issue_comment_list.append(issue_comment_data)
                     # issue comment reaction data
                     for reaction in comment.get_reactions():
-                        reaction_data = utility.extract_reaction_data(reaction,comment.id,"comment")
+                        reaction_data = Utility.extract_reaction_data(reaction,comment.id,"comment")
                         issue_reaction_list.append(reaction_data)
                 # issue event data
                 for event in issue.get_events():
-                    issue_event_data = utility.extract_event_data(event, issue.id, "issue")
+                    issue_event_data = Utility.extract_event_data(event, issue.id, "issue")
                     issue_event_list.append(issue_event_data)
                 # issue reaction data
                 for reaction in issue.get_reactions():
-                    issue_reaction_data = utility.extract_reaction_data(reaction,issue.id, "issue")
+                    issue_reaction_data = Utility.extract_reaction_data(reaction,issue.id, "issue")
                     issue_reaction_list.append(issue_reaction_data)    
         # Save lists
         if os.path.isdir(data_dir_):
             shutil.rmtree(data_dir_)
-        utility.save_list_to_pandas_table(data_dir_, AggIssues.ISSUES, issue_list)
-        utility.save_list_to_pandas_table(data_dir_, AggIssues.ISSUES_COMMENTS, issue_comment_list)
-        utility.save_list_to_pandas_table(data_dir_, AggIssues.ISSUES_EVENTS, issue_event_list)
-        utility.save_list_to_pandas_table(data_dir_, AggIssues.ISSUES_REACTIONS, issue_reaction_list)
+        Utility.save_list_to_pandas_table(data_dir_, AggIssues.ISSUES, issue_list)
+        Utility.save_list_to_pandas_table(data_dir_, AggIssues.ISSUES_COMMENTS, issue_comment_list)
+        Utility.save_list_to_pandas_table(data_dir_, AggIssues.ISSUES_EVENTS, issue_event_list)
+        Utility.save_list_to_pandas_table(data_dir_, AggIssues.ISSUES_REACTIONS, issue_reaction_list)
         return True
 
     @staticmethod

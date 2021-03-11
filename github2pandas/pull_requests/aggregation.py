@@ -3,8 +3,7 @@ from pathlib import Path
 import pickle
 import os
 import shutil
-from .. import utility
-
+from ..utility import Utility
 class AggPullRequest():
     """
     Class to aggregate Pull Requests
@@ -69,7 +68,7 @@ class AggPullRequest():
         """
         pull_request_data = dict()
         pull_request_data["id"] = pull_request.id
-        pull_request_data["assignees"] = utility.extract_assignees(pull_request.assignees)
+        pull_request_data["assignees"] = Utility.extract_assignees(pull_request.assignees)
         pull_request_data["assignees_count"] = len(pull_request.assignees)  
         pull_request_data["body"] = pull_request.body
         pull_request_data["title"] = pull_request.title
@@ -79,16 +78,16 @@ class AggPullRequest():
         pull_request_data["deletions"] = pull_request.deletions
         pull_request_data["additions"] = pull_request.additions
         pull_request_data["deletions"] = pull_request.deletions
-        pull_request_data["labels"] = utility.extract_labels(pull_request.labels)
+        pull_request_data["labels"] = Utility.extract_labels(pull_request.labels)
         pull_request_data["labels_count"] = len(pull_request.labels)
         pull_request_data["merged"] = pull_request.merged
         pull_request_data["merged_at"] = pull_request.merged_at
-        pull_request_data["merged_by"] = utility.extract_user_data(pull_request.merged_by)
+        pull_request_data["merged_by"] = Utility.extract_user_data(pull_request.merged_by)
         if pull_request.milestone:
             pull_request_data["milestone_id"] = pull_request.milestone.id
         pull_request_data["state"] = pull_request.state
         pull_request_data["updated_at"] = pull_request.updated_at
-        pull_request_data["author"] = utility.extract_user_data(pull_request.user)
+        pull_request_data["author"] = Utility.extract_user_data(pull_request.user)
         pull_request_data["comments_count"] = pull_request.get_comments().totalCount + pull_request.get_issue_comments().totalCount
         pull_request_data["issue_events_count"] = pull_request.get_issue_events().totalCount
         pull_request_data["reviews_count"] = pull_request.get_reviews().totalCount
@@ -123,7 +122,7 @@ class AggPullRequest():
         comment_data["body"] = comment.body
         comment_data["created_at"] = comment.created_at
         comment_data["id"] = comment.id
-        comment_data["author"] = utility.extract_user_data(comment.user)
+        comment_data["author"] = Utility.extract_user_data(comment.user)
         comment_data["reactions_count"] = comment.get_reactions().totalCount
         return comment_data
     
@@ -154,7 +153,7 @@ class AggPullRequest():
         review_data = dict()
         review_data["pull_request_id"] = pull_request_id
         review_data["id"] = review.id
-        review_data["author"] = utility.extract_user_data(review.user)
+        review_data["author"] = Utility.extract_user_data(review.user)
         review_data["body"] = review.body
         review_data["state"] = review.state
         review_data["submitted_at"] = review.submitted_at
@@ -201,7 +200,7 @@ class AggPullRequest():
                 pull_request_comment_list.append(pull_request_comment_data)
                 # pull request reaction data
                 for reaction in comment.get_reactions():
-                    reaction_data = utility.extract_reaction_data(reaction,comment.id, "comment")
+                    reaction_data = Utility.extract_reaction_data(reaction,comment.id, "comment")
                     pull_request_reaction_list.append(reaction_data)
             # pull request review data
             for review in pull_request.get_reviews():
@@ -213,20 +212,20 @@ class AggPullRequest():
                 pull_request_comment_list.append(pull_request_comment_data)
                 # pull request reaction data
                 for reaction in comment.get_reactions():
-                    reaction_data = utility.extract_reaction_data(reaction,comment.id, "comment")
+                    reaction_data = Utility.extract_reaction_data(reaction,comment.id, "comment")
                     pull_request_reaction_list.append(reaction_data)
             # pull request issue events
             for event in pull_request.get_issue_events():
-                pull_request_event_data = utility.extract_event_data(event, pull_request.id, "pull_request")
+                pull_request_event_data = Utility.extract_event_data(event, pull_request.id, "pull_request")
                 pull_request_event_list.append(pull_request_event_data)
         # Save lists
         if os.path.isdir(data_dir_):
             shutil.rmtree(data_dir_)
-        utility.save_list_to_pandas_table(data_dir_, AggPullRequest.PULL_REQUESTS, pull_request_list)
-        utility.save_list_to_pandas_table(data_dir_, AggPullRequest.PULL_REQUESTS_COMMENTS, pull_request_comment_list)
-        utility.save_list_to_pandas_table(data_dir_, AggPullRequest.PULL_REQUESTS_REACTIONS, pull_request_reaction_list)
-        utility.save_list_to_pandas_table(data_dir_, AggPullRequest.PULL_REQUESTS_REVIEWS, pull_request_review_list)
-        utility.save_list_to_pandas_table(data_dir_, AggPullRequest.PULL_REQUESTS_EVENTS, pull_request_event_list)
+        Utility.save_list_to_pandas_table(data_dir_, AggPullRequest.PULL_REQUESTS, pull_request_list)
+        Utility.save_list_to_pandas_table(data_dir_, AggPullRequest.PULL_REQUESTS_COMMENTS, pull_request_comment_list)
+        Utility.save_list_to_pandas_table(data_dir_, AggPullRequest.PULL_REQUESTS_REACTIONS, pull_request_reaction_list)
+        Utility.save_list_to_pandas_table(data_dir_, AggPullRequest.PULL_REQUESTS_REVIEWS, pull_request_review_list)
+        Utility.save_list_to_pandas_table(data_dir_, AggPullRequest.PULL_REQUESTS_EVENTS, pull_request_event_list)
         return True
     
     @staticmethod
