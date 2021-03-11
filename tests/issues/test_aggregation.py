@@ -5,7 +5,7 @@ import sys
 import os
 from pathlib import Path
 from github2pandas import utility
-from github2pandas.issues import aggregation
+from github2pandas.issues.aggregation import AggIssues
 
 class TestIssueAggregation(unittest.TestCase):
     
@@ -22,8 +22,7 @@ class TestIssueAggregation(unittest.TestCase):
         Test generating pandas table
         """
         repo = utility.get_repo(repo_name=self.git_repo_name, token=self.github_token)
-        result = aggregation.generate_pandas_tables(data_dir=self.default_data_folder,
-                           git_repo_name=self.git_repo_name, repo=repo)
+        result = AggIssues.generate_pandas_tables(data_dir=self.default_data_folder, repo=repo)
         self.assertTrue( result, "generate_pandas_tables throws exception")
         
     def test_get_raw_issues(self):
@@ -31,8 +30,8 @@ class TestIssueAggregation(unittest.TestCase):
         Test to get raw issue pandas Tables
         """
         data_folder = Path("data", self.git_repo_name)
-        aggregation.get_raw_issues(data_folder,aggregation.RawIssuesFilenames.PD_ISSUES)
-
+        issues = AggIssues.get_raw_issues(data_folder)
+        self.assertTrue( issues.count()[0] > 0 , "issues have no data")
 
 if __name__ == "__main__":
     unittest.main()

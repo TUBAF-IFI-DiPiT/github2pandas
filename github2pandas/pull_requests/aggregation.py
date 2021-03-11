@@ -4,7 +4,6 @@ import pickle
 import os
 import shutil
 from .. import utility
-from ..issues.aggregation import extract_issue_event_data
 
 class AggPullRequest():
     """
@@ -15,15 +14,15 @@ class AggPullRequest():
     PULL_REQUESTS_DIR : str
         Pull request dir where all files are saved in.
     PULL_REQUESTS : str
-        Pandas table for raw pull request data.
+        Pandas table file for raw pull request data.
     PULL_REQUESTS_COMMENTS : str
-        Pandas table for raw comments data in pull requests.
+        Pandas table file for raw comments data in pull requests.
     PULL_REQUESTS_REACTIONS : str
-        Pandas table for raw reactions on comments data in pull requests.
+        Pandas table file for raw reactions data in pull requests.
     PULL_REQUESTS_REVIEWS : str
-        Pandas table for raw reviews data in pull requests.
+        Pandas table file for raw reviews data in pull requests.
     PULL_REQUESTS_EVENTS : str
-        Pandas table for raw events data in pull requests.
+        Pandas table file for raw events data in pull requests.
 
     Methods
     -------
@@ -218,7 +217,7 @@ class AggPullRequest():
                     pull_request_reaction_list.append(reaction_data)
             # pull request issue events
             for event in pull_request.get_issue_events():
-                pull_request_event_data = extract_issue_event_data(event, pull_request.id)
+                pull_request_event_data = utility.extract_event_data(event, pull_request.id, "pull_request")
                 pull_request_event_list.append(pull_request_event_data)
         # Save lists
         if os.path.isdir(data_dir_):
@@ -247,7 +246,7 @@ class AggPullRequest():
         Returns
         -------
         DataFrame
-            Pandas DataFrame which includes the data
+            Pandas DataFrame which includes the pull request data
 
         """
         data_dir_ = Path(data_dir, AggPullRequest.PULL_REQUESTS_DIR)

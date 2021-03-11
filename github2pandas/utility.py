@@ -78,3 +78,41 @@ def apply_python_date_format(pd_table, source_colum, destination_column):
     pd_table[destination_column] = pd.to_datetime(pd_table[source_colum], format="%Y-%m-%d %H:%M:%S")
 
     return pd_table
+
+def extract_event_data(event, parent_id, parent):
+        """
+        extract_event_data(event, id, parent)
+
+        Extracting general event data from a issue or pull request.
+
+        Parameters
+        ----------
+        event: IssueEvent
+            IssueEvent object from pygithub.
+        parent_id: int
+            Id from parent as foreign key.
+        parent: str
+            Is it issue or pull_request Event
+
+        Returns
+        -------
+        dict
+            Dictionary with the extracted data.
+
+        Notes
+        -----
+            IssueEvent object structure: https://pygithub.readthedocs.io/en/latest/github_objects/IssueEvent.html
+
+        """
+        issue_event_data = dict()
+        issue_event_data[parent + "_id"] = parent_id
+        issue_event_data["author"] = extract_user_data(event.actor)
+        issue_event_data["commit_id"] = event.commit_id
+        issue_event_data["created_at"] = event.created_at
+        issue_event_data["event"] = event.event
+        issue_event_data["id"] = event.id
+        if event.label:
+            issue_event_data["label"] = event.label.name
+        issue_event_data["assignee"] = extract_user_data(event.assignee)
+        issue_event_data["assigner"] = extract_user_data(event.assigner)
+        return issue_event_data
