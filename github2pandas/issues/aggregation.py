@@ -24,13 +24,13 @@ class AggIssues():
 
     Methods
     -------
-    extract_issue_data(issue, repo_dir)
+    extract_issue_data(issue, data_root_dir)
         Extracting general issue data.
-    extract_issue_comment_data(comment, issue_id, repo_dir)
+    extract_issue_comment_data(comment, issue_id, data_root_dir)
         Extracting general comment data from a issue.
-    generate_pandas_tables(repo_dir, repo)
+    generate_issue_pandas_tables(repo, data_root_dir)
         Extracting the complete issue data from a repository.
-    get_raw_issues(repo_dir, filename)
+    get_raw_issues(data_root_dir, filename)
         Get the genearted pandas table.
     
     """
@@ -41,9 +41,9 @@ class AggIssues():
     ISSUES_EVENTS = "pdIssuesEvents.p"
 
     @staticmethod
-    def extract_issue_data(issue, repo_dir):
+    def extract_issue_data(issue, data_root_dir):
         """
-        extract_issue_data(issue, repo_dir)
+        extract_issue_data(issue, data_root_dir)
 
         Extracting general issue data.
 
@@ -51,7 +51,7 @@ class AggIssues():
         ----------
         issue: Issue
             Issue object from pygithub.
-        repo_dir: str
+        data_root_dir: str
             Repo dir of the project.
 
         Returns
@@ -65,11 +65,11 @@ class AggIssues():
 
         """
         issue_data = dict()  
-        issue_data["assignees"]  = Utility.extract_assignees(issue.assignees, repo_dir)
+        issue_data["assignees"]  = Utility.extract_assignees(issue.assignees, data_root_dir)
         issue_data["assignees_count"] = len(issue.assignees)
         issue_data["body"] = issue.body
         issue_data["closed_at"] = issue.closed_at
-        issue_data["closedBy"] = Utility.extract_user_data(issue.closed_by, repo_dir)
+        issue_data["closedBy"] = Utility.extract_user_data(issue.closed_by, data_root_dir)
         issue_data["created_at"] = issue.created_at
         issue_data["id"] = issue.id
         issue_data["labels"]  = Utility.extract_labels(issue.labels)
@@ -79,16 +79,16 @@ class AggIssues():
         issue_data["state"] = issue.state
         issue_data["title"] = issue.title
         issue_data["updated_at"] = issue.updated_at
-        issue_data["author"] = Utility.extract_user_data(issue.user, repo_dir)
+        issue_data["author"] = Utility.extract_user_data(issue.user, data_root_dir)
         issue_data["comments_count"] = issue.get_comments().totalCount
         issue_data["event_count"] = issue.get_events().totalCount
         issue_data["reaction_count"] = issue.get_reactions().totalCount
         return issue_data
 
     @staticmethod
-    def extract_issue_comment_data(comment, issue_id, repo_dir):
+    def extract_issue_comment_data(comment, issue_id, data_root_dir):
         """
-        extract_issue_comment_data(comment, issue_id, repo_dir)
+        extract_issue_comment_data(comment, issue_id, data_root_dir)
 
         Extracting general comment data from a issue.
 
@@ -98,7 +98,7 @@ class AggIssues():
             IssueComment object from pygithub.
         issue_id: int
             issue id as foreign key.
-        repo_dir: str
+        data_root_dir: str
             Repo dir of the project.
 
         Returns
@@ -116,23 +116,23 @@ class AggIssues():
         issue_comment_data["body"] = comment.body
         issue_comment_data["created_at"] = comment.created_at
         issue_comment_data["id"] = comment.id
-        issue_comment_data["author"] = Utility.extract_user_data(comment.user, repo_dir)
+        issue_comment_data["author"] = Utility.extract_user_data(comment.user, data_root_dir)
         issue_comment_data["reactions"] = comment.get_reactions().totalCount
         return issue_comment_data
 
     @staticmethod
-    def generate_pandas_tables(repo_dir, repo):
+    def generate_issue_pandas_tables(repo, data_root_dir):
         """
-        generate_pandas_tables(repo_dir, repo)
+        generate_issue_pandas_tables(repo, data_root_dir)
 
         Extracting the complete issue data from a repository.
 
         Parameters
         ----------
-        repo_dir: str
-            Path to the repo folder of the repository
         repo: Repository
             Repository object from pygithub.
+        data_root_dir: str
+            Path to the repo folder of the repository
 
         Returns
         -------
@@ -144,7 +144,7 @@ class AggIssues():
             Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
 
         """
-        issues_dir = Path(repo_dir, AggIssues.ISSUES_DIR)
+        issues_dir = Path(data_root_dir, AggIssues.ISSUES_DIR)
         issues = repo.get_issues(state='all') 
         issue_list = list()
         issue_comment_list = list()
@@ -154,23 +154,23 @@ class AggIssues():
             # remove pull_requests from issues
             if not issue.pull_request:
                 # issue data
-                issue_data = AggIssues.extract_issue_data(issue, repo_dir)
+                issue_data = AggIssues.extract_issue_data(issue, data_root_dir)
                 issue_list.append(issue_data)
                 # issue comment data
                 for comment in issue.get_comments():
-                    issue_comment_data = AggIssues.extract_issue_comment_data(comment, issue.id, repo_dir)
+                    issue_comment_data = AggIssues.extract_issue_comment_data(comment, issue.id, data_root_dir)
                     issue_comment_list.append(issue_comment_data)
                     # issue comment reaction data
                     for reaction in comment.get_reactions():
-                        reaction_data = Utility.extract_reaction_data(reaction,comment.id,"comment", repo_dir)
+                        reaction_data = Utility.extract_reaction_data(reaction,comment.id,"comment", data_root_dir)
                         issue_reaction_list.append(reaction_data)
                 # issue event data
                 for event in issue.get_events():
-                    issue_event_data = Utility.extract_event_data(event, issue.id, "issue", repo_dir)
+                    issue_event_data = Utility.extract_event_data(event, issue.id, "issue", data_root_dir)
                     issue_event_list.append(issue_event_data)
                 # issue reaction data
                 for reaction in issue.get_reactions():
-                    issue_reaction_data = Utility.extract_reaction_data(reaction,issue.id, "issue", repo_dir)
+                    issue_reaction_data = Utility.extract_reaction_data(reaction,issue.id, "issue", data_root_dir)
                     issue_reaction_list.append(issue_reaction_data)    
         # Save lists
         if os.path.isdir(issues_dir):
@@ -182,15 +182,15 @@ class AggIssues():
         return True
 
     @staticmethod
-    def get_raw_issues(repo_dir, filename = ISSUES):
+    def get_raw_issues(data_root_dir, filename = ISSUES):
         """
-        get_raw_issues(repo_dir, filename)
+        get_raw_issues(data_root_dir, filename)
 
         Get the genearted pandas table.
 
         Parameters
         ----------
-        repo_dir: str
+        data_root_dir: str
             Path to the repo folder of the repository.
         filename: str, default: ISSUES
             A filename of Issues
@@ -201,7 +201,7 @@ class AggIssues():
             Pandas DataFrame which includes the issue data
 
         """
-        issues_dir = Path(repo_dir, AggIssues.ISSUES_DIR)
+        issues_dir = Path(data_root_dir, AggIssues.ISSUES_DIR)
         pd_issues_file = Path(issues_dir, filename)
         if pd_issues_file.is_file():
             return pd.read_pickle(pd_issues_file)

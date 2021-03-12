@@ -36,15 +36,19 @@ class Utility():
 
     Methods
     -------
-        extract_assignees(github_assignees, repo_dir)
+        extract_assignees(github_assignees, data_root_dir)
             Get all assignees as one string.
         extract_labels(github_labels)
             Get all labels as one string.
-        extract_user_data(author)
+        extract_user_data(author, data_root_dir)
             Extracting general user data.
-        extract_reaction_data(reaction, parent_id, parent_name)
+        extract_author_data_from_commit(repo, sha, data_root_dir)
+            Extracting general author data from a commit.
+        extract_committer_data_from_commit(repo, sha, data_root_dir)
+            Extracting general committer data from a commit.
+        extract_reaction_data(reaction, parent_id, parent_name, data_root_dir)
             Extracting general reaction data.
-        extract_event_data(event, id, parent_name)
+        extract_event_data(event, parent_id, parent_name, data_root_dir)
             Extracting general event data from a issue or pull request.
         save_list_to_pandas_table(dir, file, data_list)
             Save a data list to a pandas table.
@@ -56,9 +60,9 @@ class Utility():
     USERS = "Users.p"
 
     @staticmethod
-    def extract_assignees(github_assignees, repo_dir):
+    def extract_assignees(github_assignees, data_root_dir):
         """
-        extract_assignees(github_assignees, repo_dir)
+        extract_assignees(github_assignees, data_root_dir)
 
         Get all assignees as one string.
 
@@ -66,7 +70,7 @@ class Utility():
         ----------
         github_assignees: list
             List of NamedUser
-        repo_dir: str
+        data_root_dir: str
             Repo dir of the project.
 
         Returns
@@ -81,7 +85,7 @@ class Utility():
         """
         assignees = ""
         for assignee in github_assignees:
-            assignees += Utility.extract_user_data(assignee, repo_dir) + "&"
+            assignees += Utility.extract_user_data(assignee, data_root_dir) + "&"
         if len(assignees) > 0:
             assignees = assignees[:-1]
         return assignees
@@ -116,9 +120,9 @@ class Utility():
         return labels
 
     @staticmethod
-    def extract_user_data(user, repo_dir):
+    def extract_user_data(user, data_root_dir):
         """
-        extract_user_data(author, repo_dir)
+        extract_user_data(author, data_root_dir)
 
         Extracting general user data.
 
@@ -126,7 +130,7 @@ class Utility():
         ----------
         user: NamedUser
             NamedUser object from pygithub.
-        repo_dir: str
+        data_root_dir: str
             Repo dir of the project.
         Returns
         -------
@@ -140,7 +144,7 @@ class Utility():
         """
         if not user:
             return None
-        users_file = Path(repo_dir, Utility.USERS)
+        users_file = Path(data_root_dir, Utility.USERS)
         users_df = pd.DataFrame({
             "anonym_uuid": [],
             "id": [],
@@ -164,9 +168,75 @@ class Utility():
             return user_data["anonym_uuid"]
         else:
             return saved_user.iloc[0]["anonym_uuid"]
+    
+    @staticmethod
+    def extract_author_data_from_commit(repo, sha, data_root_dir):
+        """
+        extract_author_data_from_commit(repo, sha, data_root_dir)
+
+        Extracting general author data from a commit.
+
+        Parameters
+        ----------
+        repo: Repository
+            Repository object from pygithub.
+        sha: str
+            sha from the commit.
+        data_root_dir: str
+            Repo dir of the project.
+
+        Returns
+        -------
+        str
+            Anonym uuid of user.
+
+        Notes
+        -----
+            Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
+
+        """
+        if not sha:
+            return None
+        commit = repo.get_commit(sha)
+        if not commit:
+            return None
+        return extract_user_data(commit.author, data_root_dir)
 
     @staticmethod
-    def extract_reaction_data(reaction, parent_id, parent_name, repo_dir):
+    def extract_committer_data_from_commit(repo, sha, data_root_dir):
+        """
+        extract_committer_data_from_commit(repo, sha, data_root_dir)
+
+        Extracting general committer data from a commit.
+
+        Parameters
+        ----------
+        repo: Repository
+            Repository object from pygithub.
+        sha: str
+            sha from the commit.
+        data_root_dir: str
+            Repo dir of the project.
+
+        Returns
+        -------
+        str
+            Anonym uuid of user.
+
+        Notes
+        -----
+            Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
+
+        """
+        if not sha:
+            return None
+        commit = repo.get_commit(sha)
+        if not commit:
+            return None
+        return extract_user_data(commit.committer, data_root_dir)
+
+    @staticmethod
+    def extract_reaction_data(reaction, parent_id, parent_name, data_root_dir):
         """
         extract_reaction_data(reaction, parent_id, parent_name)
 
@@ -180,7 +250,7 @@ class Utility():
             Id from parent as foreign key.
         parent_name: str
             Name of the parent.
-        repo_dir: str
+        data_root_dir: str
             Repo dir of the project.
 
         Returns
@@ -199,11 +269,11 @@ class Utility():
         reaction_data["created_at"] = reaction.created_at
         reaction_data["id"] = reaction.id
         if reaction.user:
-            reaction_data["author"] = Utility.extract_user_data(reaction.user, repo_dir)
+            reaction_data["author"] = Utility.extract_user_data(reaction.user, data_root_dir)
         return reaction_data
     
     @staticmethod
-    def extract_event_data(event, parent_id, parent_name, repo_dir):
+    def extract_event_data(event, parent_id, parent_name, data_root_dir):
         """
         extract_event_data(event, id, parent_name)
 
@@ -217,7 +287,7 @@ class Utility():
             Id from parent as foreign key.
         parent_name: str
             Name of the parent.
-        repo_dir: str
+        data_root_dir: str
             Repo dir of the project.
 
         Returns
@@ -232,15 +302,15 @@ class Utility():
         """
         issue_event_data = dict()
         issue_event_data[parent_name + "_id"] = parent_id
-        issue_event_data["author"] = Utility.extract_user_data(event.actor, repo_dir)
+        issue_event_data["author"] = Utility.extract_user_data(event.actor, data_root_dir)
         issue_event_data["commit_id"] = event.commit_id
         issue_event_data["created_at"] = event.created_at
         issue_event_data["event"] = event.event
         issue_event_data["id"] = event.id
         if event.label:
             issue_event_data["label"] = event.label.name
-        issue_event_data["assignee"] = Utility.extract_user_data(event.assignee, repo_dir)
-        issue_event_data["assigner"] = Utility.extract_user_data(event.assigner, repo_dir)
+        issue_event_data["assignee"] = Utility.extract_user_data(event.assignee, data_root_dir)
+        issue_event_data["assigner"] = Utility.extract_user_data(event.assigner, data_root_dir)
         return issue_event_data
     
     @staticmethod

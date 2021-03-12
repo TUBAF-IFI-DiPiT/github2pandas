@@ -22,7 +22,7 @@ class TestPullRequestAggregation(unittest.TestCase):
         Test generating pandas table
         """
         repo = Utility.get_repo(self.git_repo_name, self.github_token)
-        result = AggPR.generate_pandas_tables(self.default_data_folder, repo)
+        result = AggPR.generate_pull_request_pandas_tables(repo, self.default_data_folder)
         self.assertTrue( result, "generate_pandas_tables throws exception")
         
     def test_get_raw_pull_requests(self):
