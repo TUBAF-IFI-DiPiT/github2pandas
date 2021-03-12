@@ -4,6 +4,7 @@ import pickle
 import os
 import shutil
 from ..utility import Utility
+from .models import IssueData
 
 class AggIssues():
     """
@@ -26,8 +27,6 @@ class AggIssues():
     -------
     extract_issue_data(issue, data_root_dir)
         Extracting general issue data.
-    extract_issue_comment_data(comment, issue_id, data_root_dir)
-        Extracting general comment data from a issue.
     generate_issue_pandas_tables(repo, data_root_dir)
         Extracting the complete issue data from a repository.
     get_raw_issues(data_root_dir, filename)
@@ -56,7 +55,7 @@ class AggIssues():
 
         Returns
         -------
-        dict
+        IssueData
             Dictionary with the extracted data.
 
         Notes
@@ -64,7 +63,7 @@ class AggIssues():
             Issue object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Issue.html
 
         """
-        issue_data = dict()  
+        issue_data = IssueData()  
         issue_data["assignees"]  = Utility.extract_assignees(issue.assignees, data_root_dir)
         issue_data["assignees_count"] = len(issue.assignees)
         issue_data["body"] = issue.body
@@ -84,41 +83,6 @@ class AggIssues():
         issue_data["event_count"] = issue.get_events().totalCount
         issue_data["reaction_count"] = issue.get_reactions().totalCount
         return issue_data
-
-    @staticmethod
-    def extract_issue_comment_data(comment, issue_id, data_root_dir):
-        """
-        extract_issue_comment_data(comment, issue_id, data_root_dir)
-
-        Extracting general comment data from a issue.
-
-        Parameters
-        ----------
-        comment: IssueComment
-            IssueComment object from pygithub.
-        issue_id: int
-            issue id as foreign key.
-        data_root_dir: str
-            Repo dir of the project.
-
-        Returns
-        -------
-        dict
-            Dictionary with the extracted data.
-
-        Notes
-        -----
-            IssueComment object structure: https://pygithub.readthedocs.io/en/latest/github_objects/IssueComment.html
-
-        """
-        issue_comment_data = dict()  
-        issue_comment_data["issue_id"] = issue_id
-        issue_comment_data["body"] = comment.body
-        issue_comment_data["created_at"] = comment.created_at
-        issue_comment_data["id"] = comment.id
-        issue_comment_data["author"] = Utility.extract_user_data(comment.user, data_root_dir)
-        issue_comment_data["reactions"] = comment.get_reactions().totalCount
-        return issue_comment_data
 
     @staticmethod
     def generate_issue_pandas_tables(repo, data_root_dir):
@@ -158,7 +122,7 @@ class AggIssues():
                 issue_list.append(issue_data)
                 # issue comment data
                 for comment in issue.get_comments():
-                    issue_comment_data = AggIssues.extract_issue_comment_data(comment, issue.id, data_root_dir)
+                    issue_comment_data = Utility.extract_comment_data(comment, issue.id, "issue", data_root_dir)
                     issue_comment_list.append(issue_comment_data)
                     # issue comment reaction data
                     for reaction in comment.get_reactions():

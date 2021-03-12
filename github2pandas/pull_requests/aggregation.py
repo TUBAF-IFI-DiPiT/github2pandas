@@ -4,6 +4,8 @@ import pickle
 import os
 import shutil
 from ..utility import Utility
+from .models import PullRequestData, PullRequestReviewData
+
 class AggPullRequest():
     """
     Class to aggregate Pull Requests
@@ -27,8 +29,6 @@ class AggPullRequest():
     -------
     extract_pull_request_data(pull_request, data_root_dir)
         Extracting general pull request data.
-    extract_pull_request_comment_data(comment, pull_request_id, data_root_dir)
-        Extracting general comment data from a pull request.
     extract_pull_request_review_data(review, pull_request_id, data_root_dir)
         Extracting general review data from a pull request.
     generate_pull_request_pandas_tables(repo, data_root_dir)
@@ -60,7 +60,7 @@ class AggPullRequest():
 
         Returns
         -------
-        dict
+        PullRequestData
             Dictionary with the extracted data.
 
         Notes
@@ -68,7 +68,7 @@ class AggPullRequest():
             PullRequest object structure: https://pygithub.readthedocs.io/en/latest/github_objects/PullRequest.html
 
         """
-        pull_request_data = dict()
+        pull_request_data = PullRequestData()
         pull_request_data["id"] = pull_request.id
         pull_request_data["assignees"] = Utility.extract_assignees(pull_request.assignees, data_root_dir)
         pull_request_data["assignees_count"] = len(pull_request.assignees)  
@@ -96,41 +96,6 @@ class AggPullRequest():
         return pull_request_data
     
     @staticmethod
-    def extract_pull_request_comment_data(comment, pull_request_id, data_root_dir):
-        """
-        extract_pull_request_comment_data(comment, pull_request_id, data_root_dir)
-
-        Extracting general comment data from a pull request.
-
-        Parameters
-        ----------
-        comment: PullRequestComment
-            PullRequestComment object from pygithub.
-        pull_request_id: int
-            Pull request id as foreign key.
-        data_root_dir: str
-            Repo dir of the project.
-
-        Returns
-        -------
-        dict
-            Dictionary with the extracted data.
-
-        Notes
-        -----
-            PullRequestComment object structure: https://pygithub.readthedocs.io/en/latest/github_objects/PullRequestComment.html
-
-        """
-        comment_data = dict()
-        comment_data["pull_request_id"] = pull_request_id
-        comment_data["body"] = comment.body
-        comment_data["created_at"] = comment.created_at
-        comment_data["id"] = comment.id
-        comment_data["author"] = Utility.extract_user_data(comment.user, data_root_dir)
-        comment_data["reactions_count"] = comment.get_reactions().totalCount
-        return comment_data
-    
-    @staticmethod
     def extract_pull_request_review_data(review, pull_request_id, data_root_dir):
         """
         extract_pull_request_review_data(review, pull_request_id)
@@ -156,7 +121,7 @@ class AggPullRequest():
             PullRequestReview object structure: https://pygithub.readthedocs.io/en/latest/github_objects/PullRequestReview.html
 
         """
-        review_data = dict()
+        review_data = PullRequestReviewData()
         review_data["pull_request_id"] = pull_request_id
         review_data["id"] = review.id
         review_data["author"] = Utility.extract_user_data(review.user, data_root_dir)
@@ -202,7 +167,7 @@ class AggPullRequest():
             pull_request_list.append(pull_request_data)
             # pull request comment data
             for comment in pull_request.get_comments():
-                pull_request_comment_data = AggPullRequest.extract_pull_request_comment_data(comment, pull_request.id, data_root_dir)
+                pull_request_comment_data = Utility.extract_comment_data(comment, pull_request.id, "pull_request", data_root_dir)
                 pull_request_comment_list.append(pull_request_comment_data)
                 # pull request reaction data
                 for reaction in comment.get_reactions():
@@ -214,7 +179,7 @@ class AggPullRequest():
                 pull_request_review_list.append(pull_request_review_data)
             # pull request issue comments data
             for comment in pull_request.get_issue_comments():
-                pull_request_comment_data = AggPullRequest.extract_pull_request_comment_data(comment, pull_request.id, data_root_dir)
+                pull_request_comment_data = Utility.extract_comment_data(comment, pull_request.id, "pull_request", data_root_dir)
                 pull_request_comment_list.append(pull_request_comment_data)
                 # pull request reaction data
                 for reaction in comment.get_reactions():
