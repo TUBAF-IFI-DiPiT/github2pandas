@@ -200,8 +200,8 @@ class Utility():
         commit = repo.get_commit(sha)
         if not commit:
             return None
-        return extract_user_data(commit.author, data_root_dir)
-
+        return Utility.extract_user_data(commit.author, data_root_dir)
+               
     @staticmethod
     def extract_committer_data_from_commit(repo, sha, data_root_dir):
         """
@@ -233,7 +233,7 @@ class Utility():
         commit = repo.get_commit(sha)
         if not commit:
             return None
-        return extract_user_data(commit.committer, data_root_dir)
+        return Utility.extract_user_data(commit.committer, data_root_dir)
 
     @staticmethod
     def extract_reaction_data(reaction, parent_id, parent_name, data_root_dir):
