@@ -10,14 +10,6 @@ import github
 import pickle
 import uuid
 
-def replace_dublicates(pd_table, column_name, dublicates):
-
-    for name in dublicates:
-        pd_table[column_name].replace(name[0], name[1],
-                                        inplace=True)
-
-    return pd_table
-
 # getting os permissions to remove (write) readonly files
 def readonly_handler(func, local_directory, execinfo):
 
