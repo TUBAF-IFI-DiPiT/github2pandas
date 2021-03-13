@@ -26,12 +26,29 @@ Due to the early stage of development the DiP-iT package is not yet available as
 
 Naming conventions: https://namingconvention.org/python/
 
+## Working with pipenv
+
 
 | Process                                     | Command                                                 |
 | ------------------------------------------- | ------------------------------------------------------- |
 | Installation                                | `pipenv install --dev`                                  |
 | Run specific script                         | `pipenv run python file.py`                             |
 | Run all Tests                               | `pipenv run python -m unittest`                         |
-| Run all tests in a specific folder          | `ipenv run python -m unittest discover -s 'tests'`      |
+| Run all tests in a specific folder          | `pipenv run python -m unittest discover -s 'tests'`      |
 | Run all tests with specific filename        | `pipenv run python -m unittest discover -p 'test_*.py'` |
 | Start Jupyter server in virtual environment | `pipenv run jupyter notebook`                           | 
+
+## Generating documentation
+
+1. Run following command in main folder
+
+```
+pipenv run  sphinx-apidoc -o ./docu/source/ ./github2pandas
+```
+
+2. Generate html documentation 
+
+```
+cd docu
+make html
+```
