@@ -14,8 +14,7 @@ from github2pandas.version.aggregation import clone_repository,\
 
 from github2pandas.version.processing import identify_commits_in_branches
 
-from github2pandas.utility import replace_dublicates,\
-                        apply_python_date_format
+from github2pandas.utility import apply_python_date_format
 
 class Test_CommitExtractionPublic(unittest.TestCase):
 
@@ -102,8 +101,6 @@ class Test_Processing(unittest.TestCase):
         pdCommits = (
         get_commit_raw_pandas_table(self.default_data_folder)
            .pipe(apply_python_date_format, 'author_date', 'timestamp')
-           .pipe(replace_dublicates, "author_name", dublicate_names)
-           .pipe(replace_dublicates, "author_email", dublicate_emails)
            .pipe(identify_commits_in_branches)
         )
 
@@ -112,7 +109,7 @@ class Test_Processing(unittest.TestCase):
 
 class Test_CommitExtractionPrivate(unittest.TestCase):
 
-    git_repo_name = "xAPI_for_GitHubData"
+    git_repo_name = "Extract_Git_Activities"
     git_repo_owner = "TUBAF-IFI-DiPiT"
 
     default_repo_folder = Path("repos", git_repo_name)

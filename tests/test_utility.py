@@ -17,7 +17,7 @@ class TestUtility(unittest.TestCase):
         """
         Evaluate accessibility of repository 
         """
-        repo = Utility.get_repo(repo_name=self.git_repo_name, token=self.github_token)
+        repo = Utility.get_repo(self.git_repo_owner, repo_name=self.git_repo_name, token=self.github_token)
         self.assertIsNotNone(repo)
 
     def test_github_token_availability(self):

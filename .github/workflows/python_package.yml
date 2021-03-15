@@ -2,7 +2,7 @@ name: RunTests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, bug-fix/tests ]
 
   workflow_dispatch:
 
