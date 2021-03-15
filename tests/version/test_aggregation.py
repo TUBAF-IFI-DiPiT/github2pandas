@@ -110,7 +110,7 @@ class Test_Processing(unittest.TestCase):
 
 class Test_CommitExtractionPrivate(unittest.TestCase):
 
-    git_repo_name = "xAPI_for_GitHubData"
+    git_repo_name = "Extract_Git_Activities"
     git_repo_owner = "TUBAF-IFI-DiPiT"
 
     default_repo_folder = Path("repos", git_repo_name)
