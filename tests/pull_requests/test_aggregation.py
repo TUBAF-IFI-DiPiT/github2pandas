@@ -21,7 +21,7 @@ class TestPullRequestAggregation(unittest.TestCase):
         """
         Test generating pandas table
         """
-        repo = Utility.get_repo(self.git_repo_name, self.github_token)
+        repo = Utility.get_repo(self.git_repo_owner, self.git_repo_name, self.github_token)
         result = AggPR.generate_pull_request_pandas_tables(repo, self.default_data_folder)
         self.assertTrue( result, "generate_pandas_tables throws exception")
         
@@ -31,7 +31,7 @@ class TestPullRequestAggregation(unittest.TestCase):
         """
         data_folder = Path("data", self.git_repo_name)
         pull_requests = AggPR.get_raw_pull_requests(data_folder)
-        self.assertFalse( pull_requests.count().empty() , "pull requests have no data")
+        self.assertFalse( pull_requests.empty , "pull requests have no data")
 
 if __name__ == "__main__":
     unittest.main()

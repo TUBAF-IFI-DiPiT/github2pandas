@@ -355,7 +355,7 @@ class Utility():
             pickle.dump(data_frame_, f)
 
     @staticmethod      
-    def get_repo(repo_name, token):
+    def get_repo(repo_owner, repo_name, token):
         """
         get_repo(repo_name, token)
 
@@ -379,8 +379,5 @@ class Utility():
 
         """
         g = github.Github(token)
-        for repo in g.get_user().get_repos():
-            if repo_name == repo.name:
-                return repo
-        return None
+        return g.get_repo(repo_owner + "/" + repo_name)
     
