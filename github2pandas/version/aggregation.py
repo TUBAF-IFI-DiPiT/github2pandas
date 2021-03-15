@@ -21,6 +21,8 @@ def clone_repository(git_repo_owner, git_repo_name, git_repo_dir,
         callbacks = git2.RemoteCallbacks(
             git2.UserPass(git_hub_token, 'x-oauth-basic'))
     repo_ref = f"https://github.com/{git_repo_owner}/{git_repo_name}"
+    
+    git_repo_dir.mkdir(parents=True, exist_ok=True)
     repo = git2.clone_repository(repo_ref, git_repo_dir, callbacks=callbacks)
 
     existing_branches = list(repo.branches)
