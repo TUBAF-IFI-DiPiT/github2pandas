@@ -31,7 +31,7 @@ class TestPullRequestAggregation(unittest.TestCase):
         """
         data_folder = Path("data", self.git_repo_name)
         pull_requests = AggPR.get_raw_pull_requests(data_folder)
-        self.assertTrue( pull_requests.count()[0] > 0 , "pull requests have no data")
+        self.assertFalse( pull_requests.count().empty() , "pull requests have no data")
 
 if __name__ == "__main__":
     unittest.main()

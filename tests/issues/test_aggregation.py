@@ -31,7 +31,7 @@ class TestIssueAggregation(unittest.TestCase):
         """
         data_folder = Path("data", self.git_repo_name)
         issues = AggIssues.get_raw_issues(data_folder)
-        self.assertTrue( issues.count()[0] > 0 , "issues have no data")
+        self.assertFalse( issues.count().empty() , "issues have no data")
 
 if __name__ == "__main__":
     unittest.main()
