@@ -4,7 +4,7 @@ import unittest
 import sys
 import os
 from pathlib import Path
-from github2pandas import utility
+from github2pandas.utility import Utility
 
 class TestUtility(unittest.TestCase):
     
@@ -17,7 +17,7 @@ class TestUtility(unittest.TestCase):
         """
         Evaluate accessibility of repository 
         """
-        repo = utility.get_repo(repo_name=self.git_repo_name, token=self.github_token)
+        repo = Utility.get_repo(repo_name=self.git_repo_name, token=self.github_token)
         self.assertIsNotNone(repo)
 
     def test_github_token_availability(self):

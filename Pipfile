@@ -19,6 +19,7 @@ pandas = "*"
 jupyter = "*"
 sphinx = "*"
 m2r2 = "*"
+pypiwin32 = "*"
 
 [dev-packages]
 github2pandas = {editable = true, path = "."}
