@@ -77,7 +77,6 @@ class Test_Processing(unittest.TestCase):
     default_repo_folder = Path("repos", git_repo_name)
     default_data_folder = Path("data", git_repo_name)
 
-    @unittest.skip("Skiped for GitHub-Actions")
     def test_Pandas_pipeline(self):
 
         clone_repository(git_repo_owner=self.git_repo_owner,
@@ -116,7 +115,6 @@ class Test_CommitExtractionPrivate(unittest.TestCase):
     default_repo_folder = Path("repos", git_repo_name)
     default_data_folder = Path("data", git_repo_name)
 
-    @unittest.skip("Skiped for GitHub-Actions")
     def test_clone_private_repository(self):
         """
         Test cloning with private open source project
