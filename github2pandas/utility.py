@@ -9,6 +9,7 @@ import pandas as pd
 import github
 import pickle
 import uuid
+import shutil
 
 # getting os permissions to remove (write) readonly files
 def readonly_handler(func, local_directory, execinfo):
@@ -135,7 +136,8 @@ class Utility():
 
         """
         if not user:
-            return None
+            return 
+        data_root_dir.mkdir(parents=True, exist_ok=True)
         users_file = Path(data_root_dir, Utility.USERS)
         users_df = pd.DataFrame({
             "anonym_uuid": [],
@@ -161,6 +163,30 @@ class Utility():
         else:
             return saved_user.iloc[0]["anonym_uuid"]
     
+    @staticmethod
+    def get_raw_users(data_root_dir):
+        """
+        get_raw_pull_requests(data_root_dir)
+
+        Get the genearted useres pandas table.
+
+        Parameters
+        ----------
+        data_root_dir: str
+            Path to the data folder of the repository.
+
+        Returns
+        -------
+        DataFrame
+            Pandas DataFrame which includes the users data
+
+        """
+        users_file = Path(data_root_dir, Utility.USERS)
+        if users_file.is_file():
+            return pd.read_pickle(users_file)
+        else:
+            return pd.DataFrame()
+
     @staticmethod
     def extract_author_data_from_commit(repo, sha, data_root_dir):
         """
