@@ -41,8 +41,12 @@ class AggVersion(object):
         existing_branches = list(repo.branches)
         r = git.Repo.init(repo_dir)
 
-        for ref in repo.references:
-            branch_name = ref.split('/')[-1]
+        for branch_name in repo.references:
+
+            branch_pattern = ['refs/heads/', 'refs/remotes/origin/']
+            for pattern in branch_pattern:
+                branch_name = branch_name.replace(pattern, '')
+
             if branch_name != 'HEAD' and branch_name not in existing_branches:
                 print("  ", branch_name, end="")
                 try:
