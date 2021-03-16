@@ -68,7 +68,7 @@ class AggIssues():
         issue_data["assignees_count"] = len(issue.assignees)
         issue_data["body"] = issue.body
         issue_data["closed_at"] = issue.closed_at
-        issue_data["closedBy"] = Utility.extract_user_data(issue.closed_by, data_root_dir)
+        issue_data["closed_by"] = Utility.extract_user_data(issue.closed_by, data_root_dir)
         issue_data["created_at"] = issue.created_at
         issue_data["id"] = issue.id
         issue_data["labels"]  = Utility.extract_labels(issue.labels)

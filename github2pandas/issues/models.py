@@ -21,7 +21,7 @@ class IssueData(dict):
         "assignees_count",
         "body",
         "closed_at",
-        "closedBy",
+        "closed_by",
         "created_at",
         "id",
         "labels",
