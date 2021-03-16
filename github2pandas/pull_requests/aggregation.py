@@ -79,7 +79,6 @@ class AggPullRequest():
         pull_request_data["created_at"] = pull_request.created_at
         pull_request_data["deletions"] = pull_request.deletions
         pull_request_data["additions"] = pull_request.additions
-        pull_request_data["deletions"] = pull_request.deletions
         pull_request_data["labels"] = Utility.extract_labels(pull_request.labels)
         pull_request_data["labels_count"] = len(pull_request.labels)
         pull_request_data["merged"] = pull_request.merged

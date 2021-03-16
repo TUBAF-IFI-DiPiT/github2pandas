@@ -27,7 +27,6 @@ class PullRequestData(dict):
         "created_at",
         "deletions",
         "additions",
-        "deletions",
         "labels",
         "labels_count",
         "merged",
