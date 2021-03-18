@@ -3,7 +3,7 @@ from pathlib import Path
 import pickle
 import os
 import shutil
-from ..utility import Utility
+from .utility import Utility
 
 class AggPullRequest():
     """
@@ -67,7 +67,7 @@ class AggPullRequest():
             PullRequest object structure: https://pygithub.readthedocs.io/en/latest/github_objects/PullRequest.html
 
         """
-        pull_request_data = PullRequestData()
+        pull_request_data = AggPullRequest.PullRequestData()
         pull_request_data["id"] = pull_request.id
         pull_request_data["assignees"] = Utility.extract_assignees(pull_request.assignees, data_root_dir)
         pull_request_data["assignees_count"] = len(pull_request.assignees)  
@@ -119,7 +119,7 @@ class AggPullRequest():
             PullRequestReview object structure: https://pygithub.readthedocs.io/en/latest/github_objects/PullRequestReview.html
 
         """
-        review_data = PullRequestReviewData()
+        review_data = AggPullRequest.PullRequestReviewData()
         review_data["pull_request_id"] = pull_request_id
         review_data["id"] = review.id
         review_data["author"] = Utility.extract_user_data(review.user, data_root_dir)
@@ -273,7 +273,7 @@ class AggPullRequest():
 
             """
 
-            for key in PullRequestData.KEYS:
+            for key in AggPullRequest.PullRequestData.KEYS:
                 self[key] = None
         
         def __setitem__(self, key, val):
@@ -290,7 +290,7 @@ class AggPullRequest():
                 Value for dict
             """
 
-            if key not in PullRequestData.KEYS:
+            if key not in AggPullRequest.PullRequestData.KEYS:
                 raise KeyError
             dict.__setitem__(self, key, val)
 
@@ -329,7 +329,7 @@ class AggPullRequest():
 
             """
 
-            for key in PullRequestReviewData.KEYS:
+            for key in AggPullRequest.PullRequestReviewData.KEYS:
                 self[key] = None
         
         def __setitem__(self, key, val):
@@ -346,6 +346,6 @@ class AggPullRequest():
                 Value for dict
             """
 
-            if key not in PullRequestReviewData.KEYS:
+            if key not in AggPullRequest.PullRequestReviewData.KEYS:
                 raise KeyError
             dict.__setitem__(self, key, val)

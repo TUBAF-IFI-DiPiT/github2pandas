@@ -3,7 +3,7 @@ from pathlib import Path
 import pickle
 import os
 import shutil
-from ..utility import Utility
+from .utility import Utility
 
 class AggIssues():
     """
@@ -62,7 +62,7 @@ class AggIssues():
             Issue object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Issue.html
 
         """
-        issue_data = IssueData()  
+        issue_data = AggIssues.IssueData()  
         issue_data["assignees"]  = Utility.extract_assignees(issue.assignees, data_root_dir)
         issue_data["assignees_count"] = len(issue.assignees)
         issue_data["body"] = issue.body
@@ -215,7 +215,7 @@ class AggIssues():
 
             """
 
-            for key in IssueData.KEYS:
+            for key in AggIssues.IssueData.KEYS:
                 self[key] = None
         
         def __setitem__(self, key, val):
@@ -232,6 +232,6 @@ class AggIssues():
                 Value for dict
             """
 
-            if key not in IssueData.KEYS:
+            if key not in AggIssues.IssueData.KEYS:
                 raise KeyError
             dict.__setitem__(self, key, val)

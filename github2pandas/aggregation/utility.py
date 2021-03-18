@@ -157,7 +157,7 @@ class Utility():
             users_df = pd.read_pickle(users_file)
         saved_user = users_df.loc[users_df['id'] == user.id]
         if saved_user.empty:
-            user_data = UserData()
+            user_data = Utility.UserData()
             user_data["anonym_uuid"] = str(uuid.uuid4())
             user_data["id"] = user.id
             user_data["name"] = user.name
@@ -288,7 +288,7 @@ class Utility():
             Reaction object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Reaction.html
 
         """
-        reaction_data = ReactionData(parent_name) 
+        reaction_data = Utility.ReactionData(parent_name) 
         reaction_data[parent_name + "_id"] = parent_id
         reaction_data["content"] = reaction.content
         reaction_data["created_at"] = reaction.created_at
@@ -325,7 +325,7 @@ class Utility():
             IssueEvent object structure: https://pygithub.readthedocs.io/en/latest/github_objects/IssueEvent.html
 
         """
-        issue_event_data = EventData(parent_name)
+        issue_event_data = Utility.EventData(parent_name)
         issue_event_data[parent_name + "_id"] = parent_id
         issue_event_data["author"] = Utility.extract_user_data(event.actor, data_root_dir)
         issue_event_data["commit_id"] = event.commit_id
@@ -367,7 +367,7 @@ class Utility():
             IssueComment object structure: https://pygithub.readthedocs.io/en/latest/github_objects/IssueComment.html
 
         """
-        comment_data = CommentData(parent_name)
+        comment_data = Utility.CommentData(parent_name)
         comment_data[parent_name + "_id"] = parent_id
         comment_data["body"] = comment.body
         comment_data["created_at"] = comment.created_at
@@ -471,10 +471,10 @@ class Utility():
 
             """
 
-            if not parent_name in CommentData.PARENTS:
+            if not parent_name in Utility.CommentData.PARENTS:
                 raise ValueError
-            CommentData.KEYS.append(parent_name + "_id")
-            for key in CommentData.KEYS:
+            Utility.CommentData.KEYS.append(parent_name + "_id")
+            for key in Utility.CommentData.KEYS:
                 self[key] = None
         
         def __setitem__(self, key, val):
@@ -491,7 +491,7 @@ class Utility():
                 Value for dict
             """
 
-            if key not in CommentData.KEYS:
+            if key not in Utility.CommentData.KEYS:
                 raise KeyError
             dict.__setitem__(self, key, val)
 
@@ -543,10 +543,10 @@ class Utility():
 
             """
 
-            if not parent_name in EventData.PARENTS:
+            if not parent_name in Utility.EventData.PARENTS:
                 raise ValueError
-            EventData.KEYS.append(parent_name + "_id")
-            for key in EventData.KEYS:
+            Utility.EventData.KEYS.append(parent_name + "_id")
+            for key in Utility.EventData.KEYS:
                 self[key] = None
         
         def __setitem__(self, key, val):
@@ -563,7 +563,7 @@ class Utility():
                 Value for dict
             """
 
-            if key not in EventData.KEYS:
+            if key not in Utility.EventData.KEYS:
                 raise KeyError
             dict.__setitem__(self, key, val)
 
@@ -611,10 +611,10 @@ class Utility():
 
             """
 
-            if not parent_name in ReactionData.PARENTS:
+            if not parent_name in Utility.ReactionData.PARENTS:
                 raise ValueError
-            ReactionData.KEYS.append(parent_name + "_id")
-            for key in ReactionData.KEYS:
+            Utility.ReactionData.KEYS.append(parent_name + "_id")
+            for key in Utility.ReactionData.KEYS:
                 self[key] = None
         
         def __setitem__(self, key, val):
@@ -631,7 +631,7 @@ class Utility():
                 Value for dict
             """
 
-            if key not in ReactionData.KEYS:
+            if key not in Utility.ReactionData.KEYS:
                 raise KeyError
             dict.__setitem__(self, key, val)
         
@@ -668,7 +668,7 @@ class Utility():
             Set all keys in KEYS to None.
 
             """
-            for key in UserData.KEYS:
+            for key in Utility.UserData.KEYS:
                 self[key] = None
         
         def __setitem__(self, key, val):
@@ -685,6 +685,6 @@ class Utility():
                 Value for dict
             """
 
-            if key not in UserData.KEYS:
+            if key not in Utility.UserData.KEYS:
                 raise KeyError
             dict.__setitem__(self, key, val)
