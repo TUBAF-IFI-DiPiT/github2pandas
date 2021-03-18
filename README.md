@@ -52,3 +52,26 @@ pipenv run  sphinx-apidoc -o ./docu/source/ ./github2pandas
 cd docu
 make html
 ```
+## Data aggregation structur
+
+- Extract_Git_Activities
+   - Issues
+      - pdIssues.p
+      - pdIssuesComments.p
+      - pdIssuesEvents.p
+      - pdIssuesReactions.p
+   - PullRequests
+      - pdPullRequests.p
+      - pdPullRequestsComments.p
+      - pdPullRequestsEvents.p
+      - pdPullRequestsReactions.p
+      - pdPullRequestsReviews.p
+   - Users.p
+   - Versions
+      - pdCommits.p
+      - pdEdits.p
+      - repo
+         - left out ...
+      - Versions.db
+   - Workflows
+      - pdWorkflows.p
