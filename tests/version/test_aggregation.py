@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 
 from github2pandas.utility import Utility
-from github2pandas.version.aggregation import AggVersion as AggVer
+from github2pandas.aggregation.version import AggVersion as AggVer
 
 class Test_CommitExtraction(unittest.TestCase):
 

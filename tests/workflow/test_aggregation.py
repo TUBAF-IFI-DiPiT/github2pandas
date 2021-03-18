@@ -4,7 +4,7 @@ import unittest
 import os
 from pathlib import Path
 
-from github2pandas.workflows.aggregation import AggWorkflow as AggWF
+from github2pandas.aggregation.workflows import AggWorkflow as AggWF
 from github2pandas.utility import Utility
 
 class Test_Workflow(unittest.TestCase):
