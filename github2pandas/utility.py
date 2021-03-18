@@ -10,6 +10,7 @@ import github
 import pickle
 import uuid
 import shutil
+from .models import CommentData, EventData, ReactionData, UserData
 
 # getting os permissions to remove (write) readonly files
 def readonly_handler(func, local_directory, execinfo):
@@ -27,6 +28,11 @@ class Utility():
     """
     Class which contains functions for mutiple modules.
 
+    Attributes
+    ----------
+    USERS : str
+        Pandas table file for raw user data.
+
     Methods
     -------
         extract_assignees(github_assignees, data_root_dir)
@@ -43,6 +49,8 @@ class Utility():
             Extracting general reaction data.
         extract_event_data(event, parent_id, parent_name, data_root_dir)
             Extracting general event data from a issue or pull request.
+        extract_comment_data(comment, parent_id, parent_name, data_root_dir)
+            Extracting general comment data from a pull request or issue.
         save_list_to_pandas_table(dir, file, data_list)
             Save a data list to a pandas table.
         get_repo(repo_name, token)
@@ -150,7 +158,7 @@ class Utility():
             users_df = pd.read_pickle(users_file)
         saved_user = users_df.loc[users_df['id'] == user.id]
         if saved_user.empty:
-            user_data = dict()
+            user_data = UserData()
             user_data["anonym_uuid"] = str(uuid.uuid4())
             user_data["id"] = user.id
             user_data["name"] = user.name
@@ -273,7 +281,7 @@ class Utility():
 
         Returns
         -------
-        dict
+        ReactionData
             Dictionary with the extracted data.
 
         Notes
@@ -281,7 +289,7 @@ class Utility():
             Reaction object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Reaction.html
 
         """
-        reaction_data = dict() 
+        reaction_data = ReactionData(parent_name) 
         reaction_data[parent_name + "_id"] = parent_id
         reaction_data["content"] = reaction.content
         reaction_data["created_at"] = reaction.created_at
@@ -293,7 +301,7 @@ class Utility():
     @staticmethod
     def extract_event_data(event, parent_id, parent_name, data_root_dir):
         """
-        extract_event_data(event, id, parent_name)
+        extract_event_data(event, id, parent_name, data_root_dir)
 
         Extracting general event data from a issue or pull request.
 
@@ -310,7 +318,7 @@ class Utility():
 
         Returns
         -------
-        dict
+        EventData
             Dictionary with the extracted data.
 
         Notes
@@ -318,7 +326,7 @@ class Utility():
             IssueEvent object structure: https://pygithub.readthedocs.io/en/latest/github_objects/IssueEvent.html
 
         """
-        issue_event_data = dict()
+        issue_event_data = EventData(parent_name)
         issue_event_data[parent_name + "_id"] = parent_id
         issue_event_data["author"] = Utility.extract_user_data(event.actor, data_root_dir)
         issue_event_data["commit_id"] = event.commit_id
@@ -330,6 +338,44 @@ class Utility():
         issue_event_data["assignee"] = Utility.extract_user_data(event.assignee, data_root_dir)
         issue_event_data["assigner"] = Utility.extract_user_data(event.assigner, data_root_dir)
         return issue_event_data
+    
+    @staticmethod
+    def extract_comment_data(comment, parent_id, parent_name, data_root_dir):
+        """
+        extract_comment_data(comment, parent_id, parent_name, data_root_dir)
+
+        Extracting general comment data from a pull request or issue.
+
+        Parameters
+        ----------
+        comment: github_object 
+            PullRequestComment or IssueComment object from pygithub.
+        parent_id: int
+            Id from parent as foreign key.
+        parent_name: str
+            Name of the parent.
+        data_root_dir: str
+            Repo dir of the project.
+
+        Returns
+        -------
+        CommentData
+            Dictionary with the extracted data.
+
+        Notes
+        -----
+            PullRequestComment object structure: https://pygithub.readthedocs.io/en/latest/github_objects/PullRequestComment.html
+            IssueComment object structure: https://pygithub.readthedocs.io/en/latest/github_objects/IssueComment.html
+
+        """
+        comment_data = CommentData(parent_name)
+        comment_data[parent_name + "_id"] = parent_id
+        comment_data["body"] = comment.body
+        comment_data["created_at"] = comment.created_at
+        comment_data["id"] = comment.id
+        comment_data["author"] = Utility.extract_user_data(comment.user, data_root_dir)
+        comment_data["reactions_count"] = comment.get_reactions().totalCount
+        return comment_data
     
     @staticmethod
     def save_list_to_pandas_table(dir, file, data_list):
