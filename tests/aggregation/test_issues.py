@@ -4,7 +4,7 @@ import unittest
 import sys
 import os
 from pathlib import Path
-from github2pandas.utility import Utility
+from github2pandas.aggregation.utility import Utility
 from github2pandas.aggregation.issues import AggIssues
 
 class TestIssueAggregation(unittest.TestCase):
