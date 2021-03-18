@@ -8,6 +8,22 @@ import git2net
 import shutil
 from pathlib import Path
 
+import stat
+'''
+Error handler function
+It will try to change file permission and call the calling function again,
+'''
+def handleError(func, path, exc_info):
+    print('Handling Error for file ' , path)
+    print(exc_info)
+    # Check if file access issue
+    if not os.access(path, os.W_OK):
+       print('Hello')
+       # Try to change the permision of file
+       os.chmod(path, stat.S_IWUSR)
+       # call the calling function again
+       func(path)
+
 class AggVersion():
     """
     Class to aggregate Pull Requests
@@ -81,7 +97,7 @@ class AggVersion():
 
         repo_dir = version_folder.joinpath(AggVersion.VERSION_REPOSITORY_DIR)
         if repo_dir.exists ():
-            shutil.rmtree(repo_dir.resolve())
+            shutil.rmtree(repo_dir.resolve(), onerror=handleError)
 
         callbacks = None
 
