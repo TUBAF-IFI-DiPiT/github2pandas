@@ -137,8 +137,6 @@ class AggIssues():
                     issue_reaction_data = Utility.extract_reaction_data(reaction,issue.id, "issue", data_root_dir)
                     issue_reaction_list.append(issue_reaction_data)    
         # Save lists
-        if os.path.isdir(issues_dir):
-            shutil.rmtree(issues_dir)
         Utility.save_list_to_pandas_table(issues_dir, AggIssues.ISSUES, issue_list)
         Utility.save_list_to_pandas_table(issues_dir, AggIssues.ISSUES_COMMENTS, issue_comment_list)
         Utility.save_list_to_pandas_table(issues_dir, AggIssues.ISSUES_EVENTS, issue_event_list)

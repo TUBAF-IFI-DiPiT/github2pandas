@@ -9,15 +9,8 @@ import pandas as pd
 import github
 import pickle
 import uuid
+import shutil
 from .models import CommentData, EventData, ReactionData, UserData
-
-def replace_dublicates(pd_table, column_name, dublicates):
-
-    for name in dublicates:
-        pd_table[column_name].replace(name[0], name[1],
-                                        inplace=True)
-
-    return pd_table
 
 # getting os permissions to remove (write) readonly files
 def readonly_handler(func, local_directory, execinfo):
@@ -151,7 +144,8 @@ class Utility():
 
         """
         if not user:
-            return None
+            return 
+        data_root_dir.mkdir(parents=True, exist_ok=True)
         users_file = Path(data_root_dir, Utility.USERS)
         users_df = pd.DataFrame({
             "anonym_uuid": [],
@@ -177,6 +171,30 @@ class Utility():
         else:
             return saved_user.iloc[0]["anonym_uuid"]
     
+    @staticmethod
+    def get_raw_users(data_root_dir):
+        """
+        get_raw_pull_requests(data_root_dir)
+
+        Get the genearted useres pandas table.
+
+        Parameters
+        ----------
+        data_root_dir: str
+            Path to the data folder of the repository.
+
+        Returns
+        -------
+        DataFrame
+            Pandas DataFrame which includes the users data
+
+        """
+        users_file = Path(data_root_dir, Utility.USERS)
+        if users_file.is_file():
+            return pd.read_pickle(users_file)
+        else:
+            return pd.DataFrame()
+
     @staticmethod
     def extract_author_data_from_commit(repo, sha, data_root_dir):
         """
@@ -208,8 +226,8 @@ class Utility():
         commit = repo.get_commit(sha)
         if not commit:
             return None
-        return extract_user_data(commit.author, data_root_dir)
-
+        return Utility.extract_user_data(commit.author, data_root_dir)
+               
     @staticmethod
     def extract_committer_data_from_commit(repo, sha, data_root_dir):
         """
@@ -241,7 +259,7 @@ class Utility():
         commit = repo.get_commit(sha)
         if not commit:
             return None
-        return extract_user_data(commit.committer, data_root_dir)
+        return Utility.extract_user_data(commit.committer, data_root_dir)
 
     @staticmethod
     def extract_reaction_data(reaction, parent_id, parent_name, data_root_dir):
@@ -383,7 +401,7 @@ class Utility():
             pickle.dump(data_frame_, f)
 
     @staticmethod      
-    def get_repo(repo_name, token):
+    def get_repo(repo_owner, repo_name, token):
         """
         get_repo(repo_name, token)
 
@@ -407,8 +425,5 @@ class Utility():
 
         """
         g = github.Github(token)
-        for repo in g.get_user().get_repos():
-            if repo_name == repo.name:
-                return repo
-        return None
+        return g.get_repo(repo_owner + "/" + repo_name)
     

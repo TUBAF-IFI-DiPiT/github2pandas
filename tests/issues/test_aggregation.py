@@ -21,7 +21,7 @@ class TestIssueAggregation(unittest.TestCase):
         """
         Test generating pandas table
         """
-        repo = Utility.get_repo(self.git_repo_name, self.github_token)
+        repo = Utility.get_repo(self.git_repo_owner, self.git_repo_name, self.github_token)
         result = AggIssues.generate_issue_pandas_tables(repo, self.default_data_folder)
         self.assertTrue( result, "generate_pandas_tables throws exception")
         
@@ -31,7 +31,7 @@ class TestIssueAggregation(unittest.TestCase):
         """
         data_folder = Path("data", self.git_repo_name)
         issues = AggIssues.get_raw_issues(data_folder)
-        self.assertTrue( issues.count()[0] > 0 , "issues have no data")
+        self.assertFalse( issues.empty , "issues have no data")
 
 if __name__ == "__main__":
     unittest.main()

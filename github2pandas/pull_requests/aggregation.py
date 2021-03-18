@@ -189,8 +189,6 @@ class AggPullRequest():
                 pull_request_event_data = Utility.extract_event_data(event, pull_request.id, "pull_request", data_root_dir)
                 pull_request_event_list.append(pull_request_event_data)
         # Save lists
-        if os.path.isdir(pull_request_dir):
-            shutil.rmtree(pull_request_dir)
         Utility.save_list_to_pandas_table(pull_request_dir, AggPullRequest.PULL_REQUESTS, pull_request_list)
         Utility.save_list_to_pandas_table(pull_request_dir, AggPullRequest.PULL_REQUESTS_COMMENTS, pull_request_comment_list)
         Utility.save_list_to_pandas_table(pull_request_dir, AggPullRequest.PULL_REQUESTS_REACTIONS, pull_request_reaction_list)

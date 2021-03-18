@@ -1,5 +1,5 @@
 /repos/
-/data/
+data/
 secret.yml
 *.txt
 *.pyc
