@@ -4,6 +4,7 @@ import pickle
 import os
 import shutil
 from .utility import Utility
+import github
 
 class AggPullRequest():
     """
@@ -67,30 +68,25 @@ class AggPullRequest():
             PullRequest object structure: https://pygithub.readthedocs.io/en/latest/github_objects/PullRequest.html
 
         """
+        
         pull_request_data = AggPullRequest.PullRequestData()
         pull_request_data["id"] = pull_request.id
-        pull_request_data["assignees"] = Utility.extract_assignees(pull_request.assignees, data_root_dir)
-        pull_request_data["assignees_count"] = len(pull_request.assignees)  
         pull_request_data["body"] = pull_request.body
         pull_request_data["title"] = pull_request.title
-        pull_request_data["changed_files"] = pull_request.changed_files
         pull_request_data["closed_at"] = pull_request.closed_at
         pull_request_data["created_at"] = pull_request.created_at
         pull_request_data["deletions"] = pull_request.deletions
         pull_request_data["additions"] = pull_request.additions
-        pull_request_data["labels"] = Utility.extract_labels(pull_request.labels)
-        pull_request_data["labels_count"] = len(pull_request.labels)
         pull_request_data["merged"] = pull_request.merged
         pull_request_data["merged_at"] = pull_request.merged_at
-        pull_request_data["merged_by"] = Utility.extract_user_data(pull_request.merged_by, data_root_dir)
-        if pull_request.milestone:
-            pull_request_data["milestone_id"] = pull_request.milestone.id
         pull_request_data["state"] = pull_request.state
         pull_request_data["updated_at"] = pull_request.updated_at
-        pull_request_data["author"] = Utility.extract_user_data(pull_request.user, data_root_dir)
-        pull_request_data["comments_count"] = pull_request.get_comments().totalCount + pull_request.get_issue_comments().totalCount
-        pull_request_data["issue_events_count"] = pull_request.get_issue_events().totalCount
-        pull_request_data["reviews_count"] = pull_request.get_reviews().totalCount
+        pull_request_data["assignees"] = Utility.extract_assignees(pull_request.assignees, data_root_dir)
+        pull_request_data["labels"] = Utility.extract_labels(pull_request.labels)
+        if not pull_request._merged_by == github.GithubObject.NotSet:
+            pull_request_data["merged_by"] = Utility.extract_user_data(pull_request.merged_by, data_root_dir)
+        if not pull_request._user == github.GithubObject.NotSet:
+            pull_request_data["author"] = Utility.extract_user_data(pull_request.user, data_root_dir)
         return pull_request_data
     
     @staticmethod
@@ -122,7 +118,8 @@ class AggPullRequest():
         review_data = AggPullRequest.PullRequestReviewData()
         review_data["pull_request_id"] = pull_request_id
         review_data["id"] = review.id
-        review_data["author"] = Utility.extract_user_data(review.user, data_root_dir)
+        if not review._user == github.GithubObject.NotSet:
+            review_data["author"] = Utility.extract_user_data(review.user, data_root_dir)
         review_data["body"] = review.body
         review_data["state"] = review.state
         review_data["submitted_at"] = review.submitted_at
@@ -243,26 +240,19 @@ class AggPullRequest():
         KEYS = [
             "id",
             "assignees",
-            "assignees_count",
             "body",
             "title",
-            "changed_files",
             "closed_at",
             "created_at",
             "deletions",
             "additions",
             "labels",
-            "labels_count",
             "merged",
             "merged_at",
             "merged_by",
-            "milestone_id",
             "state",
             "updated_at",
             "author",
-            "comments_count",
-            "issue_events_count",
-            "reviews_count"
         ]
         
         def __init__(self):

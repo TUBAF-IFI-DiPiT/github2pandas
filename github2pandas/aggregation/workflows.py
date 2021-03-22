@@ -169,4 +169,4 @@ class AggWorkflow(object):
         if pd_wfh_file.is_file():
             return pd.read_pickle(pd_wfh_file)
         else: 
-            return None
+            return pd.DataFrame()
