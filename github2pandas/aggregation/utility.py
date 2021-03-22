@@ -10,7 +10,6 @@ import github
 import pickle
 import uuid
 import shutil
-
 # getting os permissions to remove (write) readonly files
 def readonly_handler(func, local_directory, execinfo):
 
@@ -143,7 +142,7 @@ class Utility():
 
         """
         if not user:
-            return 
+            return
         data_root_dir.mkdir(parents=True, exist_ok=True)
         users_file = Path(data_root_dir, Utility.USERS)
         users_df = pd.DataFrame({
@@ -293,7 +292,7 @@ class Utility():
         reaction_data["content"] = reaction.content
         reaction_data["created_at"] = reaction.created_at
         reaction_data["id"] = reaction.id
-        if reaction.user:
+        if not reaction._user == github.GithubObject.NotSet:
             reaction_data["author"] = Utility.extract_user_data(reaction.user, data_root_dir)
         return reaction_data
     
@@ -327,15 +326,18 @@ class Utility():
         """
         issue_event_data = Utility.EventData(parent_name)
         issue_event_data[parent_name + "_id"] = parent_id
-        issue_event_data["author"] = Utility.extract_user_data(event.actor, data_root_dir)
+        if not event._actor == github.GithubObject.NotSet:
+            issue_event_data["author"] = Utility.extract_user_data(event.actor, data_root_dir)
         issue_event_data["commit_id"] = event.commit_id
         issue_event_data["created_at"] = event.created_at
         issue_event_data["event"] = event.event
         issue_event_data["id"] = event.id
-        if event.label:
+        if not event._label == github.GithubObject.NotSet:
             issue_event_data["label"] = event.label.name
-        issue_event_data["assignee"] = Utility.extract_user_data(event.assignee, data_root_dir)
-        issue_event_data["assigner"] = Utility.extract_user_data(event.assigner, data_root_dir)
+        if not event._assignee == github.GithubObject.NotSet:
+            issue_event_data["assignee"] = Utility.extract_user_data(event.assignee, data_root_dir)
+        if not event._assigner == github.GithubObject.NotSet:
+            issue_event_data["assigner"] = Utility.extract_user_data(event.assigner, data_root_dir)
         return issue_event_data
     
     @staticmethod
@@ -372,8 +374,8 @@ class Utility():
         comment_data["body"] = comment.body
         comment_data["created_at"] = comment.created_at
         comment_data["id"] = comment.id
-        comment_data["author"] = Utility.extract_user_data(comment.user, data_root_dir)
-        comment_data["reactions_count"] = comment.get_reactions().totalCount
+        if not comment._user == github.GithubObject.NotSet:
+            comment_data["author"] = Utility.extract_user_data(comment.user, data_root_dir)
         return comment_data
     
     @staticmethod
@@ -450,8 +452,7 @@ class Utility():
             "body",
             "created_at",
             "id",
-            "author",
-            "reactions_count"
+            "author"
         ]
         PARENTS = [
             "issue", 

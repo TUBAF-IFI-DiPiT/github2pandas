@@ -4,6 +4,7 @@ import pickle
 import os
 import shutil
 from .utility import Utility
+import github
 
 class AggIssues():
     """
@@ -64,23 +65,18 @@ class AggIssues():
         """
         issue_data = AggIssues.IssueData()  
         issue_data["assignees"]  = Utility.extract_assignees(issue.assignees, data_root_dir)
-        issue_data["assignees_count"] = len(issue.assignees)
         issue_data["body"] = issue.body
         issue_data["closed_at"] = issue.closed_at
-        issue_data["closed_by"] = Utility.extract_user_data(issue.closed_by, data_root_dir)
+        if not issue._closed_by == github.GithubObject.NotSet:
+            issue_data["closed_by"] = Utility.extract_user_data(issue.closed_by, data_root_dir)
         issue_data["created_at"] = issue.created_at
         issue_data["id"] = issue.id
         issue_data["labels"]  = Utility.extract_labels(issue.labels)
-        issue_data["labels_count"] = len(issue.labels)
-        if issue.milestone:
-            issue_data["milestone_id"] = issue.milestone.id
         issue_data["state"] = issue.state
         issue_data["title"] = issue.title
         issue_data["updated_at"] = issue.updated_at
-        issue_data["author"] = Utility.extract_user_data(issue.user, data_root_dir)
-        issue_data["comments_count"] = issue.get_comments().totalCount
-        issue_data["event_count"] = issue.get_events().totalCount
-        issue_data["reaction_count"] = issue.get_reactions().totalCount
+        if not issue._user == github.GithubObject.NotSet:
+            issue_data["author"] = Utility.extract_user_data(issue.user, data_root_dir)
         return issue_data
 
     @staticmethod
@@ -115,7 +111,7 @@ class AggIssues():
         issue_reaction_list = list()
         for issue in issues:
             # remove pull_requests from issues
-            if not issue.pull_request:
+            if issue._pull_request == github.GithubObject.NotSet:
                 # issue data
                 issue_data = AggIssues.extract_issue_data(issue, data_root_dir)
                 issue_list.append(issue_data)
@@ -189,22 +185,16 @@ class AggIssues():
 
         KEYS = [
             "assignees",
-            "assignees_count",
             "body",
             "closed_at",
             "closed_by",
             "created_at",
             "id",
             "labels",
-            "labels_count",
-            "milestone_id",
             "state",
             "title",
             "updated_at",
-            "author",
-            "comments_count",
-            "event_count",
-            "reaction_count"
+            "author"
         ]
         
         def __init__(self):

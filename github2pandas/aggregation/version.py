@@ -232,7 +232,7 @@ class AggVersion():
         if pd_commits_file.is_file():
             return pd.read_pickle(pd_commits_file)
         else: 
-            return None
+            return pd.DataFrame()
 
     @staticmethod
     def get_raw_edit(data_root_dir):
@@ -255,5 +255,5 @@ class AggVersion():
         if pd_edits_file.is_file():
             return pd.read_pickle(pd_edits_file)
         else: 
-            return None
+            return pd.DataFrame()
 
