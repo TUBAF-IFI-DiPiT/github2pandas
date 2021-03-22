@@ -3,7 +3,7 @@ import zipfile
 import io
 import pandas as pd
 from pathlib import Path
-from ..utility import Utility
+from .utility import Utility
 
 class AggWorkflow(object):
     """

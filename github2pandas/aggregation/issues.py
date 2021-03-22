@@ -3,8 +3,7 @@ from pathlib import Path
 import pickle
 import os
 import shutil
-from ..utility import Utility
-from .models import IssueData
+from .utility import Utility
 
 class AggIssues():
     """
@@ -63,7 +62,7 @@ class AggIssues():
             Issue object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Issue.html
 
         """
-        issue_data = IssueData()  
+        issue_data = AggIssues.IssueData()  
         issue_data["assignees"]  = Utility.extract_assignees(issue.assignees, data_root_dir)
         issue_data["assignees_count"] = len(issue.assignees)
         issue_data["body"] = issue.body
@@ -169,3 +168,70 @@ class AggIssues():
             return pd.read_pickle(pd_issues_file)
         else:
             return pd.DataFrame()
+    
+    class IssueData(dict):
+        """
+        Class extends a dict in order to restrict the issue data set to defined keys.
+
+        Attributes
+        ----------
+        KEYS: list
+            List of allowed keys.
+            
+        Methods
+        -------
+            __init__(self)
+                Set all keys in KEYS to None.
+            __setitem__(self, key, val)
+                Set Value if Key is in KEYS.
+        
+        """
+
+        KEYS = [
+            "assignees",
+            "assignees_count",
+            "body",
+            "closed_at",
+            "closed_by",
+            "created_at",
+            "id",
+            "labels",
+            "labels_count",
+            "milestone_id",
+            "state",
+            "title",
+            "updated_at",
+            "author",
+            "comments_count",
+            "event_count",
+            "reaction_count"
+        ]
+        
+        def __init__(self):
+            """
+            __init__(self)
+
+            Set all keys in KEYS to None.
+
+            """
+
+            for key in AggIssues.IssueData.KEYS:
+                self[key] = None
+        
+        def __setitem__(self, key, val):
+            """
+            __setitem__(self, key, val)
+
+            Set Value if Key is in KEYS.
+
+            Parameters
+            ----------
+            key: str
+                Key for dict
+            val
+                Value for dict
+            """
+
+            if key not in AggIssues.IssueData.KEYS:
+                raise KeyError
+            dict.__setitem__(self, key, val)

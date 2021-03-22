@@ -10,7 +10,6 @@ import github
 import pickle
 import uuid
 import shutil
-from .models import CommentData, EventData, ReactionData, UserData
 
 # getting os permissions to remove (write) readonly files
 def readonly_handler(func, local_directory, execinfo):
@@ -158,7 +157,7 @@ class Utility():
             users_df = pd.read_pickle(users_file)
         saved_user = users_df.loc[users_df['id'] == user.id]
         if saved_user.empty:
-            user_data = UserData()
+            user_data = Utility.UserData()
             user_data["anonym_uuid"] = str(uuid.uuid4())
             user_data["id"] = user.id
             user_data["name"] = user.name
@@ -289,7 +288,7 @@ class Utility():
             Reaction object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Reaction.html
 
         """
-        reaction_data = ReactionData(parent_name) 
+        reaction_data = Utility.ReactionData(parent_name) 
         reaction_data[parent_name + "_id"] = parent_id
         reaction_data["content"] = reaction.content
         reaction_data["created_at"] = reaction.created_at
@@ -326,7 +325,7 @@ class Utility():
             IssueEvent object structure: https://pygithub.readthedocs.io/en/latest/github_objects/IssueEvent.html
 
         """
-        issue_event_data = EventData(parent_name)
+        issue_event_data = Utility.EventData(parent_name)
         issue_event_data[parent_name + "_id"] = parent_id
         issue_event_data["author"] = Utility.extract_user_data(event.actor, data_root_dir)
         issue_event_data["commit_id"] = event.commit_id
@@ -368,7 +367,7 @@ class Utility():
             IssueComment object structure: https://pygithub.readthedocs.io/en/latest/github_objects/IssueComment.html
 
         """
-        comment_data = CommentData(parent_name)
+        comment_data = Utility.CommentData(parent_name)
         comment_data[parent_name + "_id"] = parent_id
         comment_data["body"] = comment.body
         comment_data["created_at"] = comment.created_at
@@ -427,3 +426,265 @@ class Utility():
         g = github.Github(token)
         return g.get_repo(repo_owner + "/" + repo_name)
     
+    class CommentData(dict):
+        """
+        Class extends a dict in order to restrict the comment data set to defined keys.
+
+        Attributes
+        ----------
+        KEYS: list
+            List of allowed keys.
+        PARENTS: list
+            List of possible parents.
+            
+        Methods
+        -------
+            __init__(self, parent_name)
+                Check parent_name and set all keys to None.
+            __setitem__(self, key, val)
+                Set Value if Key is in KEYS.
+        
+        """
+
+        KEYS = [
+            "body",
+            "created_at",
+            "id",
+            "author",
+            "reactions_count"
+        ]
+        PARENTS = [
+            "issue", 
+            "pull_request"
+        ]
+        
+        def __init__(self, parent_name):
+            """
+            __init__(self, parent_name)
+
+            Check parent_name and set all keys to None.
+
+            Parameters
+            ----------
+            parent_name: str
+                Name of the parent.
+
+            """
+
+            if not parent_name in Utility.CommentData.PARENTS:
+                raise ValueError
+            Utility.CommentData.KEYS.append(parent_name + "_id")
+            for key in Utility.CommentData.KEYS:
+                self[key] = None
+        
+        def __setitem__(self, key, val):
+            """
+            __setitem__(self, key, val)
+
+            Set Value if Key is in KEYS.
+
+            Parameters
+            ----------
+            key: str
+                Key for dict
+            val
+                Value for dict
+            """
+
+            if key not in Utility.CommentData.KEYS:
+                raise KeyError
+            dict.__setitem__(self, key, val)
+
+    class EventData(dict):
+        """
+        Class extends a dict in order to restrict the event data set to defined keys.
+
+        Attributes
+        ----------
+        KEYS: list
+            List of allowed keys.
+        PARENTS: list
+            List of possible parents.
+            
+        Methods
+        -------
+            __init__(self, parent_name)
+            Check parent_name and set all keys to None.
+            __setitem__(self, key, val)
+                Set Value if Key is in KEYS.
+        
+        """
+
+        KEYS = [
+            "author",
+            "commit_id",
+            "created_at",
+            "event",
+            "id",
+            "label",
+            "assignee",
+            "assigner",
+        ]
+        PARENTS = [
+            "issue", 
+            "pull_request"
+        ]
+
+        def __init__(self, parent_name):
+            """
+            __init__(self, parent_name)
+
+            Check parent_name and set all keys to None.
+
+            Parameters
+            ----------
+            parent_name: str
+                Name of the parent.
+
+            """
+
+            if not parent_name in Utility.EventData.PARENTS:
+                raise ValueError
+            Utility.EventData.KEYS.append(parent_name + "_id")
+            for key in Utility.EventData.KEYS:
+                self[key] = None
+        
+        def __setitem__(self, key, val):
+            """
+            __setitem__(self, key, val)
+
+            Set Value if Key is in KEYS.
+
+            Parameters
+            ----------
+            key: str
+                Key for dict
+            val
+                Value for dict
+            """
+
+            if key not in Utility.EventData.KEYS:
+                raise KeyError
+            dict.__setitem__(self, key, val)
+
+    class ReactionData(dict):
+        """
+        Class extends a dict in order to restrict the reaction data set to defined keys.
+
+        Attributes
+        ----------
+        KEYS: list
+            List of allowed keys.
+        PARENTS: list
+            List of possible parents.
+            
+        Methods
+        -------
+            __init__(self, parent_name)
+                Check parent_name and set all keys to None.
+            __setitem__(self, key, val)
+                Set Value if Key is in KEYS.
+        
+        """
+
+        KEYS = [
+            "content",
+            "created_at",
+            "id",
+            "author"
+        ]
+        PARENTS = [
+            "issue", 
+            "comment"
+        ]
+
+        def __init__(self, parent_name):
+            """
+            __init__(self, parent_name)
+
+            Check parent_name and set all keys to None.
+
+            Parameters
+            ----------
+            parent_name: str
+                Name of the parent.
+
+            """
+
+            if not parent_name in Utility.ReactionData.PARENTS:
+                raise ValueError
+            Utility.ReactionData.KEYS.append(parent_name + "_id")
+            for key in Utility.ReactionData.KEYS:
+                self[key] = None
+        
+        def __setitem__(self, key, val):
+            """
+            __setitem__(self, key, val)
+
+            Set Value if Key is in KEYS.
+
+            Parameters
+            ----------
+            key: str
+                Key for dict
+            val
+                Value for dict
+            """
+
+            if key not in Utility.ReactionData.KEYS:
+                raise KeyError
+            dict.__setitem__(self, key, val)
+        
+    class UserData(dict):
+        """
+        Class extends a dict in order to restrict the user data set to defined keys.
+
+        Attributes
+        ----------
+        KEYS: list
+            List of allowed keys.
+            
+        Methods
+        -------
+            __init__(self)
+                Set all keys in KEYS to None.
+            __setitem__(self, key, val)
+                Set Value if Key is in KEYS.
+        
+        """
+
+        KEYS = [
+            "anonym_uuid",
+            "id",
+            "name",
+            "email",
+            "login",
+        ]
+
+        def __init__(self):
+            """
+            __init__(self)
+
+            Set all keys in KEYS to None.
+
+            """
+            for key in Utility.UserData.KEYS:
+                self[key] = None
+        
+        def __setitem__(self, key, val):
+            """
+            __setitem__(self, key, val)
+
+            Set Value if Key is in KEYS.
+
+            Parameters
+            ----------
+            key: str
+                Key for dict
+            val
+                Value for dict
+            """
+
+            if key not in Utility.UserData.KEYS:
+                raise KeyError
+            dict.__setitem__(self, key, val)
