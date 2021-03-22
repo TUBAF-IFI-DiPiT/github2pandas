@@ -1,21 +1,61 @@
 # Extract GitHub Activities
 
+## General information
+
 This package is being developed by the participating partners (TU Bergakademie Freiberg, OVGU Magdeburg and HU Berlin) as part of the DiP-iT project.
-The package implements Python functions for aggregation and preprocessing of GitHub activities. These are structured in files as follows.
+The package implements Python functions for 
++ aggregating and preprocessing GitHub activities (Commits, Actions, Issues, Pull-Requests) and 
++ generating project progress summaries according to different metrics (ratio of changed lines, ratio of aggregated Levenshtein distances e.g.).
 
+`github2pandas` stores the collected information in pandas DataFrames. The user defines the corresponding root folder. The structure beyond that (file names, folder names) is defined as a member variable in the corresponding classes and can be overwritten. The default configuration results in the following file structure.
 
-| Aspect              | Example                                                                                                                        | Executable notebook | Documentation | 
-|:------------------- |:------------------------------------------------------------------------------------------------------------------------------ |:------------------- | ------------- |
-| Commits & Edits     |                                                                                                                                |                     |               |
-| Workflows / Actions | [Commits_aggregation.py](https://github.com/TUBAF-IFI-DiPiT/Extract_Git_Activities/blob/main/notebooks/Workflow_Example.ipynb) | [CoLab](invalid)    |               |
-| Issues              |                                                                                                                                |                     |               |
-| Discussions         |                                                                                                                                |                     |               |
+```
+data                                     <- Root directory give as parameter
+├── Github Repository 0                  <- Repository name
+│   ├── Issues
+│   │   ├── pdIssuesComments.p
+│   │   ├── pdIssuesEvents.p
+│   │   ├── pdIssues.p
+│   │   └── pdIssuesReactions.p
+│   ├── PullRequests
+│   │   ├── pdPullRequestsComments.p
+│   │   ├── pdPullRequestsEvents.p
+│   │   ├── pdPullRequests.p
+│   │   ├── pdPullRequestsReactions.p
+│   │   └── pdPullRequestsReviews.p
+│   ├── Users.p
+│   ├── Versions
+│   │   ├── pdCommits.p
+│   │   ├── pdEdits.p
+│   │   ├── repo                         <- Repository clone
+│   │   │   ├── ..
+│   |   |   └── ..
+│   │   └── Versions.db
+│   └── Workflows
+│       └── pdWorkflows.p
+├── Github Repository 1 
+...
+```
 
-Due to the early stage of development the DiP-iT package is not yet available as a pip package. Installations should be done accordingly as follows:
+GitHub token is required for use, which is used for authentication. The [website](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) describes how you can generate this for your GitHub account. Customise the username and project name and explore any public or private repository you have access to with your account!
+
+| Aspect              | Example                                                                                                                        | Executable notebook | 
+|:------------------- |:------------------------------------------------------------------------------------------------------------------------------ |:------------------- |
+| Overview Example    | [Overview.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Complete_aggregation_Example.ipynb)      | [CoLab](invalid)    |
+| Commits & Edits     | [Version_example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Version_Example.ipynb)            |                     |
+| Workflows / Actions | [Workflow_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Workflow_Example.ipynb)          |                     |
+| Issues              | [Issue_example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Issues_Example.ipynb)               |                     |
+| Pull-Requests       | [Pull_Requests_example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Pull_Requests_Example.ipynb)|                     |
+
+The documentation of the module is available at XXX. 
+
+## Installation
+
+Due to the early stage of development the `github2pandas` package is not yet available as a pip package. Installations should be done accordingly as follows:
 
 1. Generate local clone of the package
     ```
-    git clone https://github.com/TUBAF-IFI-DiPiT/Extract_Git_Activities.git
+    git clone https://github.com/TUBAF-IFI-DiPiT/github2pandas.git
     ```
 2. Include the specific folder to your python path 
     ```
@@ -34,7 +74,7 @@ Naming conventions: https://namingconvention.org/python/
 | Installation                                | `pipenv install --dev`                                  |
 | Run specific script                         | `pipenv run python file.py`                             |
 | Run all Tests                               | `pipenv run python -m unittest`                         |
-| Run all tests in a specific folder          | `pipenv run python -m unittest discover -s 'tests'`      |
+| Run all tests in a specific folder          | `pipenv run python -m unittest discover -s 'tests'`     |
 | Run all tests with specific filename        | `pipenv run python -m unittest discover -p 'test_*.py'` |
 | Start Jupyter server in virtual environment | `pipenv run jupyter notebook`                           | 
 
@@ -52,26 +92,3 @@ pipenv run  sphinx-apidoc -o ./docu/source/ ./github2pandas
 cd docu
 make html
 ```
-## Data aggregation structur
-
-- Extract_Git_Activities
-   - Issues
-      - pdIssues.p
-      - pdIssuesComments.p
-      - pdIssuesEvents.p
-      - pdIssuesReactions.p
-   - PullRequests
-      - pdPullRequests.p
-      - pdPullRequestsComments.p
-      - pdPullRequestsEvents.p
-      - pdPullRequestsReactions.p
-      - pdPullRequestsReviews.p
-   - Users.p
-   - Versions
-      - pdCommits.p
-      - pdEdits.p
-      - repo
-         - left out ...
-      - Versions.db
-   - Workflows
-      - pdWorkflows.p
