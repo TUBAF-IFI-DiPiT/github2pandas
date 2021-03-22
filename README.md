@@ -10,7 +10,7 @@ The package implements Python functions for
 `github2pandas` stores the collected information in pandas DataFrames. The user defines the corresponding root folder. The structure beyond that (file names, folder names) is defined as a member variable in the corresponding classes and can be overwritten. The default configuration results in the following file structure.
 
 ```
-data                                     <- Root directory give as parameter
+data                                     <- Root directory given as parameter
 ├── Github Repository 0                  <- Repository name
 │   ├── Issues
 │   │   ├── pdIssuesComments.p
@@ -62,7 +62,7 @@ Due to the early stage of development the `github2pandas` package is not yet ava
     pipenv install --dev
     ```
 
-# For Developer
+# For Developers
 
 Naming conventions: https://namingconvention.org/python/
 
