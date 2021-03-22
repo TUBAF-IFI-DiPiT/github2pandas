@@ -41,11 +41,11 @@ GitHub token is required for use, which is used for authentication. The [website
 
 | Aspect              | Example                                                                                                                        | Executable notebook | 
 |:------------------- |:------------------------------------------------------------------------------------------------------------------------------ |:------------------- |
-| Overview Example    | [Overview.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Complete_aggregation_Example.ipynb)      | [CoLab](invalid)    |
-| Commits & Edits     | [Version_example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Version_Example.ipynb)            |                     |
+| Overview Example    | [Overview_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Complete_aggregation_Example.ipynb)      | [CoLab](invalid)    |
+| Commits & Edits     | [Version_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Version_Example.ipynb)            |                     |
 | Workflows / Actions | [Workflow_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Workflow_Example.ipynb)          |                     |
-| Issues              | [Issue_example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Issues_Example.ipynb)               |                     |
-| Pull-Requests       | [Pull_Requests_example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Pull_Requests_Example.ipynb)|                     |
+| Issues              | [Issue_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Issues_Example.ipynb)               |                     |
+| Pull-Requests       | [Pull_Requests_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Pull_Requests_Example.ipynb)|                     |
 
 The documentation of the module is available at XXX. 
 
