@@ -1,3 +1,4 @@
+from github2pandas.aggregation.utility import Utility
 import os
 import sqlite3
 import pickle
@@ -7,18 +8,17 @@ import git
 import git2net
 import shutil
 from pathlib import Path
-
 import stat
-'''
+
+"""
 Error handler function
 It will try to change file permission and call the calling function again,
-'''
+"""
 def handleError(func, path, exc_info):
     print('Handling Error for file ' , path)
     print(exc_info)
     # Check if file access issue
     if not os.access(path, os.W_OK):
-       print('Hello')
        # Try to change the permision of file
        os.chmod(path, stat.S_IWUSR)
        # call the calling function again
@@ -40,7 +40,7 @@ class AggVersion():
         Pandas table file for edit data per commit.
     VERSION_DB : str
         MYSQL data base file containing version history.
-    NO_OF_PROCESSES : int
+    no_of_processes : int
         Number of processors used for crawling process.
 
     Methods
@@ -62,7 +62,13 @@ class AggVersion():
     VERSION_COMMITS = "pdCommits.p"
     VERSION_EDITS = "pdEdits.p"
     VERSION_DB = "Versions.db"
-    NO_OF_PROCESSES = 1
+    no_of_proceses = 1
+
+    COMMIT_DELETEABLE_COLUMNS = ['author_email', 'author_name', 'committer_email', 'committer_name', 'author_date', 'author_timezone', 'commit_message_len', 'project_name', 'merge']
+
+    COMMIT_RENAMING_COLUMNS = {'hash':'commit_sha', 'committer_date': 'commited_at', 'parents': 'parent_sha'}
+
+    EDIT_RENAMING_COLUMNS = {'commit_hash':'commit_sha'}
 
     @staticmethod
     def clone_repository(repo, data_root_dir, github_token=None):
@@ -165,12 +171,11 @@ class AggVersion():
         if os.path.exists(sqlite_db_file):
             os.remove(sqlite_db_file)
 
-        print("--------------------------------------")
-        print(AggVersion.NO_OF_PROCESSES)
-        print("--------------------------------------")
         git2net.mine_git_repo(repo_dir, sqlite_db_file,
                               use_blocks=True,
-                              no_of_processes=AggVersion.NO_OF_PROCESSES,
+                              extract_complexity=True,
+                              extract_text=True,
+                              no_of_processes=AggVersion.no_of_proceses,
                               max_modifications=1000)
         return True
 
@@ -200,6 +205,12 @@ class AggVersion():
         db = sqlite3.connect(sqlite_db_file)
         pdCommits = pd.read_sql_query("SELECT * FROM commits", db)
         pdEdits = pd.read_sql_query("SELECT * FROM edits", db)
+
+        pdCommits.rename(columns=AggVersion.COMMIT_RENAMING_COLUMNS, inplace = True)
+        pdCommits.drop(columns=AggVersion.COMMIT_DELETEABLE_COLUMNS, axis = 1, inplace = True)
+        pdCommits = Utility.apply_datetime_format(pdCommits, 'commited_at')
+
+        pdEdits.rename(columns=AggVersion.EDIT_RENAMING_COLUMNS, inplace = True)
 
         pd_commits_file = Path(version_folder, AggVersion.VERSION_COMMITS)
         with open(pd_commits_file, "wb") as f:

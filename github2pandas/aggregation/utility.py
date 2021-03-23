@@ -16,12 +16,6 @@ def readonly_handler(func, local_directory, execinfo):
     os.chmod(local_directory, stat.S_IWRITE)
     func(local_directory)
 
-def apply_python_date_format(pd_table, source_colum, destination_column):
-
-    pd_table[destination_column] = pd.to_datetime(pd_table[source_colum], format="%Y-%m-%d %H:%M:%S")
-
-    return pd_table
-
 class Utility():
     """
     Class which contains functions for mutiple modules.
@@ -53,10 +47,39 @@ class Utility():
             Save a data list to a pandas table.
         get_repo(repo_name, token)
             Get a repository by name and token.
-    
+        apply_datetime_format(pd_table, source_column, destination_column)
+            Provide equal date formate for all timestamps.
     """
 
     USERS = "Users.p"
+
+    @staticmethod
+    def apply_datetime_format(pd_table, source_column, destination_column = None):
+        """
+        apply_datetime_format(pd_table, source_column, destination_column)
+
+        Provide equal date formate for all timestamps
+
+        Parameters
+        ----------
+        pd_table: pandas Dataframe
+            List of NamedUser
+        source_column: str
+            Source column name.
+        destination_column: str
+            Destination column name.
+
+        Returns
+        -------
+        str
+            String which contains all assignees.
+        """
+        if not destination_column:
+            destination_column = source_column
+        pd_table[destination_column] = pd.to_datetime(pd_table[source_column], format="%Y-%m-%d %H:%M:%S")
+
+        return pd_table
+
 
     @staticmethod
     def extract_assignees(github_assignees, data_root_dir):
