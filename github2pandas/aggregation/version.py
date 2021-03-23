@@ -172,7 +172,6 @@ class AggVersion():
             os.remove(sqlite_db_file)
 
         git2net.mine_git_repo(repo_dir, sqlite_db_file,
-                              use_blocks=True,
                               extract_complexity=True,
                               extract_text=True,
                               no_of_processes=AggVersion.no_of_proceses,

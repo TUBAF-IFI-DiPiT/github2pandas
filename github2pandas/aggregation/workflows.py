@@ -59,10 +59,7 @@ class AggWorkflow(object):
         workflow_data["workflow_id"] = workflow.id
         workflow_data['workflow_name'] = workflow.name
         workflow_data['workflow_run_id'] = run.id
-        workflow_data['commit_message'] = run.head_commit.message
-        workflow_data['commit_author'] = run.head_commit.author.name
         workflow_data['commit_sha'] = run.head_sha
-        workflow_data['commit_branch'] = run.head_branch
         workflow_data['state'] = run.status
         workflow_data['conclusion'] = run.conclusion
         return workflow_data
@@ -97,7 +94,6 @@ class AggWorkflow(object):
         for index, run in enumerate(workflow_runs):
             workflow = repo.get_workflow(str(run.workflow_id))
             workflow_sample = AggWorkflow.extract_workflow_data(workflow, run)
-            workflow_sample['author'] = Utility.extract_committer_data_from_commit(repo, workflow_sample['commit_sha'], data_root_dir)
             workflow_list.append(workflow_sample)
   
         workflow_dir = Path(data_root_dir, AggWorkflow.WORKFLOW_DIR)
