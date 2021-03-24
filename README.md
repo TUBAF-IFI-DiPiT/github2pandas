@@ -1,4 +1,4 @@
-# Extract GitHub Activities
+# Transform GitHub Activities to Pandas Dataframes
 
 ## General information
 
@@ -36,18 +36,7 @@ data                                     <- Root directory given as parameter
 ├── Github Repository 1 
 ...
 ```
-
-GitHub token is required for use, which is used for authentication. The [website](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) describes how you can generate this for your GitHub account. Customise the username and project name and explore any public or private repository you have access to with your account!
-
-| Aspect              | Example                                                                                                                        | Executable notebook | 
-|:------------------- |:------------------------------------------------------------------------------------------------------------------------------ |:------------------- |
-| Overview Example    | [Overview_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Complete_aggregation_Example.ipynb)      | [CoLab](invalid)    |
-| Commits & Edits     | [Version_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Version_Example.ipynb)            |                     |
-| Workflows / Actions | [Workflow_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Workflow_Example.ipynb)          |                     |
-| Issues              | [Issue_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Issues_Example.ipynb)               |                     |
-| Pull-Requests       | [Pull_Requests_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Pull_Requests_Example.ipynb)|                     |
-
-The documentation of the module is available at XXX. 
+The internal structure and relations of the data frames are included in the project's [wiki](https://github.com/TUBAF-IFI-DiPiT/github2pandas/wiki).
 
 ## Installation
 
@@ -61,6 +50,20 @@ Due to the early stage of development the `github2pandas` package is not yet ava
     ```
     pipenv install --dev
     ```
+
+## Application examples 
+
+GitHub token is required for use, which is used for authentication. The [website](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) describes how you can generate this for your GitHub account. Customise the username and project name and explore any public or private repository you have access to with your account!
+
+| Aspect              | Example                                                                                                                        | Executable notebook | 
+|:------------------- |:------------------------------------------------------------------------------------------------------------------------------ |:------------------- |
+| Overview Example    | [Overview_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Complete_aggregation_Example.ipynb)      | [CoLab](invalid)    |
+| Commits & Edits     | [Version_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Version_Example.ipynb)            |                     |
+| Workflows / Actions | [Workflow_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Workflow_Example.ipynb)          |                     |
+| Issues              | [Issue_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Issues_Example.ipynb)               |                     |
+| Pull-Requests       | [Pull_Requests_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Pull_Requests_Example.ipynb)|                     |
+
+The documentation of the module is available at XXX. 
 
 # For Developers
 
