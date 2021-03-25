@@ -49,6 +49,5 @@ class Test_CommitExtraction(unittest.TestCase):
         pdEdits = AggVer.get_raw_edit(data_root_dir=self.default_data_folder)
         self.assertTrue( not pdEdits.empty, "Pandas edits data frame empty")
 
-
 if "__main__" == __name__:
     unittest.main()

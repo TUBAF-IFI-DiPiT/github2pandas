@@ -92,7 +92,7 @@ class AggWorkflow(object):
            PullRequestReview object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Workflow.html
 
         """
-        workflow_data = dict()
+        workflow_data = {}
         workflow_data["workflow_id"] = workflow.id
         workflow_data['workflow_name'] = workflow.name
         workflow_data['created_at'] = workflow.created_at
@@ -122,7 +122,7 @@ class AggWorkflow(object):
         workflow_dir = Path(data_root_dir, AggWorkflow.WORKFLOW_DIR)
         workflow_dir.mkdir(parents=True, exist_ok=True)
 
-        workflow_list = list()
+        workflow_list = []
         for workflow in repo.get_workflows():
             workflow_sample = AggWorkflow.extract_workflow_data(workflow)
             workflow_list.append(workflow_sample)
