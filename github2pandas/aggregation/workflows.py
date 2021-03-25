@@ -63,7 +63,7 @@ class AggWorkflow(object):
         run_data["workflow_id"] = run.workflow_id
         run_data['workflow_run_id'] = run.id
         run_data['commit_sha'] = run.head_sha
-        run_data['pull_requests'] = run.pull_requests
+        run_data['pull_requests'] = [pr.id for pr in run.pull_requests]
         run_data['state'] = run.status
         run_data['event'] = run.event
         run_data['conclusion'] = run.conclusion
@@ -180,7 +180,7 @@ class AggWorkflow(object):
             return None
 
     @staticmethod
-    def get_raw_workflow(data_root_dir):
+    def get_workflow(data_root_dir):
         """
         get_raw_workflow(repo_dir)
 
@@ -203,7 +203,7 @@ class AggWorkflow(object):
             return pd.DataFrame()
 
     @staticmethod
-    def get_raw_run(data_root_dir):
+    def get_run(data_root_dir):
         """
         get_raw_workflow(repo_dir)
 
@@ -224,3 +224,5 @@ class AggWorkflow(object):
             return pd.read_pickle(pd_run_file)
         else: 
             return pd.DataFrame()
+
+
