@@ -128,7 +128,7 @@ class AggWorkflow(object):
             workflow_list.append(workflow_sample)
         Utility.save_list_to_pandas_table(workflow_dir, AggWorkflow.WORKFLOW, workflow_list)
 
-        run_list = list()
+        run_list = []
         for run in repo.get_workflow_runs():
             run_sample = AggWorkflow.extract_run_data(run)
             run_sample['author'] = Utility.extract_committer_data_from_commit(repo, run_sample['commit_sha'], data_root_dir)
