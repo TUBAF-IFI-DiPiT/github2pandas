@@ -18,6 +18,8 @@ class Utility():
 
     Methods
     -------
+        check_for_updates(new_list, old_df)
+            Check if id and updated_at are in the old_df.
         save_list_to_pandas_table(dir, file, data_list)
             Save a data list to a pandas table.
         get_repo_informations(data_root_dir)
@@ -53,6 +55,24 @@ class Utility():
     
     @staticmethod
     def check_for_updates(new_list, old_df):
+        """
+        check_for_updates(new_list, old_df)
+
+        Check if id and updated_at are in the old_df.
+
+        Parameters
+        ----------
+        new_list: list, PaginatedList
+            new list with id and updated_at.
+        old_df: DataFrame
+            old Dataframe.
+
+        Returns
+        -------
+        bool
+            True if it need to be updated. False the List is uptodate.
+
+        """
         if old_df.empty:
             return True
         try:

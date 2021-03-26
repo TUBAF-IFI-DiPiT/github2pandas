@@ -29,7 +29,7 @@ class PullRequests():
         Extracting general pull request data.
     extract_pull_request_review_data(review, pull_request_id, users_ids, data_root_dir)
         Extracting general review data from a pull request.
-    generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False)
+    generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False, check_for_updates=True)
         Extracting the complete pull request data from a repository.
     generate_pull_request_pandas_tables_with_reactions(repo, data_root_dir)
         Extracting the complete pull request data from a repository including all reactions.
@@ -135,7 +135,7 @@ class PullRequests():
     @staticmethod
     def generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False, check_for_updates=True):
         """
-        generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False)
+        generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False, check_for_updates=True)
 
         Extracting the complete pull request data from a repository.
 
@@ -147,7 +147,8 @@ class PullRequests():
             Data root directory for the repository.
         reactions: bool, default=False
             If reactions should also be exracted. The extraction of all reactions increases significantly the aggregation speed.
-
+        check_for_updates: bool, default=True
+            Check first if there are any new pull requests.
         Notes
         -----
             PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html

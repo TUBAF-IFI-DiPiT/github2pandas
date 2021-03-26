@@ -25,7 +25,7 @@ class Issues():
     -------
     extract_issue_data(issue, users_ids, data_root_dir)
         Extracting general issue data.
-    generate_issue_pandas_tables(repo, data_root_dir, reactions=False)
+    generate_issue_pandas_tables(repo, data_root_dir, reactions=False, check_for_updates=True)
         Extracting the complete issue data from a repository.
     generate_issue_pandas_tables_with_reactions(repo, data_root_dir)
         Extracting the complete issue data from a repository including all reactions.
@@ -86,7 +86,7 @@ class Issues():
     @staticmethod
     def generate_issue_pandas_tables(repo, data_root_dir, reactions=False, check_for_updates=True):
         """
-        generate_issue_pandas_tables(repo, data_root_dir, reactions=False)
+        generate_issue_pandas_tables(repo, data_root_dir, reactions=False, check_for_updates=True)
 
         Extracting the complete issue data from a repository.
 
@@ -98,6 +98,8 @@ class Issues():
             Data root directory for the repository.
         reactions: bool, default=False
             If reactions should also be exracted. The extraction of all reactions increases significantly the aggregation speed.
+        check_for_updates: bool, default=True
+            Check first if there are any new pull requests.
 
         Notes
         -----
