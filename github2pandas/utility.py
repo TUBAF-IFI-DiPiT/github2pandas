@@ -4,6 +4,7 @@ import pandas as pd
 import github
 import pickle
 import uuid
+from human_id import generate_id
 
 class Utility():
     """
@@ -263,6 +264,7 @@ class Utility():
 
         """
         if not user:
+            print("No User. This call was slow!!! Should be fixed")
             return
         if user.node_id in users_ids:
             return users_ids[user.node_id]
@@ -271,7 +273,7 @@ class Utility():
         if users_file.is_file():
             users_df = pd.read_pickle(users_file)
         user_data = {}
-        user_data["anonym_uuid"] = str(uuid.uuid4())
+        user_data["anonym_uuid"] = generate_id(seed=user.node_id)
         users_ids[user.node_id] = user_data["anonym_uuid"]
         user_data["id"] = user.node_id
         user_data["name"] = user.name
