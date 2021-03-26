@@ -84,7 +84,7 @@ class Issues():
         return issue_data
 
     @staticmethod
-    def generate_issue_pandas_tables(repo, data_root_dir, reactions=False):
+    def generate_issue_pandas_tables(repo, data_root_dir, reactions=False, check_for_updates=True):
         """
         generate_issue_pandas_tables(repo, data_root_dir, reactions=False)
 
@@ -104,6 +104,16 @@ class Issues():
             PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
         
         """
+        if check_for_updates:
+            new_issues = repo.get_issues(state='all') 
+            real_issues = []
+            for issue in new_issues:
+                if issue._pull_request == github.GithubObject.NotSet:
+                    real_issues.append(issue)
+            old_issues = Issues.get_issues(data_root_dir)
+            if not Utility.check_for_updates(real_issues, old_issues):
+                return
+
         if reactions:
             Issues.generate_issue_pandas_tables_with_reactions(repo, data_root_dir)
         else:

@@ -50,7 +50,27 @@ class Utility():
 
     USERS = "Users.p"
     REPO = "Repo.json"
-
+    
+    @staticmethod
+    def check_for_updates(new_list, old_df):
+        if old_df.empty:
+            return True
+        try:
+            if not len(new_list) == old_df.count()[0]:
+                print(new_list.totalCount)
+                print(old_df.count()[0])
+                return True
+        except:
+            if not new_list.totalCount == old_df.count()[0]:
+                print(new_list.totalCount)
+                print(old_df.count()[0])
+                return True
+        for new_class in new_list:
+            df = old_df.loc[((old_df.id == new_class.id) & (old_df.updated_at == new_class.updated_at))]
+            if df.empty:
+                return True
+        return False
+    
     @staticmethod
     def save_list_to_pandas_table(dir, file, data_list):
         """

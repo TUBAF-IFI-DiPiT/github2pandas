@@ -133,7 +133,7 @@ class PullRequests():
         return review_data
     
     @staticmethod
-    def generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False):
+    def generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False, check_for_updates=True):
         """
         generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False)
 
@@ -153,6 +153,12 @@ class PullRequests():
             PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
 
         """
+        
+        if check_for_updates:
+            pull_requests = repo.get_pulls(state='all') 
+            old_pull_requests = PullRequests.get_pull_requests(data_root_dir)
+            if not Utility.check_for_updates(pull_requests, old_pull_requests):
+                return
         if reactions:
             PullRequests.generate_pull_request_pandas_tables_with_reactions(repo, data_root_dir)
         else:
@@ -263,17 +269,14 @@ class PullRequests():
             for review in pull_request.get_reviews():
                 pull_request_review_data = PullRequests.extract_pull_request_review_data(review, pull_request.id, users_ids, data_root_dir)
                 pull_request_review_list.append(pull_request_review_data)
-            pull_request_list.append(pull_request_data)
             # pull request issue comments data
             for comment in pull_request.get_issue_comments():
                 pull_request_comment_data = Utility.extract_comment_data(comment, pull_request.id, "pull_request", users_ids, data_root_dir)
                 pull_request_comment_list.append(pull_request_comment_data)
-            pull_request_list.append(pull_request_data)
             # pull request issue events
             for event in pull_request.get_issue_events():
                 pull_request_event_data = Utility.extract_event_data(event, pull_request.id, "pull_request", users_ids, data_root_dir)
                 pull_request_event_list.append(pull_request_event_data)
-            pull_request_list.append(pull_request_data)
         # Save lists
         Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS, pull_request_list)
         Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS_COMMENTS, pull_request_comment_list)
