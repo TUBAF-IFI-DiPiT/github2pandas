@@ -23,7 +23,7 @@ class TestPullRequests(unittest.TestCase):
         Test pull requests aggregation
         """
         warnings.simplefilter ("ignore", ResourceWarning)
-        repo = Utility.get_repo(self.git_repo_owner, self.git_repo_name, self.github_token)
+        repo = Utility.get_repo(self.git_repo_owner, self.git_repo_name, self.github_token, self.default_data_folder)
         result = PullRequests.generate_pull_request_pandas_tables(repo, self.default_data_folder)
         pull_requests = PullRequests.get_pull_requests(self.default_data_folder)
         self.assertFalse( pull_requests.empty , "pull requests have no data")

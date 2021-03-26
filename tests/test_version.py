@@ -24,7 +24,7 @@ class Test_CommitExtraction(unittest.TestCase):
         """
         warnings.simplefilter ("ignore", ResourceWarning)
         try:
-            repo = Utility.get_repo(self.git_repo_owner, self.git_repo_name, self.github_token)
+            repo = Utility.get_repo(self.git_repo_owner, self.git_repo_name, self.github_token, self.default_data_folder)
             result = Version.clone_repository(repo=repo, 
                                             data_root_dir=self.default_data_folder, 
                                             github_token=self.github_token)

@@ -24,7 +24,7 @@ class TestIssues(unittest.TestCase):
         Test issues aggregation
         """
         warnings.simplefilter ("ignore", ResourceWarning)
-        repo = Utility.get_repo(self.git_repo_owner, self.git_repo_name, self.github_token)
+        repo = Utility.get_repo(self.git_repo_owner, self.git_repo_name, self.github_token, self.default_data_folder)
         Issues.generate_issue_pandas_tables(repo, self.default_data_folder)
         issues = Issues.get_issues(self.default_data_folder)
         self.assertFalse(issues.empty , "issues have no data")

@@ -20,7 +20,7 @@ class Test_Workflow(unittest.TestCase):
         Test workflows aggregation
         """
         warnings.simplefilter ("ignore", ResourceWarning)
-        repo = Utility.get_repo(self.git_repo_owner, self.git_repo_name, self.github_token)
+        repo = Utility.get_repo(self.git_repo_owner, self.git_repo_name, self.github_token, self.default_data_folder)
         Workflows.generate_workflow_pandas_tables(repo=repo, data_root_dir=self.default_data_folder)
         pd_workflow = Workflows.get_workflows(data_root_dir=self.default_data_folder)
         self.assertTrue( not pd_workflow.empty, "Pandas edits data frame empty")
