@@ -9,13 +9,13 @@ import warnings
 from github2pandas.utility import Utility
 from github2pandas.version import Version
 
+skip = False
 class Test_CommitExtraction(unittest.TestCase):
 
     github_token = os.environ['TOKEN']
 
     git_repo_name = "Extract_Git_Activities"
     git_repo_owner = "TUBAF-IFI-DiPiT"
-    skip = False
     default_data_folder = Path("data", git_repo_name)
 
     def test_clone_public_repository(self):
@@ -30,14 +30,15 @@ class Test_CommitExtraction(unittest.TestCase):
                                             github_token=self.github_token)
             self.assertTrue( result, "Cloning throws exception")
         except git2.GitError:
-            self.skip = True
+            global skip
+            skip = True
             self.skipTest("Skip Test because repo is not public")
 
     def test_generate_pandas_files(self):
         """
         Extract commit history for small open source project
         """
-        if self.skip:
+        if skip:
             self.skipTest("Skip Test due to GitError")
         result  = Version.generate_version_pandas_tables(data_root_dir=self.default_data_folder)
         self.assertTrue( result, "Pandas data frame empty")
@@ -47,7 +48,7 @@ class Test_CommitExtraction(unittest.TestCase):
         """
         Extract commit history for small open source project
         """
-        if self.skip:
+        if skip:
             self.skipTest("Skip Test due to GitError")
         pdCommits = Version.get_raw_commit(data_root_dir=self.default_data_folder)
         self.assertTrue( not pdCommits.empty, "Pandas commit data frame empty")
@@ -57,7 +58,7 @@ class Test_CommitExtraction(unittest.TestCase):
         """
         Extract commit history for small open source project
         """
-        if self.skip:
+        if skip:
             self.skipTest("Skip Test due to GitError")
         pdEdits = Version.get_raw_edit(data_root_dir=self.default_data_folder)
         self.assertTrue( not pdEdits.empty, "Pandas edits data frame empty")
