@@ -3,9 +3,10 @@
 import unittest
 import os
 from pathlib import Path
+import warnings
 
-from github2pandas.aggregation.workflows import AggWorkflow as AggWF
-from github2pandas.aggregation.utility import Utility
+from github2pandas.workflows import Workflows
+from github2pandas.utility import Utility
 
 class Test_Workflow(unittest.TestCase):
 
@@ -14,13 +15,14 @@ class Test_Workflow(unittest.TestCase):
     default_data_folder = Path("data", git_repo_name)
     github_token = os.environ['TOKEN']
 
-    def test_workflow_aggregation_public_repository(self):
+    def test_workflows_aggregation_public_repository(self):
         """
-        Test workflow aggregation
+        Test workflows aggregation
         """
+        warnings.simplefilter ("ignore", ResourceWarning)
         repo = Utility.get_repo(self.git_repo_owner, self.git_repo_name, self.github_token)
-        AggWF.generate_workflow_pandas_tables(repo=repo, data_root_dir=self.default_data_folder)
-        pd_workflow = AggWF.get_raw_workflow(data_root_dir=self.default_data_folder)
+        Workflows.generate_workflow_pandas_tables(repo=repo, data_root_dir=self.default_data_folder)
+        pd_workflow = Workflows.get_workflows(data_root_dir=self.default_data_folder)
         self.assertTrue( not pd_workflow.empty, "Pandas edits data frame empty")
 
 if "__main__" == __name__:

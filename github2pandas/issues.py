@@ -4,7 +4,7 @@ import os
 from .utility import Utility
 import github
 
-class AggIssues():
+class Issues():
     """
     Class to aggregate Issues
 
@@ -105,9 +105,9 @@ class AggIssues():
         
         """
         if reactions:
-            AggIssues.generate_issue_pandas_tables_with_reactions(repo, data_root_dir)
+            Issues.generate_issue_pandas_tables_with_reactions(repo, data_root_dir)
         else:
-            AggIssues.generate_issue_pandas_tables_without_reactions(repo, data_root_dir)
+            Issues.generate_issue_pandas_tables_without_reactions(repo, data_root_dir)
     
     @staticmethod
     def generate_issue_pandas_tables_with_reactions(repo, data_root_dir):
@@ -128,7 +128,7 @@ class AggIssues():
             PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
 
         """
-        issues_dir = Path(data_root_dir, AggIssues.ISSUES_DIR)
+        issues_dir = Path(data_root_dir, Issues.ISSUES_DIR)
         issues = repo.get_issues(state='all') 
         users_ids = Utility.get_users_ids(data_root_dir)
         issue_list = []
@@ -139,7 +139,7 @@ class AggIssues():
             # remove pull_requests from issues
             if issue._pull_request == github.GithubObject.NotSet:
                 # issue data
-                issue_data = AggIssues.extract_issue_data(issue, users_ids, data_root_dir)
+                issue_data = Issues.extract_issue_data(issue, users_ids, data_root_dir)
                 issue_list.append(issue_data)
                 # issue comment data
                 for comment in issue.get_comments():
@@ -158,10 +158,10 @@ class AggIssues():
                     issue_reaction_data = Utility.extract_reaction_data(reaction,issue.id, "issue", users_ids, data_root_dir)
                     issue_reaction_list.append(issue_reaction_data)    
         # Save lists
-        Utility.save_list_to_pandas_table(issues_dir, AggIssues.ISSUES, issue_list)
-        Utility.save_list_to_pandas_table(issues_dir, AggIssues.ISSUES_COMMENTS, issue_comment_list)
-        Utility.save_list_to_pandas_table(issues_dir, AggIssues.ISSUES_EVENTS, issue_event_list)
-        Utility.save_list_to_pandas_table(issues_dir, AggIssues.ISSUES_REACTIONS, issue_reaction_list)
+        Utility.save_list_to_pandas_table(issues_dir, Issues.ISSUES, issue_list)
+        Utility.save_list_to_pandas_table(issues_dir, Issues.ISSUES_COMMENTS, issue_comment_list)
+        Utility.save_list_to_pandas_table(issues_dir, Issues.ISSUES_EVENTS, issue_event_list)
+        Utility.save_list_to_pandas_table(issues_dir, Issues.ISSUES_REACTIONS, issue_reaction_list)
     
     @staticmethod
     def generate_issue_pandas_tables_without_reactions(repo, data_root_dir):
@@ -182,7 +182,7 @@ class AggIssues():
             PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
 
         """
-        issues_dir = Path(data_root_dir, AggIssues.ISSUES_DIR)
+        issues_dir = Path(data_root_dir, Issues.ISSUES_DIR)
         issues = repo.get_issues(state='all') 
         users_ids = Utility.get_users_ids(data_root_dir)
         issue_list = []
@@ -192,7 +192,7 @@ class AggIssues():
             # remove pull_requests from issues
             if issue._pull_request == github.GithubObject.NotSet:
                 # issue data
-                issue_data = AggIssues.extract_issue_data(issue, users_ids, data_root_dir)
+                issue_data = Issues.extract_issue_data(issue, users_ids, data_root_dir)
                 issue_list.append(issue_data)
                 # issue comment data
                 for comment in issue.get_comments():
@@ -204,9 +204,9 @@ class AggIssues():
                     issue_event_data = Utility.extract_event_data(event, issue.id, "issue", users_ids, data_root_dir)
                     issue_event_list.append(issue_event_data)
         # Save lists
-        Utility.save_list_to_pandas_table(issues_dir, AggIssues.ISSUES, issue_list)
-        Utility.save_list_to_pandas_table(issues_dir, AggIssues.ISSUES_COMMENTS, issue_comment_list)
-        Utility.save_list_to_pandas_table(issues_dir, AggIssues.ISSUES_EVENTS, issue_event_list)
+        Utility.save_list_to_pandas_table(issues_dir, Issues.ISSUES, issue_list)
+        Utility.save_list_to_pandas_table(issues_dir, Issues.ISSUES_COMMENTS, issue_comment_list)
+        Utility.save_list_to_pandas_table(issues_dir, Issues.ISSUES_EVENTS, issue_event_list)
         return True
     
     @staticmethod
@@ -229,7 +229,7 @@ class AggIssues():
             Pandas DataFrame which can include the desired data
 
         """
-        issues_dir = Path(data_root_dir, AggIssues.ISSUES_DIR)
+        issues_dir = Path(data_root_dir, Issues.ISSUES_DIR)
         pd_issues_file = Path(issues_dir, filename)
         if pd_issues_file.is_file():
             return pd.read_pickle(pd_issues_file)

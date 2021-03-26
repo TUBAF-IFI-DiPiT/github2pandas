@@ -5,7 +5,7 @@ import pandas as pd
 from pathlib import Path
 from .utility import Utility
 
-class AggWorkflow(object):
+class Workflows(object):
     """
     Class to aggregate Pull Requests
 
@@ -119,21 +119,22 @@ class AggWorkflow(object):
         bool
             Code runs without errors 
         """
-        workflow_dir = Path(data_root_dir, AggWorkflow.WORKFLOW_DIR)
+        workflow_dir = Path(data_root_dir, Workflows.WORKFLOW_DIR)
         workflow_dir.mkdir(parents=True, exist_ok=True)
+        users_ids = Utility.get_users_ids(data_root_dir)
 
         workflow_list = []
         for workflow in repo.get_workflows():
-            workflow_sample = AggWorkflow.extract_workflow_data(workflow)
+            workflow_sample = Workflows.extract_workflow_data(workflow)
             workflow_list.append(workflow_sample)
-        Utility.save_list_to_pandas_table(workflow_dir, AggWorkflow.WORKFLOW, workflow_list)
+        Utility.save_list_to_pandas_table(workflow_dir, Workflows.WORKFLOW, workflow_list)
 
         run_list = []
         for run in repo.get_workflow_runs():
-            run_sample = AggWorkflow.extract_run_data(run)
-            run_sample['author'] = Utility.extract_committer_data_from_commit(repo, run_sample['commit_sha'], data_root_dir)
+            run_sample = Workflows.extract_run_data(run)
+            run_sample['author'] = Utility.extract_committer_data_from_commit(repo, run_sample['commit_sha'], users_ids, data_root_dir)
             run_list.append(run_sample)
-        Utility.save_list_to_pandas_table(workflow_dir, AggWorkflow.RUNS, run_list)
+        Utility.save_list_to_pandas_table(workflow_dir, Workflows.RUNS, run_list)
         return True
 
     @staticmethod
@@ -173,14 +174,14 @@ class AggWorkflow(object):
         print(query_url)
         if 'zip' in response.headers['Content-Type']:
             zipObj = zipfile.ZipFile(io.BytesIO(response.content))
-            data_dir_ = Path(data_root_dir, AggWorkflow.WORKFLOW_DIR, str(run.id))
+            data_dir_ = Path(data_root_dir, Workflows.WORKFLOW_DIR, str(run.id))
             zipObj.extractall(data_dir_)
             return len(zipObj.namelist())
         else:
             return None
 
     @staticmethod
-    def get_workflow(data_root_dir):
+    def get_workflows(data_root_dir):
         """
         get_raw_workflow(repo_dir)
 
@@ -196,14 +197,14 @@ class AggWorkflow(object):
         DataFrame
             Pandas DataFrame which includes the workflow data
         """
-        pd_wfh_file = Path(data_root_dir, AggWorkflow.WORKFLOW_DIR).joinpath(AggWorkflow.WORKFLOW)
+        pd_wfh_file = Path(data_root_dir, Workflows.WORKFLOW_DIR).joinpath(Workflows.WORKFLOW)
         if pd_wfh_file.is_file():
             return pd.read_pickle(pd_wfh_file)
         else: 
             return pd.DataFrame()
 
     @staticmethod
-    def get_run(data_root_dir):
+    def get_runs(data_root_dir):
         """
         get_raw_workflow(repo_dir)
 
@@ -219,7 +220,7 @@ class AggWorkflow(object):
         DataFrame
             Pandas DataFrame which includes the run data
         """
-        pd_run_file = Path(data_root_dir, AggWorkflow.WORKFLOW_DIR).joinpath(AggWorkflow.RUNS)
+        pd_run_file = Path(data_root_dir, Workflows.WORKFLOW_DIR).joinpath(Workflows.RUNS)
         if pd_run_file.is_file():
             return pd.read_pickle(pd_run_file)
         else: 

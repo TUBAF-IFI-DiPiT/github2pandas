@@ -4,7 +4,9 @@ import unittest
 import sys
 import os
 from pathlib import Path
-from github2pandas.aggregation.utility import Utility
+import warnings
+
+from github2pandas.utility import Utility
 
 class TestUtility(unittest.TestCase):
     
@@ -17,6 +19,7 @@ class TestUtility(unittest.TestCase):
         """
         Evaluate accessibility of repository 
         """
+        warnings.simplefilter ("ignore", ResourceWarning)
         repo = Utility.get_repo(self.git_repo_owner, repo_name=self.git_repo_name, token=self.github_token)
         self.assertIsNotNone(repo)
 
