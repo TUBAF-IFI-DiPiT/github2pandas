@@ -21,7 +21,7 @@ class TestUtility(unittest.TestCase):
         Evaluate accessibility of repository 
         """
         warnings.simplefilter ("ignore", ResourceWarning)
-        repo = Utility.get_repo(self.git_repo_owner, repo_name=self.git_repo_name, token=self.github_token, self.default_data_folder)
+        repo = Utility.get_repo(self.git_repo_owner, self.git_repo_name, self.github_token, self.default_data_folder)
         self.assertIsNotNone(repo)
 
     def test_github_token_availability(self):
