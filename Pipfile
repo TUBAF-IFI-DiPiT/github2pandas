@@ -20,6 +20,7 @@ jupyter = "*"
 sphinx = "*"
 m2r2 = "*"
 pypiwin32 = "*"
+human-id = "*"
 
 [dev-packages]
 github2pandas = {editable = true, path = "."}

@@ -4,7 +4,7 @@ import os
 from .utility import Utility
 import github
 
-class AggPullRequest():
+class PullRequests():
     """
     Class to aggregate Pull Requests
 
@@ -29,7 +29,7 @@ class AggPullRequest():
         Extracting general pull request data.
     extract_pull_request_review_data(review, pull_request_id, users_ids, data_root_dir)
         Extracting general review data from a pull request.
-    generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False)
+    generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False, check_for_updates=True)
         Extracting the complete pull request data from a repository.
     generate_pull_request_pandas_tables_with_reactions(repo, data_root_dir)
         Extracting the complete pull request data from a repository including all reactions.
@@ -133,9 +133,9 @@ class AggPullRequest():
         return review_data
     
     @staticmethod
-    def generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False):
+    def generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False, check_for_updates=True):
         """
-        generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False)
+        generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False, check_for_updates=True)
 
         Extracting the complete pull request data from a repository.
 
@@ -147,16 +147,23 @@ class AggPullRequest():
             Data root directory for the repository.
         reactions: bool, default=False
             If reactions should also be exracted. The extraction of all reactions increases significantly the aggregation speed.
-
+        check_for_updates: bool, default=True
+            Check first if there are any new pull requests.
         Notes
         -----
             PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
 
         """
+        
+        if check_for_updates:
+            pull_requests = repo.get_pulls(state='all') 
+            old_pull_requests = PullRequests.get_pull_requests(data_root_dir)
+            if not Utility.check_for_updates(pull_requests, old_pull_requests):
+                return
         if reactions:
-            AggPullRequest.generate_pull_request_pandas_tables_with_reactions(repo, data_root_dir)
+            PullRequests.generate_pull_request_pandas_tables_with_reactions(repo, data_root_dir)
         else:
-            AggPullRequest.generate_pull_request_pandas_tables_without_reactions(repo, data_root_dir)
+            PullRequests.generate_pull_request_pandas_tables_without_reactions(repo, data_root_dir)
         
     @staticmethod
     def generate_pull_request_pandas_tables_with_reactions(repo, data_root_dir):
@@ -177,7 +184,7 @@ class AggPullRequest():
             PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
 
         """
-        pull_request_dir = Path(data_root_dir, AggPullRequest.PULL_REQUESTS_DIR)
+        pull_request_dir = Path(data_root_dir, PullRequests.PULL_REQUESTS_DIR)
         pull_requests = repo.get_pulls(state='all') 
         users_ids = Utility.get_users_ids(data_root_dir)
         pull_request_list = []
@@ -187,7 +194,7 @@ class AggPullRequest():
         pull_request_event_list = []
         # pull request data
         for pull_request in pull_requests:
-            pull_request_data = AggPullRequest.extract_pull_request_data(pull_request, users_ids, data_root_dir)
+            pull_request_data = PullRequests.extract_pull_request_data(pull_request, users_ids, data_root_dir)
             pull_request_list.append(pull_request_data)
             # pull request comment data
             for comment in pull_request.get_comments():
@@ -200,7 +207,7 @@ class AggPullRequest():
             pull_request_list.append(pull_request_data)
             # pull request review data
             for review in pull_request.get_reviews():
-                pull_request_review_data = AggPullRequest.extract_pull_request_review_data(review, pull_request.id, users_ids, data_root_dir)
+                pull_request_review_data = PullRequests.extract_pull_request_review_data(review, pull_request.id, users_ids, data_root_dir)
                 pull_request_review_list.append(pull_request_review_data)
             pull_request_list.append(pull_request_data)
             # pull request issue comments data
@@ -218,11 +225,11 @@ class AggPullRequest():
                 pull_request_event_list.append(pull_request_event_data)
             pull_request_list.append(pull_request_data)
         # Save lists
-        Utility.save_list_to_pandas_table(pull_request_dir, AggPullRequest.PULL_REQUESTS, pull_request_list)
-        Utility.save_list_to_pandas_table(pull_request_dir, AggPullRequest.PULL_REQUESTS_COMMENTS, pull_request_comment_list)
-        Utility.save_list_to_pandas_table(pull_request_dir, AggPullRequest.PULL_REQUESTS_REACTIONS, pull_request_reaction_list)
-        Utility.save_list_to_pandas_table(pull_request_dir, AggPullRequest.PULL_REQUESTS_REVIEWS, pull_request_review_list)
-        Utility.save_list_to_pandas_table(pull_request_dir, AggPullRequest.PULL_REQUESTS_EVENTS, pull_request_event_list)
+        Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS, pull_request_list)
+        Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS_COMMENTS, pull_request_comment_list)
+        Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS_REACTIONS, pull_request_reaction_list)
+        Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS_REVIEWS, pull_request_review_list)
+        Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS_EVENTS, pull_request_event_list)
         return True
     
     @staticmethod
@@ -244,7 +251,7 @@ class AggPullRequest():
             PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
 
         """
-        pull_request_dir = Path(data_root_dir, AggPullRequest.PULL_REQUESTS_DIR)
+        pull_request_dir = Path(data_root_dir, PullRequests.PULL_REQUESTS_DIR)
         pull_requests = repo.get_pulls(state='all') 
         users_ids = Utility.get_users_ids(data_root_dir)
         pull_request_list = []
@@ -253,7 +260,7 @@ class AggPullRequest():
         pull_request_event_list = []
         # pull request data
         for pull_request in pull_requests:
-            pull_request_data = AggPullRequest.extract_pull_request_data(pull_request, users_ids, data_root_dir)
+            pull_request_data = PullRequests.extract_pull_request_data(pull_request, users_ids, data_root_dir)
             pull_request_list.append(pull_request_data)
             # pull request comment data
             for comment in pull_request.get_comments():
@@ -261,24 +268,21 @@ class AggPullRequest():
                 pull_request_comment_list.append(pull_request_comment_data)
             # pull request review data
             for review in pull_request.get_reviews():
-                pull_request_review_data = AggPullRequest.extract_pull_request_review_data(review, pull_request.id, users_ids, data_root_dir)
+                pull_request_review_data = PullRequests.extract_pull_request_review_data(review, pull_request.id, users_ids, data_root_dir)
                 pull_request_review_list.append(pull_request_review_data)
-            pull_request_list.append(pull_request_data)
             # pull request issue comments data
             for comment in pull_request.get_issue_comments():
                 pull_request_comment_data = Utility.extract_comment_data(comment, pull_request.id, "pull_request", users_ids, data_root_dir)
                 pull_request_comment_list.append(pull_request_comment_data)
-            pull_request_list.append(pull_request_data)
             # pull request issue events
             for event in pull_request.get_issue_events():
                 pull_request_event_data = Utility.extract_event_data(event, pull_request.id, "pull_request", users_ids, data_root_dir)
                 pull_request_event_list.append(pull_request_event_data)
-            pull_request_list.append(pull_request_data)
         # Save lists
-        Utility.save_list_to_pandas_table(pull_request_dir, AggPullRequest.PULL_REQUESTS, pull_request_list)
-        Utility.save_list_to_pandas_table(pull_request_dir, AggPullRequest.PULL_REQUESTS_COMMENTS, pull_request_comment_list)
-        Utility.save_list_to_pandas_table(pull_request_dir, AggPullRequest.PULL_REQUESTS_REVIEWS, pull_request_review_list)
-        Utility.save_list_to_pandas_table(pull_request_dir, AggPullRequest.PULL_REQUESTS_EVENTS, pull_request_event_list)
+        Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS, pull_request_list)
+        Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS_COMMENTS, pull_request_comment_list)
+        Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS_REVIEWS, pull_request_review_list)
+        Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS_EVENTS, pull_request_event_list)
         return True
     
     @staticmethod
@@ -301,7 +305,7 @@ class AggPullRequest():
             Pandas DataFrame which can includes the desired data
 
         """
-        pull_request_dir = Path(data_root_dir, AggPullRequest.PULL_REQUESTS_DIR)
+        pull_request_dir = Path(data_root_dir, PullRequests.PULL_REQUESTS_DIR)
         pd_pull_requests_file = Path(pull_request_dir, filename)
         if pd_pull_requests_file.is_file():
             return pd.read_pickle(pd_pull_requests_file)

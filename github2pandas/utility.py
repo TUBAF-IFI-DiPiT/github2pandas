@@ -4,6 +4,8 @@ import pandas as pd
 import github
 import pickle
 import uuid
+from human_id import generate_id
+import json
 
 class Utility():
     """
@@ -16,9 +18,13 @@ class Utility():
 
     Methods
     -------
+        check_for_updates(new_list, old_df)
+            Check if id and updated_at are in the old_df.
         save_list_to_pandas_table(dir, file, data_list)
             Save a data list to a pandas table.
-        get_repo(repo_owner, repo_name, token)
+        get_repo_informations(data_root_dir)
+            Get a repository data (owner and name).
+        get_repo(repo_owner, repo_name, token, data_root_dir)
             Get a repository by owner, name and token.
         apply_datetime_format(pd_table, source_column, destination_column)
             Provide equal date formate for all timestamps.
@@ -45,7 +51,46 @@ class Utility():
     """
 
     USERS = "Users.p"
+    REPO = "Repo.json"
+    
+    @staticmethod
+    def check_for_updates(new_list, old_df):
+        """
+        check_for_updates(new_list, old_df)
 
+        Check if id and updated_at are in the old_df.
+
+        Parameters
+        ----------
+        new_list: list, PaginatedList
+            new list with id and updated_at.
+        old_df: DataFrame
+            old Dataframe.
+
+        Returns
+        -------
+        bool
+            True if it need to be updated. False the List is uptodate.
+
+        """
+        if old_df.empty:
+            return True
+        try:
+            if not len(new_list) == old_df.count()[0]:
+                print(new_list.totalCount)
+                print(old_df.count()[0])
+                return True
+        except:
+            if not new_list.totalCount == old_df.count()[0]:
+                print(new_list.totalCount)
+                print(old_df.count()[0])
+                return True
+        for new_class in new_list:
+            df = old_df.loc[((old_df.id == new_class.id) & (old_df.updated_at == new_class.updated_at))]
+            if df.empty:
+                return True
+        return False
+    
     @staticmethod
     def save_list_to_pandas_table(dir, file, data_list):
         """
@@ -68,11 +113,35 @@ class Utility():
         pd_file = Path(dir, file)
         with open(pd_file, "wb") as f:
             pickle.dump(data_frame_, f)
-
+    
     @staticmethod      
-    def get_repo(repo_owner, repo_name, token):
+    def get_repo_informations(data_root_dir):
         """
-        get_repo(repo_owner, repo_name, token)
+        get_repo_informations(data_root_dir)
+
+        Get a repository data (owner and name).
+
+        Parameters
+        ----------
+        data_root_dir: str
+            Data root directory for the repository.
+        
+        Returns
+        -------
+        tuple
+            Repository Owner and name
+
+        """
+        repo_file = Path(data_root_dir, Utility.REPO)
+        if repo_file.is_file():
+            with open(repo_file, 'r') as json_file:
+                repo_data = json.load(json_file)
+                return (repo_data["repo_owner"], repo_data["repo_name"])
+        
+    @staticmethod      
+    def get_repo(repo_owner, repo_name, token, data_root_dir):
+        """
+        get_repo(repo_owner, repo_name, token, data_root_dir)
 
         Get a repository by owner, name and token.
 
@@ -84,6 +153,8 @@ class Utility():
             the name of the desired repository.
         token: str
             A valid Github Token.
+        data_root_dir: str
+            Data root directory for the repository.
         
         Returns
         -------
@@ -96,6 +167,10 @@ class Utility():
 
         """
         g = github.Github(token)
+        data_root_dir.mkdir(parents=True, exist_ok=True)
+        repo_file = Path(data_root_dir, Utility.REPO)
+        with open(repo_file, 'w') as json_file:
+            json.dump({"repo_owner": repo_owner,"repo_name":repo_name}, json_file)
         return g.get_repo(repo_owner + "/" + repo_name)
     
     @staticmethod
@@ -263,6 +338,7 @@ class Utility():
 
         """
         if not user:
+            print("No User. This call was slow!!! Should be fixed")
             return
         if user.node_id in users_ids:
             return users_ids[user.node_id]
@@ -271,7 +347,7 @@ class Utility():
         if users_file.is_file():
             users_df = pd.read_pickle(users_file)
         user_data = {}
-        user_data["anonym_uuid"] = str(uuid.uuid4())
+        user_data["anonym_uuid"] = generate_id(seed=user.node_id)
         users_ids[user.node_id] = user_data["anonym_uuid"]
         user_data["id"] = user.node_id
         user_data["name"] = user.name

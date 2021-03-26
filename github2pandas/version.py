@@ -1,4 +1,4 @@
-from github2pandas.aggregation.utility import Utility
+from .utility import Utility
 import os
 import sqlite3
 import pickle
@@ -24,7 +24,7 @@ def handleError(func, path, exc_info):
        # call the calling function again
        func(path)
 
-class AggVersion():
+class Version():
     """
     Class to aggregate Pull Requests
 
@@ -98,10 +98,10 @@ class AggVersion():
         git_repo_name = repo.name
         git_repo_owner = repo.owner.login
         
-        version_folder = Path(data_root_dir, AggVersion.VERSION_DIR)
+        version_folder = Path(data_root_dir, Version.VERSION_DIR)
         version_folder.mkdir(parents=True, exist_ok=True)
 
-        repo_dir = version_folder.joinpath(AggVersion.VERSION_REPOSITORY_DIR)
+        repo_dir = version_folder.joinpath(Version.VERSION_REPOSITORY_DIR)
         if repo_dir.exists ():
             shutil.rmtree(repo_dir.resolve(), onerror=handleError)
 
@@ -163,10 +163,10 @@ class AggVersion():
                             extract_complexity=False, extract_merges=True, extract_merge_deletions=False,
                             all_branches=False):
         """
-        version_folder = Path(data_root_dir, AggVersion.VERSION_DIR)
+        version_folder = Path(data_root_dir, Version.VERSION_DIR)
         version_folder.mkdir(parents=True, exist_ok=True)
-        repo_dir = version_folder.joinpath(AggVersion.VERSION_REPOSITORY_DIR)
-        sqlite_db_file = version_folder.joinpath(AggVersion.VERSION_DB)
+        repo_dir = version_folder.joinpath(Version.VERSION_REPOSITORY_DIR)
+        sqlite_db_file = version_folder.joinpath(Version.VERSION_DB)
 
         if os.path.exists(sqlite_db_file):
             os.remove(sqlite_db_file)
@@ -174,7 +174,7 @@ class AggVersion():
         git2net.mine_git_repo(repo_dir, sqlite_db_file,
                               extract_complexity=True,
                               extract_text=True,
-                              no_of_processes=AggVersion.no_of_proceses,
+                              no_of_processes=Version.no_of_proceses,
                               max_modifications=1000)
         return True
 
@@ -196,26 +196,26 @@ class AggVersion():
             Code runs without errors 
         """
 
-        AggVersion.generate_data_base(data_root_dir)
+        Version.generate_data_base(data_root_dir)
 
-        version_folder = Path(data_root_dir, AggVersion.VERSION_DIR)
-        sqlite_db_file = version_folder.joinpath(AggVersion.VERSION_DB)
+        version_folder = Path(data_root_dir, Version.VERSION_DIR)
+        sqlite_db_file = version_folder.joinpath(Version.VERSION_DB)
 
         db = sqlite3.connect(sqlite_db_file)
         pdCommits = pd.read_sql_query("SELECT * FROM commits", db)
         pdEdits = pd.read_sql_query("SELECT * FROM edits", db)
 
-        pdCommits.rename(columns=AggVersion.COMMIT_RENAMING_COLUMNS, inplace = True)
-        pdCommits.drop(columns=AggVersion.COMMIT_DELETEABLE_COLUMNS, axis = 1, inplace = True)
+        pdCommits.rename(columns=Version.COMMIT_RENAMING_COLUMNS, inplace = True)
+        pdCommits.drop(columns=Version.COMMIT_DELETEABLE_COLUMNS, axis = 1, inplace = True)
         pdCommits = Utility.apply_datetime_format(pdCommits, 'commited_at')
 
-        pdEdits.rename(columns=AggVersion.EDIT_RENAMING_COLUMNS, inplace = True)
+        pdEdits.rename(columns=Version.EDIT_RENAMING_COLUMNS, inplace = True)
 
-        pd_commits_file = Path(version_folder, AggVersion.VERSION_COMMITS)
+        pd_commits_file = Path(version_folder, Version.VERSION_COMMITS)
         with open(pd_commits_file, "wb") as f:
             pickle.dump(pdCommits, f)
 
-        pd_edits_file = Path(version_folder, AggVersion.VERSION_EDITS)
+        pd_edits_file = Path(version_folder, Version.VERSION_EDITS)
         with open(pd_edits_file, "wb") as f:
             pickle.dump(pdEdits, f)
 
@@ -238,7 +238,7 @@ class AggVersion():
         DataFrame
             Pandas DataFrame which includes the commit data set
         """
-        pd_commits_file = Path(data_root_dir, AggVersion.VERSION_DIR).joinpath(AggVersion.VERSION_COMMITS)
+        pd_commits_file = Path(data_root_dir, Version.VERSION_DIR).joinpath(Version.VERSION_COMMITS)
         if pd_commits_file.is_file():
             return pd.read_pickle(pd_commits_file)
         else: 
@@ -261,7 +261,7 @@ class AggVersion():
         DataFrame
             Pandas DataFrame which includes the edit data set
         """
-        pd_edits_file = Path(data_root_dir, AggVersion.VERSION_DIR).joinpath(AggVersion.VERSION_EDITS)
+        pd_edits_file = Path(data_root_dir, Version.VERSION_DIR).joinpath(Version.VERSION_EDITS)
         if pd_edits_file.is_file():
             return pd.read_pickle(pd_edits_file)
         else: 
