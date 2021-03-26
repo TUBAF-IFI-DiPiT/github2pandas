@@ -15,7 +15,7 @@ class Test_CommitExtraction(unittest.TestCase):
 
     git_repo_name = "Extract_Git_Activities"
     git_repo_owner = "TUBAF-IFI-DiPiT"
-
+    skip = False
     default_data_folder = Path("data", git_repo_name)
 
     def test_clone_public_repository(self):
