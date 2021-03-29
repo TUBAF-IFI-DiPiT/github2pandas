@@ -20,7 +20,7 @@ class Workflows(object):
 
     Methods
     -------
-    extract_workflow_data(workflow, run, data_root_dir)
+    extract_workflow_data(workflow, run, data_root_dir, check_for_updates=True)
         Extracting workflow data from run 
     generate_workflow_pandas_tables(repo, data_root_dir)
         Extracting the complete workflow data set from a repository
@@ -61,13 +61,15 @@ class Workflows(object):
         """
         run_data = dict()
         run_data["workflow_id"] = run.workflow_id
-        run_data['workflow_run_id'] = run.id
+        run_data['id'] = run.id
         run_data['commit_sha'] = run.head_sha
         run_data['pull_requests'] = [pr.id for pr in run.pull_requests]
         run_data['state'] = run.status
         run_data['event'] = run.event
         run_data['conclusion'] = run.conclusion
         run_data['commit_sha'] = run.head_sha
+        run_data['created_at'] = run.created_at
+        run_data['updated_at'] = run.updated_at
         return run_data
 
     @staticmethod
@@ -93,17 +95,17 @@ class Workflows(object):
 
         """
         workflow_data = {}
-        workflow_data["workflow_id"] = workflow.id
-        workflow_data['workflow_name'] = workflow.name
+        workflow_data["id"] = workflow.id
+        workflow_data['name'] = workflow.name
         workflow_data['created_at'] = workflow.created_at
         workflow_data['updated_at'] = workflow.updated_at
         workflow_data["state"] = workflow.state
         return workflow_data
 
     @staticmethod
-    def generate_workflow_pandas_tables(repo, data_root_dir):
+    def generate_workflow_pandas_tables(repo, data_root_dir, check_for_updates=True):
         """
-        def generate_workflow_pandas_tables(repo, data_root_dir)
+        def generate_workflow_pandas_tables(repo, data_root_dir, check_for_updates=True)
 
         Extracting the complete workflow list and run history from a repository
 
@@ -113,6 +115,8 @@ class Workflows(object):
             Repo dir of the project.
         repo: Repository
             Repository object from pygithub.
+        check_for_updates: bool, default=True
+            Check first if there are any new pull requests.
 
         Returns
         -------
@@ -123,14 +127,24 @@ class Workflows(object):
         workflow_dir.mkdir(parents=True, exist_ok=True)
         users_ids = Utility.get_users_ids(data_root_dir)
 
+        workflows = repo.get_workflows()
+        workflow_runs = repo.get_workflow_runs()
+
+        if check_for_updates:
+            old_workflows = Workflows.get_workflows(data_root_dir)
+            check_workflows = Utility.check_for_updates_paginated(workflows, old_workflows)
+            old_workflow_runs = Workflows.get_runs(data_root_dir)
+            check_workflow_runs = Utility.check_for_updates_paginated(workflow_runs, old_workflow_runs)
+            if not check_workflows and not check_workflow_runs:
+                return
         workflow_list = []
-        for workflow in repo.get_workflows():
+        for workflow in workflows:
             workflow_sample = Workflows.extract_workflow_data(workflow)
             workflow_list.append(workflow_sample)
         Utility.save_list_to_pandas_table(workflow_dir, Workflows.WORKFLOW, workflow_list)
 
         run_list = []
-        for run in repo.get_workflow_runs():
+        for run in workflow_runs:
             run_sample = Workflows.extract_run_data(run)
             run_sample['author'] = Utility.extract_committer_data_from_commit(repo, run_sample['commit_sha'], users_ids, data_root_dir)
             run_list.append(run_sample)
