@@ -158,7 +158,7 @@ class PullRequests():
         if check_for_updates:
             pull_requests = repo.get_pulls(state='all') 
             old_pull_requests = PullRequests.get_pull_requests(data_root_dir)
-            if not Utility.check_for_updates(pull_requests, old_pull_requests):
+            if not Utility.check_for_updates_paginated(pull_requests, old_pull_requests):
                 return
         if reactions:
             PullRequests.generate_pull_request_pandas_tables_with_reactions(repo, data_root_dir)
