@@ -123,11 +123,11 @@ class Version():
                 branch_name = branch_name.replace(pattern, '')
 
             if branch_name != 'HEAD' and branch_name not in existing_branches:
-                print("  ", branch_name, end="")
+                #print("  ", branch_name, end="")
                 try:
                     r.git.branch('--track', branch_name,
                                 'remotes/origin/'+branch_name)
-                    print(" ")
+                    #print(" ")
                 except Exception:
                     print(" -> An exception occurred")
 
