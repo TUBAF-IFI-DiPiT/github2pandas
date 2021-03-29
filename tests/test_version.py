@@ -60,7 +60,7 @@ class Test_CommitExtraction(unittest.TestCase):
         """
         if skip:
             self.skipTest("Skip Test due to GitError")
-        pdEdits = Version.get_version(data_root_dir=self.default_data_folder, Version.VERSION_EDITS)
+        pdEdits = Version.get_version(self.default_data_folder, Version.VERSION_EDITS)
         self.assertTrue( not pdEdits.empty, "Pandas edits data frame empty")
 if "__main__" == __name__:
     unittest.main()
