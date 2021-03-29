@@ -20,6 +20,8 @@ class Utility():
     -------
         check_for_updates(new_list, old_df)
             Check if id and updated_at are in the old_df.
+        check_for_updates_paginated(new_paginated_list, old_df)
+            Check if id and updated_at are in the old_df.
         save_list_to_pandas_table(dir, file, data_list)
             Save a data list to a pandas table.
         get_repo_informations(data_root_dir)
@@ -75,17 +77,43 @@ class Utility():
         """
         if old_df.empty:
             return True
-        try:
-            if not len(new_list) == old_df.count()[0]:
-                print(new_list.totalCount)
-                print(old_df.count()[0])
-                return True
-        except:
-            if not new_list.totalCount == old_df.count()[0]:
-                print(new_list.totalCount)
-                print(old_df.count()[0])
-                return True
+        if not len(new_list) == old_df.count()[0]:
+            print(new_list.totalCount)
+            print(old_df.count()[0])
+            return True
         for new_class in new_list:
+            df = old_df.loc[((old_df.id == new_class.id) & (old_df.updated_at == new_class.updated_at))]
+            if df.empty:
+                return True
+        return False
+    
+    @staticmethod
+    def check_for_updates_paginated(new_paginated_list, old_df):
+        """
+        check_for_updates_paginated(new_paginated_list, old_df)
+
+        Check if id and updated_at are in the old_df.
+
+        Parameters
+        ----------
+        new_paginated_list: PaginatedList
+            new list with id and updated_at.
+        old_df: DataFrame
+            old Dataframe.
+
+        Returns
+        -------
+        bool
+            True if it need to be updated. False the List is uptodate.
+
+        """
+        if old_df.empty:
+            return True
+        if not new_paginated_list.totalCount == old_df.count()[0]:
+            print(new_paginated_list.totalCount)
+            print(old_df.count()[0])
+            return True
+        for new_class in new_paginated_list:
             df = old_df.loc[((old_df.id == new_class.id) & (old_df.updated_at == new_class.updated_at))]
             if df.empty:
                 return True
