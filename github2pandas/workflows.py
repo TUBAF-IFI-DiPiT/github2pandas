@@ -180,50 +180,30 @@ class Workflows(object):
         else:
             return None
 
-    @staticmethod
-    def get_workflows(data_root_dir):
-        """
-        get_raw_workflow(repo_dir)
 
-        Get the generated pandas table.
+    @staticmethod
+    def get_workflows(data_root_dir, filename=WORKFLOW):
+        """
+        get_workflow(data_root_dir, filename=WORKFLOWS)
+
+        Get a generated pandas tables.
 
         Parameters
         ----------
-        data_dir: str
-            Path to the data folder of the repository.
+        data_root_dir: str
+            Data root directory for the repository.
+        filename: str, default=WORKFLOWS
+            Pandas table file for workflows or run data.
 
         Returns
         -------
         DataFrame
-            Pandas DataFrame which includes the workflow data
+            Pandas DataFrame which can include the desired data
+
         """
-        pd_wfh_file = Path(data_root_dir, Workflows.WORKFLOW_DIR).joinpath(Workflows.WORKFLOW)
-        if pd_wfh_file.is_file():
-            return pd.read_pickle(pd_wfh_file)
-        else: 
+        workflow_dir = Path(data_root_dir, Workflows.WORKFLOW_DIR)
+        pd_workflows_file = Path(workflow_dir, filename)
+        if pd_workflows_file.is_file():
+            return pd.read_pickle(pd_workflows_file)
+        else:
             return pd.DataFrame()
-
-    @staticmethod
-    def get_runs(data_root_dir):
-        """
-        get_raw_workflow(repo_dir)
-
-        Get the generated pandas table.
-
-        Parameters
-        ----------
-        data_dir: str
-            Path to the data folder of the repository.
-
-        Returns
-        -------
-        DataFrame
-            Pandas DataFrame which includes the run data
-        """
-        pd_run_file = Path(data_root_dir, Workflows.WORKFLOW_DIR).joinpath(Workflows.RUNS)
-        if pd_run_file.is_file():
-            return pd.read_pickle(pd_run_file)
-        else: 
-            return pd.DataFrame()
-
-

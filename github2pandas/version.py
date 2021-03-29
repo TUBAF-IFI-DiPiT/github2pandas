@@ -222,9 +222,9 @@ class Version():
         return True
 
     @staticmethod
-    def get_raw_commit(data_root_dir):
+    def get_version(data_root_dir, filename=VERSION_COMMITS):
         """
-        get_raw_commit(data_root_dir)
+        get_version(data_root_dir, filename)
 
         Get the generated pandas table.
 
@@ -232,38 +232,17 @@ class Version():
         ----------
         data_root_dir: str
             Path to the data folder of the repository.
+        filename: str, default=VERSION_COMMITS
+            Pandas table file for workflows or runs.
 
         Returns
         -------
         DataFrame
-            Pandas DataFrame which includes the commit data set
+            Pandas DataFrame which includes the commit or edit data set
         """
-        pd_commits_file = Path(data_root_dir, Version.VERSION_DIR).joinpath(Version.VERSION_COMMITS)
-        if pd_commits_file.is_file():
-            return pd.read_pickle(pd_commits_file)
-        else: 
+        workflows_dir = Path(data_root_dir, Version.VERSION_DIR)
+        pd_workflows_file = Path(workflows_dir, filename)
+        if pd_workflows_file.is_file():
+            return pd.read_pickle(pd_workflows_file)
+        else:
             return pd.DataFrame()
-
-    @staticmethod
-    def get_raw_edit(data_root_dir):
-        """
-        get_raw_edit(data_root_dir)
-
-        Get the generated pandas table.
-
-        Parameters
-        ----------
-        data_root_dir: str
-            Path to the data folder of the repository.
-
-        Returns
-        -------
-        DataFrame
-            Pandas DataFrame which includes the edit data set
-        """
-        pd_edits_file = Path(data_root_dir, Version.VERSION_DIR).joinpath(Version.VERSION_EDITS)
-        if pd_edits_file.is_file():
-            return pd.read_pickle(pd_edits_file)
-        else: 
-            return pd.DataFrame()
-
