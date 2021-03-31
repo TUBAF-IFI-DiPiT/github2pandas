@@ -335,7 +335,7 @@ class Utility():
         """
         labels = ""
         for label in github_labels:
-            labels += github_object.labels.name + "&"
+            labels += label.name + "&"
         if len(labels) > 0:
             labels = labels[:-1]
         return labels
