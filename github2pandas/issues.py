@@ -1,12 +1,13 @@
 import pandas as pd
 from pathlib import Path
 import os
-from .utility import Utility
 import github
+
+from .utility import Utility
 
 class Issues():
     """
-    Class to aggregate Issues
+    Class to extract Issues
 
     Attributes
     ----------
@@ -27,10 +28,6 @@ class Issues():
         Extracting general issue data.
     generate_issue_pandas_tables(repo, data_root_dir, reactions=False, check_for_updates=True)
         Extracting the complete issue data from a repository.
-    generate_issue_pandas_tables_with_reactions(repo, data_root_dir)
-        Extracting the complete issue data from a repository including all reactions.
-    generate_issue_pandas_tables_without_reactions(repo, data_root_dir)
-        Extracting the complete issue data from a repository excluding all reactions.
     get_issues(data_root_dir, filename=ISSUES)
         Get a genearted pandas table.
     
@@ -67,6 +64,7 @@ class Issues():
             PyGithub Issue object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Issue.html
 
         """
+
         issue_data = {}
         issue_data["assignees"]  = Utility.extract_assignees(issue.assignees, users_ids, data_root_dir)
         issue_data["body"] = issue.body
@@ -106,6 +104,7 @@ class Issues():
             PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
         
         """
+
         if check_for_updates:
             new_issues = repo.get_issues(state='all') 
             real_issues = []
@@ -116,30 +115,6 @@ class Issues():
             if not Utility.check_for_updates(real_issues, old_issues):
                 return
 
-        if reactions:
-            Issues.generate_issue_pandas_tables_with_reactions(repo, data_root_dir)
-        else:
-            Issues.generate_issue_pandas_tables_without_reactions(repo, data_root_dir)
-    
-    @staticmethod
-    def generate_issue_pandas_tables_with_reactions(repo, data_root_dir):
-        """
-        generate_issue_pandas_tables_with_reactions(repo, data_root_dir)
-
-        Extracting the complete issue data from a repository including all reactions.
-
-        Parameters
-        ----------
-        repo: Repository
-            Repository object from pygithub.
-        data_root_dir: str
-            Data root directory for the repository.
-
-        Notes
-        -----
-            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
-
-        """
         issues_dir = Path(data_root_dir, Issues.ISSUES_DIR)
         issues = repo.get_issues(state='all') 
         users_ids = Utility.get_users_ids(data_root_dir)
@@ -158,68 +133,25 @@ class Issues():
                     issue_comment_data = Utility.extract_comment_data(comment, issue.id, "issue", users_ids, data_root_dir)
                     issue_comment_list.append(issue_comment_data)
                     # issue comment reaction data
-                    for reaction in comment.get_reactions():
-                        reaction_data = Utility.extract_reaction_data(reaction,comment.id,"comment", users_ids, data_root_dir)
-                        issue_reaction_list.append(reaction_data)
+                    if reactions:
+                        for reaction in comment.get_reactions():
+                            reaction_data = Utility.extract_reaction_data(reaction,comment.id,"comment", users_ids, data_root_dir)
+                            issue_reaction_list.append(reaction_data)
                 # issue event data
                 for event in issue.get_events():
                     issue_event_data = Utility.extract_event_data(event, issue.id, "issue", users_ids, data_root_dir)
                     issue_event_list.append(issue_event_data)
                 # issue reaction data
-                for reaction in issue.get_reactions():
-                    issue_reaction_data = Utility.extract_reaction_data(reaction,issue.id, "issue", users_ids, data_root_dir)
-                    issue_reaction_list.append(issue_reaction_data)    
+                if reactions:
+                    for reaction in issue.get_reactions():
+                        issue_reaction_data = Utility.extract_reaction_data(reaction,issue.id, "issue", users_ids, data_root_dir)
+                        issue_reaction_list.append(issue_reaction_data)    
         # Save lists
         Utility.save_list_to_pandas_table(issues_dir, Issues.ISSUES, issue_list)
         Utility.save_list_to_pandas_table(issues_dir, Issues.ISSUES_COMMENTS, issue_comment_list)
         Utility.save_list_to_pandas_table(issues_dir, Issues.ISSUES_EVENTS, issue_event_list)
-        Utility.save_list_to_pandas_table(issues_dir, Issues.ISSUES_REACTIONS, issue_reaction_list)
-    
-    @staticmethod
-    def generate_issue_pandas_tables_without_reactions(repo, data_root_dir):
-        """
-        generate_issue_pandas_tables_without_reactions(repo, data_root_dir)
-
-        Extracting the complete issue data from a repository excluding all reactions.
-
-        Parameters
-        ----------
-        repo: Repository
-            Repository object from pygithub.
-        data_root_dir: str
-            Data root directory for the repository.
-
-        Notes
-        -----
-            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
-
-        """
-        issues_dir = Path(data_root_dir, Issues.ISSUES_DIR)
-        issues = repo.get_issues(state='all') 
-        users_ids = Utility.get_users_ids(data_root_dir)
-        issue_list = []
-        issue_comment_list = []
-        issue_event_list = []
-        for issue in issues:
-            # remove pull_requests from issues
-            if issue._pull_request == github.GithubObject.NotSet:
-                # issue data
-                issue_data = Issues.extract_issue_data(issue, users_ids, data_root_dir)
-                issue_list.append(issue_data)
-                # issue comment data
-                for comment in issue.get_comments():
-                    issue_comment_data = Utility.extract_comment_data(comment, issue.id, "issue", users_ids, data_root_dir)
-                    issue_comment_list.append(issue_comment_data)
-                    # issue comment reaction data
-                # issue event data
-                for event in issue.get_events():
-                    issue_event_data = Utility.extract_event_data(event, issue.id, "issue", users_ids, data_root_dir)
-                    issue_event_list.append(issue_event_data)
-        # Save lists
-        Utility.save_list_to_pandas_table(issues_dir, Issues.ISSUES, issue_list)
-        Utility.save_list_to_pandas_table(issues_dir, Issues.ISSUES_COMMENTS, issue_comment_list)
-        Utility.save_list_to_pandas_table(issues_dir, Issues.ISSUES_EVENTS, issue_event_list)
-        return True
+        if reactions:
+            Utility.save_list_to_pandas_table(issues_dir, Issues.ISSUES_REACTIONS, issue_reaction_list)
     
     @staticmethod
     def get_issues(data_root_dir, filename=ISSUES):
@@ -241,6 +173,7 @@ class Issues():
             Pandas DataFrame which can include the desired data
 
         """
+        
         issues_dir = Path(data_root_dir, Issues.ISSUES_DIR)
         pd_issues_file = Path(issues_dir, filename)
         if pd_issues_file.is_file():

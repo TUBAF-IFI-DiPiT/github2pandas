@@ -3,7 +3,6 @@ from pathlib import Path
 import pandas as pd
 import github
 import pickle
-import uuid
 from human_id import generate_id
 import json
 
@@ -15,6 +14,8 @@ class Utility():
     ----------
     USERS : str
         Pandas table file for user data.
+    REPO : str
+       Json file for general repository informations.
 
     Methods
     -------
@@ -28,7 +29,7 @@ class Utility():
             Get a repository data (owner and name).
         get_repo(repo_owner, repo_name, token, data_root_dir)
             Get a repository by owner, name and token.
-        apply_datetime_format(pd_table, source_column, destination_column)
+        apply_datetime_format(pd_table, source_column, destination_column=None)
             Provide equal date formate for all timestamps.
         get_users(data_root_dir)
             Get the generated users pandas table.
@@ -38,7 +39,7 @@ class Utility():
             Get all assignees as one string.
         extract_labels(github_labels)
             Get all labels as one string.
-        extract_user_data(author, users_ids, data_root_dir)
+        extract_user_data(user, users_ids, data_root_dir)
             Extracting general user data.
         extract_author_data_from_commit(repo, sha, users_ids, data_root_dir)
             Extracting general author data from a commit.
@@ -64,7 +65,7 @@ class Utility():
 
         Parameters
         ----------
-        new_list: list, PaginatedList
+        new_list: list
             new list with id and updated_at.
         old_df: DataFrame
             old Dataframe.
@@ -72,14 +73,12 @@ class Utility():
         Returns
         -------
         bool
-            True if it need to be updated. False the List is uptodate.
+            True if the repo needs to be updated. False the List is uptodate.
 
         """
         if old_df.empty:
             return True
         if not len(new_list) == old_df.count()[0]:
-            print(new_list.totalCount)
-            print(old_df.count()[0])
             return True
         for new_class in new_list:
             df = old_df.loc[((old_df.id == new_class.id) & (old_df.updated_at == new_class.updated_at))]
@@ -97,7 +96,7 @@ class Utility():
         Parameters
         ----------
         new_paginated_list: PaginatedList
-            new list with id and updated_at.
+            new paginated list with id and updated_at.
         old_df: DataFrame
             old Dataframe.
 
@@ -202,9 +201,9 @@ class Utility():
         return g.get_repo(repo_owner + "/" + repo_name)
     
     @staticmethod
-    def apply_datetime_format(pd_table, source_column, destination_column = None):
+    def apply_datetime_format(pd_table, source_column, destination_column=None):
         """
-        apply_datetime_format(pd_table, source_column, destination_column)
+        apply_datetime_format(pd_table, source_column, destination_column=None)
 
         Provide equal date formate for all timestamps
 
@@ -214,8 +213,8 @@ class Utility():
             List of NamedUser
         source_column: str
             Source column name.
-        destination_column: str
-            Destination column name.
+        destination_column: str, default=None
+            Destination column name. Saves to Source if None.
 
         Returns
         -------
@@ -281,7 +280,7 @@ class Utility():
     @staticmethod
     def extract_assignees(github_assignees, users_ids, data_root_dir):
         """
-        extract_assignees(github_assignees, data_root_dir)
+        extract_assignees(github_assignees, users_ids, data_root_dir)
 
         Get all assignees as one string. 
 
@@ -343,7 +342,7 @@ class Utility():
     @staticmethod
     def extract_user_data(user, users_ids, data_root_dir):
         """
-        extract_user_data(author, users_ids, data_root_dir)
+        extract_user_data(user, users_ids, data_root_dir)
 
         Extracting general user data.
 
@@ -424,7 +423,7 @@ class Utility():
     @staticmethod
     def extract_committer_data_from_commit(repo, sha, users_ids, data_root_dir):
         """
-        extract_committer_data_from_commit(repo, sha, data_root_dir)
+        extract_committer_data_from_commit(repo, sha, users_ids, data_root_dir)
 
         Extracting general committer data from a commit.
 
@@ -459,7 +458,7 @@ class Utility():
     @staticmethod
     def extract_reaction_data(reaction, parent_id, parent_name, users_ids, data_root_dir):
         """
-        extract_reaction_data(reaction, parent_id, users_ids, parent_name)
+        extract_reaction_data(reaction, parent_id, parent_name, users_ids, data_root_dir)
 
         Extracting general reaction data.
 
@@ -498,7 +497,7 @@ class Utility():
     @staticmethod
     def extract_event_data(event, parent_id, parent_name, users_ids, data_root_dir):
         """
-        extract_event_data(event, id, parent_name, users_ids, data_root_dir)
+        extract_event_data(event, parent_id, parent_name, users_ids, data_root_dir)
 
         Extracting general event data from a issue or pull request.
 

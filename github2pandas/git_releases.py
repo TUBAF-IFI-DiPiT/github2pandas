@@ -6,7 +6,7 @@ from .utility import Utility
 
 class GitReleases():
     """
-    Class to aggregate git releases.
+    Class to extract git releases.
 
     Attributes
     ----------
@@ -102,6 +102,7 @@ class GitReleases():
         users_ids = Utility.get_users_ids(data_root_dir)
         git_releases_list = []
         for git_release in git_releases:
+            # git release data
             git_release_data = GitReleases.extract_git_releases_data(git_release, users_ids, data_root_dir)
             git_releases_list.append(git_release_data)
         Utility.save_list_to_pandas_table(git_releases_dir, GitReleases.GIT_RELEASES, git_releases_list)
