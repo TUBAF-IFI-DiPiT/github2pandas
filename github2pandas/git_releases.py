@@ -6,7 +6,7 @@ from .utility import Utility
 
 class GitReleases():
     """
-    Class to extract git releases.
+    Class to aggregate git releases.
 
     Attributes
     ----------
@@ -38,11 +38,11 @@ class GitReleases():
 
         Parameters
         ----------
-        GitRelease: GitRelease
+        GitRelease : GitRelease
             GitRelease object from pygithub.
-        users_ids: dict
+        users_ids : dict
             Dict of User Ids as Keys and anonym Ids as Value.
-        data_root_dir: str
+        data_root_dir : str
             Data root directory for the repository.
 
         Returns
@@ -64,7 +64,7 @@ class GitReleases():
         git_releases_data["target_commitish"] = git_release.target_commitish
         git_releases_data["draft"] = git_release.draft
         git_releases_data["prerelease"] = git_release.prerelease
-        if not git_release.author == github.GithubObject.NotSet:
+        if not git_release._author == github.GithubObject.NotSet:
             git_releases_data["author"] = Utility.extract_user_data(git_release.author, users_ids, data_root_dir)
         git_releases_data["created_at"] = git_release.created_at
         git_releases_data["published_at"] = git_release.published_at
@@ -79,12 +79,12 @@ class GitReleases():
 
         Parameters
         ----------
-        repo: Repository
+        repo : Repository
             Repository object from pygithub.
-        data_root_dir: str
+        data_root_dir : str
             Data root directory for the repository.
-        check_for_updates: bool, default=True
-            Check first if there are any new git releases.
+        check_for_updates : bool, default=True
+            Check first if there are any new git releases information.
         
         Notes
         -----
@@ -116,9 +116,9 @@ class GitReleases():
 
         Parameters
         ----------
-        data_root_dir: str
+        data_root_dir : str
             Data root directory for the repository.
-        filename: str, default=GIT_RELEASES
+        filename : str, default=GIT_RELEASES
             Pandas table file for git releases data
 
         Returns

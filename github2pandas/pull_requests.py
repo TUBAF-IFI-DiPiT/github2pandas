@@ -7,7 +7,7 @@ from .utility import Utility
 
 class PullRequests():
     """
-    Class to extract Pull Requests
+    Class to aggregate Pull Requests
 
     Attributes
     ----------
@@ -52,11 +52,11 @@ class PullRequests():
 
         Parameters
         ----------
-        pull_request: PullRequest
+        pull_request : PullRequest
             PullRequest object from pygithub.
-        users_ids: dict
+        users_ids : dict
             Dict of User Ids as Keys and anonym Ids as Value.
-        data_root_dir: str
+        data_root_dir : str
             Data root directory for the repository.
 
         Returns
@@ -100,13 +100,13 @@ class PullRequests():
 
         Parameters
         ----------
-        review: PullRequestReview
+        review : PullRequestReview
             PullRequestReview object from pygithub.
-        pull_request_id: int
+        pull_request_id : int
             Pull request id as foreign key.
-        users_ids: dict
+        users_ids : dict
             Dict of User Ids as Keys and anonym Ids as Value.
-        data_root_dir: str
+        data_root_dir : str
             Data root directory for the repository.
 
         Returns
@@ -139,14 +139,15 @@ class PullRequests():
 
         Parameters
         ----------
-        repo: Repository
+        repo : Repository
             Repository object from pygithub.
-        data_root_dir: str
+        data_root_dir : str
             Data root directory for the repository.
-        reactions: bool, default=False
+        reactions : bool, default=False
             If reactions should also be exracted. The extraction of all reactions increases significantly the aggregation speed.
-        check_for_updates: bool, default=True
-            Check first if there are any new pull requests.
+        check_for_updates : bool, default=True
+            Check first if there are any new pull requests information.
+        
         Notes
         -----
             PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
@@ -213,9 +214,9 @@ class PullRequests():
 
         Parameters
         ----------
-        data_root_dir: str
+        data_root_dir : str
             Data root directory for the repository.
-        filename: str, default=PULL_REQUESTS
+        filename : str, default=PULL_REQUESTS
             Pandas table file for pull requests or comments or reactions or reviews or events data.
 
         Returns

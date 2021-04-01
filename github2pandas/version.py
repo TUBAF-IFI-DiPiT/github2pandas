@@ -1,4 +1,3 @@
-from .utility import Utility
 import os
 import sqlite3
 import pickle
@@ -10,23 +9,11 @@ import shutil
 from pathlib import Path
 import stat
 
-"""
-Error handler function
-It will try to change file permission and call the calling function again,
-"""
-def handleError(func, path, exc_info):
-    print('Handling Error for file ' , path)
-    print(exc_info)
-    # Check if file access issue
-    if not os.access(path, os.W_OK):
-       # Try to change the permision of file
-       os.chmod(path, stat.S_IWUSR)
-       # call the calling function again
-       func(path)
+from .utility import Utility
 
 class Version():
     """
-    Class to aggregate Pull Requests
+    Class to aggregate Version
 
     Attributes
     ----------
@@ -42,19 +29,26 @@ class Version():
         MYSQL data base file containing version history.
     no_of_processes : int
         Number of processors used for crawling process.
+    COMMIT_DELETEABLE_COLUMNS : list
+        Commit colums from git2net which can be deleted.
+    COMMIT_RENAMING_COLUMNS : dict
+        Commit Colums from git2net which need to be renamed.
+    EDIT_RENAMING_COLUMNS : dict
+        Edit Colums from git2net which need to be renamed.
 
     Methods
     -------
+    handleError(func, path, exc_info)
+        Error handler function which will try to change file permission and call the calling function again.
     clone_repository(repo, data_root_dir, github_token=None)
         Cloning repository from git.
     generate_data_base(data_root_dir)
         Extracting version data from a local repository and storing them in a mysql data base.
     generate_version_pandas_tables(data_root_dir)
         Extracting edits and commits in a pandas table.
-    get_raw_commit(data_root_dir):
+    get_version(data_root_dir, filename=VERSION_COMMITS)
         Get the generated pandas table.
-    get_raw_edit(data_root_dir)
-        Get the generated pandas table.
+
     """  
 
     VERSION_DIR = "Versions"
@@ -71,6 +65,33 @@ class Version():
     EDIT_RENAMING_COLUMNS = {'commit_hash':'commit_sha'}
 
     @staticmethod
+    def handleError(func, path, exc_info):
+        """
+        handleError(func, path, exc_info)
+
+        Error handler function which will try to change file permission and call the calling function again.
+
+        Parameters
+        ----------
+        func : Function
+            Calling function.
+        path : str
+            Path of the file which causes the Error.
+        exc_info : str
+            Execution information.
+        
+        """
+        
+        print('Handling Error for file ' , path)
+        print(exc_info)
+        # Check if file access issue
+        if not os.access(path, os.W_OK):
+            # Try to change the permision of file
+            os.chmod(path, stat.S_IWUSR)
+            # call the calling function again
+            func(path)
+
+    @staticmethod
     def clone_repository(repo, data_root_dir, github_token=None):
         """
         Clone_repository(repo, data_root_dir, github_token=None)
@@ -79,22 +100,19 @@ class Version():
 
         Parameters
         ----------
-        repo: Repository
+        repo : Repository
             Repository object from pygithub.
-        data_root_dir: str
+        data_root_dir : str
             Repo dir of the project.
-        github_token: str
-            Token string
-
-        Returns
-        -------
-        Bool
-            Code runs without errors 
+        github_token : str
+            Token string.
 
         Notes
         -----
             Pygit2 documentation: https://github.com/libgit2/pygit2
+        
         """
+        
         git_repo_name = repo.name
         git_repo_owner = repo.owner.login
         
@@ -103,7 +121,7 @@ class Version():
 
         repo_dir = version_folder.joinpath(Version.VERSION_REPOSITORY_DIR)
         if repo_dir.exists ():
-            shutil.rmtree(repo_dir.resolve(), onerror=handleError)
+            shutil.rmtree(repo_dir.resolve(), onerror=Version.handleError)
 
         callbacks = None
 
@@ -123,15 +141,11 @@ class Version():
                 branch_name = branch_name.replace(pattern, '')
 
             if branch_name != 'HEAD' and branch_name not in existing_branches:
-                #print("  ", branch_name, end="")
                 try:
                     r.git.branch('--track', branch_name,
                                 'remotes/origin/'+branch_name)
-                    #print(" ")
                 except Exception:
                     print(" -> An exception occurred")
-
-        return True
 
     @staticmethod
     def generate_data_base(data_root_dir):
@@ -142,13 +156,8 @@ class Version():
 
         Parameters
         ----------
-        data_root_dir: str
-            Repo dir of the project.
-
-        Returns
-        -------
-        bool
-            Code runs without errors 
+        data_root_dir : str
+            Data root directory for the repository.
         
         Notes
         -----
@@ -162,7 +171,9 @@ class Version():
                             blame_C='', blame_w=False, max_modifications=0, timeout=0, extract_text=False,
                             extract_complexity=False, extract_merges=True, extract_merge_deletions=False,
                             all_branches=False):
+        
         """
+        
         version_folder = Path(data_root_dir, Version.VERSION_DIR)
         version_folder.mkdir(parents=True, exist_ok=True)
         repo_dir = version_folder.joinpath(Version.VERSION_REPOSITORY_DIR)
@@ -176,7 +187,6 @@ class Version():
                               extract_text=True,
                               no_of_processes=Version.no_of_proceses,
                               max_modifications=1000)
-        return True
 
     @staticmethod
     def generate_version_pandas_tables(data_root_dir):
@@ -188,12 +198,8 @@ class Version():
         Parameters
         ----------
         data_root_dir: str
-            Repo dir of the project.
+            Data root directory for the repository.
 
-        Returns
-        -------
-        bool
-            Code runs without errors 
         """
 
         Version.generate_data_base(data_root_dir)
@@ -202,44 +208,44 @@ class Version():
         sqlite_db_file = version_folder.joinpath(Version.VERSION_DB)
 
         db = sqlite3.connect(sqlite_db_file)
-        pdCommits = pd.read_sql_query("SELECT * FROM commits", db)
-        pdEdits = pd.read_sql_query("SELECT * FROM edits", db)
+        pd_commits = pd.read_sql_query("SELECT * FROM commits", db)
+        pd_edits = pd.read_sql_query("SELECT * FROM edits", db)
 
-        pdCommits.rename(columns=Version.COMMIT_RENAMING_COLUMNS, inplace = True)
-        pdCommits.drop(columns=Version.COMMIT_DELETEABLE_COLUMNS, axis = 1, inplace = True)
-        pdCommits = Utility.apply_datetime_format(pdCommits, 'commited_at')
+        pd_commits.rename(columns=Version.COMMIT_RENAMING_COLUMNS, inplace = True)
+        pd_commits.drop(columns=Version.COMMIT_DELETEABLE_COLUMNS, axis = 1, inplace = True)
+        pd_commits = Utility.apply_datetime_format(pd_commits, 'commited_at')
 
-        pdEdits.rename(columns=Version.EDIT_RENAMING_COLUMNS, inplace = True)
+        pd_edits.rename(columns=Version.EDIT_RENAMING_COLUMNS, inplace = True)
 
         pd_commits_file = Path(version_folder, Version.VERSION_COMMITS)
         with open(pd_commits_file, "wb") as f:
-            pickle.dump(pdCommits, f)
+            pickle.dump(pd_commits, f)
 
         pd_edits_file = Path(version_folder, Version.VERSION_EDITS)
         with open(pd_edits_file, "wb") as f:
-            pickle.dump(pdEdits, f)
-
-        return True
+            pickle.dump(pd_edits, f)
 
     @staticmethod
     def get_version(data_root_dir, filename=VERSION_COMMITS):
         """
-        get_version(data_root_dir, filename)
+        get_version(data_root_dir, filename=VERSION_COMMITS)
 
         Get the generated pandas table.
 
         Parameters
         ----------
-        data_root_dir: str
-            Path to the data folder of the repository.
-        filename: str, default=VERSION_COMMITS
-            Pandas table file for workflows or runs.
+        data_root_dir : str
+            Data root directory for the repository.
+        filename : str, default=VERSION_COMMITS
+            Pandas table file for commits or edits.
 
         Returns
         -------
         DataFrame
             Pandas DataFrame which includes the commit or edit data set
+        
         """
+        
         workflows_dir = Path(data_root_dir, Version.VERSION_DIR)
         pd_workflows_file = Path(workflows_dir, filename)
         if pd_workflows_file.is_file():

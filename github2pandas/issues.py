@@ -7,7 +7,7 @@ from .utility import Utility
 
 class Issues():
     """
-    Class to extract Issues
+    Class to aggregate Issues
 
     Attributes
     ----------
@@ -47,11 +47,11 @@ class Issues():
 
         Parameters
         ----------
-        issue: Issue
+        issue : Issue
             Issue object from pygithub.
-        users_ids: dict
+        users_ids : dict
             Dict of User Ids as Keys and anonym Ids as Value.
-        data_root_dir: str
+        data_root_dir : str
             Data root directory for the repository.
 
         Returns
@@ -90,14 +90,14 @@ class Issues():
 
         Parameters
         ----------
-        repo: Repository
+        repo : Repository
             Repository object from pygithub.
-        data_root_dir: str
+        data_root_dir : str
             Data root directory for the repository.
-        reactions: bool, default=False
+        reactions : bool, default=False
             If reactions should also be exracted. The extraction of all reactions increases significantly the aggregation speed.
-        check_for_updates: bool, default=True
-            Check first if there are any new pull requests.
+        check_for_updates : bool, default=True
+            Check first if there are any new issues information.
 
         Notes
         -----
@@ -162,9 +162,9 @@ class Issues():
 
         Parameters
         ----------
-        data_root_dir: str
+        data_root_dir : str
             Data root directory for the repository.
-        filename: str, default=ISSUES
+        filename : str, default=ISSUES
             Pandas table file for issues or comments or reactions or events data.
 
         Returns
