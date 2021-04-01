@@ -77,6 +77,8 @@ class Utility():
 
         """
         if old_df.empty:
+            if len(new_list) == 0:
+                return False
             return True
         if not len(new_list) == old_df.count()[0]:
             return True
@@ -107,10 +109,10 @@ class Utility():
 
         """
         if old_df.empty:
+            if new_paginated_list.totalCount == 0:
+                return False
             return True
         if not new_paginated_list.totalCount == old_df.count()[0]:
-            print(new_paginated_list.totalCount)
-            print(old_df.count()[0])
             return True
         for new_class in new_paginated_list:
             df = old_df.loc[((old_df.id == new_class.id) & (old_df.updated_at == new_class.updated_at))]
@@ -164,7 +166,8 @@ class Utility():
             with open(repo_file, 'r') as json_file:
                 repo_data = json.load(json_file)
                 return (repo_data["repo_owner"], repo_data["repo_name"])
-        
+        return None, None
+    
     @staticmethod      
     def get_repo(repo_owner, repo_name, token, data_root_dir):
         """
@@ -246,7 +249,6 @@ class Utility():
             Pandas DataFrame which includes the users data
 
         """
-        data_root_dir.mkdir(parents=True, exist_ok=True)
         users_file = Path(data_root_dir, Utility.USERS)
         if users_file.is_file():
             return pd.read_pickle(users_file)

@@ -2,6 +2,7 @@ import unittest
 import os
 from pathlib import Path
 import github
+import datetime
 
 from github2pandas.utility import Utility
 from github2pandas.issues import Issues
@@ -21,47 +22,55 @@ class TestIssues(unittest.TestCase):
     users_ids = Utility.get_users_ids(default_data_folder)
 
     def test_generate_issue_pandas_tables(self):
-        """
-        Test generate issues pandas tables without reactions and check for updates.
-        """
-
         Issues.generate_issue_pandas_tables(self.repo, self.default_data_folder, check_for_updates=False)
-
-    def test_generate_issue_pandas_tables_check(self):
-        """
-        Test generate issues pandas tables with reactions check for updates.
-        """
-
         Issues.generate_issue_pandas_tables(self.repo, self.default_data_folder)
-
-    def test_generate_issue_pandas_tables_reactions(self):
-        """
-        Test generate issues pandas tables with reactions and without check for updates.
-        """
-
         Issues.generate_issue_pandas_tables(self.repo, self.default_data_folder, reactions=True, check_for_updates=False)
 
     def test_get_issues(self):
-        """
-        Test get issues.
-        """
-
         issues = Issues.get_issues(self.default_data_folder)
         issues_comments = Issues.get_issues(self.default_data_folder, filename=Issues.ISSUES_COMMENTS)
         issues_reactions = Issues.get_issues(self.default_data_folder, filename=Issues.ISSUES_REACTIONS)
         issues_events = Issues.get_issues(self.default_data_folder, filename=Issues.ISSUES_EVENTS)
 
     def test_extract_issue_data(self):
-        """
-        Test extract issue data.
-        """
-
         issues = self.repo.get_issues(state='all') 
         for issue in issues:
             # remove pull_requests from issues
             if issue._pull_request == github.GithubObject.NotSet:
                 issue_data = Issues.extract_issue_data(issue, self.users_ids, self.default_data_folder)
                 break
+        class User:
+             node_id = "test_extract_issue_data"
+             name = "test_extract_issue_data"
+             email = "test_extract_issue_data@test.de"
+             login = "test_extract_issue_data"
+        class Issue:
+            assignees = []
+            body = "test_extract_issue_data"
+            closed_at = datetime.datetime.now()
+            _closed_by = User()
+            closed_by = User()
+            created_at = datetime.datetime.now()
+            id = 0
+            labels = []
+            state = "test_extract_issue_data"
+            title = "test_extract_issue_data"
+            updated_at = datetime.datetime.now()
+            _user = User()
+            user = User()
+        
+        issue_data = Issues.extract_issue_data(Issue(), self.users_ids, self.default_data_folder)
+        self.assertIsNotNone(issue_data)
+        issue = Issue()
+        issue._user = github.GithubObject.NotSet
+        issue._closed_by = github.GithubObject.NotSet
+        issue_data = Issues.extract_issue_data(issue, self.users_ids, self.default_data_folder)
+        self.assertIsNotNone(issue_data)
+        self.assertFalse("author" in issue_data.keys())
+        self.assertFalse("closed_by" in issue_data.keys())
+        # remove users data
+        os.remove(Path(self.default_data_folder, Utility.USERS))
+        self.users_ids = {}
 
 if __name__ == "__main__":
     unittest.main()

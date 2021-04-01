@@ -20,31 +20,13 @@ class TestGitReleases(unittest.TestCase):
     users_ids = Utility.get_users_ids(default_data_folder)
 
     def test_generate_git_releases_pandas_tables(self):
-        """
-        Test generate git releases pandas tables without check for updates.
-        """
-
         GitReleases.generate_git_releases_pandas_tables(self.repo, self.default_data_folder, check_for_updates=False)
-
-    def test_generate_git_releases_pandas_tables_check(self):
-        """
-        Test generate git releases pandas tables with check for updates.
-        """
-
         GitReleases.generate_git_releases_pandas_tables(self.repo, self.default_data_folder)
 
     def test_get_git_releases(self):
-        """
-        Test get git releases.
-        """
-
         git_releases = GitReleases.get_git_releases(self.default_data_folder)
 
     def test_extract_git_releases_data(self):
-        """
-        Test extract git releases data.
-        """
-
         git_releases = self.repo.get_releases()
         for git_release in git_releases:
             git_release_data = GitReleases.extract_git_releases_data(git_release, self.users_ids, self.default_data_folder)
