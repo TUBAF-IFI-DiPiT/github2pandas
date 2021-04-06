@@ -19,11 +19,12 @@ pandas = "*"
 jupyter = "*"
 sphinx = "*"
 m2r2 = "*"
-pypiwin32 = "*"
+pypiwin32 = {sys_platform = "== 'win32'"}
 human-id = "*"
 
 [dev-packages]
 github2pandas = {editable = true, path = "."}
+pipenv-setup = "*"
 
 [requires]
 python_version = "3.8"
