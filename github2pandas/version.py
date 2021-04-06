@@ -25,6 +25,8 @@ class Version():
         Pandas table file for commits.
     VERSION_EDITS : str
         Pandas table file for edit data per commit.
+    VERSION_BRANCHES : str
+        Pandas table file for branch names.
     VERSION_DB : str
         MYSQL data base file containing version history.
     no_of_processes : int
@@ -55,6 +57,7 @@ class Version():
     VERSION_REPOSITORY_DIR = "repo"
     VERSION_COMMITS = "pdCommits.p"
     VERSION_EDITS = "pdEdits.p"
+    VERSION_BRANCHES = "pdBrances.p"
     VERSION_DB = "Versions.db"
     no_of_proceses = 1
 
@@ -217,6 +220,19 @@ class Version():
 
         pd_edits.rename(columns=Version.EDIT_RENAMING_COLUMNS, inplace = True)
 
+        # Extract branch names
+        branch_entries = [x.split(',') for x in pd_commits.branches.values]
+        branch_list = [item for sublist in branch_entries for item in sublist]
+        branches = list(set(branch_list))
+        pd_Branches = pd.DataFrame(branches, columns =['branch_names'])
+
+        branch_ids = []
+        for index, row in pd_commits.iterrows():
+            idxs = [branches.index(branch_name) for branch_name in row.branches.split(',')]
+            branch_ids.append(idxs)
+        pd_commits['branch_ids'] = branch_ids
+        pd_commits.drop(['branches'], axis = 1, inplace=True)
+        
         pd_commits_file = Path(version_folder, Version.VERSION_COMMITS)
         with open(pd_commits_file, "wb") as f:
             pickle.dump(pd_commits, f)
@@ -224,6 +240,10 @@ class Version():
         pd_edits_file = Path(version_folder, Version.VERSION_EDITS)
         with open(pd_edits_file, "wb") as f:
             pickle.dump(pd_edits, f)
+
+        pd_branches_file = Path(version_folder, Version.VERSION_BRANCHES)
+        with open(pd_branches_file, "wb") as f:
+            pickle.dump(pd_Branches, f)          
 
     @staticmethod
     def get_version(data_root_dir, filename=VERSION_COMMITS):
