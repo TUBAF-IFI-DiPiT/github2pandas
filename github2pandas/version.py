@@ -189,6 +189,7 @@ class Version():
                               extract_complexity=True,
                               extract_text=True,
                               no_of_processes=Version.no_of_proceses,
+                              all_branches=True,
                               max_modifications=1000)
 
     @staticmethod
