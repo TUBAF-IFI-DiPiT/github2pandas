@@ -3,7 +3,6 @@ from pathlib import Path
 import pandas as pd
 import github
 import pickle
-import uuid
 from human_id import generate_id
 import json
 
@@ -15,6 +14,8 @@ class Utility():
     ----------
     USERS : str
         Pandas table file for user data.
+    REPO : str
+       Json file for general repository informations.
 
     Methods
     -------
@@ -28,7 +29,7 @@ class Utility():
             Get a repository data (owner and name).
         get_repo(repo_owner, repo_name, token, data_root_dir)
             Get a repository by owner, name and token.
-        apply_datetime_format(pd_table, source_column, destination_column)
+        apply_datetime_format(pd_table, source_column, destination_column=None)
             Provide equal date formate for all timestamps.
         get_users(data_root_dir)
             Get the generated users pandas table.
@@ -38,7 +39,7 @@ class Utility():
             Get all assignees as one string.
         extract_labels(github_labels)
             Get all labels as one string.
-        extract_user_data(author, users_ids, data_root_dir)
+        extract_user_data(user, users_ids, data_root_dir)
             Extracting general user data.
         extract_author_data_from_commit(repo, sha, users_ids, data_root_dir)
             Extracting general author data from a commit.
@@ -50,8 +51,8 @@ class Utility():
             Extracting general event data from a issue or pull request.
         extract_comment_data(comment, parent_id, parent_name, users_ids, data_root_dir)
             Extracting general comment data from a pull request or issue.
+    
     """
-
     USERS = "Users.p"
     REPO = "Repo.json"
     
@@ -64,22 +65,22 @@ class Utility():
 
         Parameters
         ----------
-        new_list: list, PaginatedList
+        new_list : list
             new list with id and updated_at.
-        old_df: DataFrame
+        old_df : DataFrame
             old Dataframe.
 
         Returns
         -------
         bool
-            True if it need to be updated. False the List is uptodate.
+            True if the repo needs to be updated. False the List is uptodate.
 
         """
         if old_df.empty:
+            if len(new_list) == 0:
+                return False
             return True
         if not len(new_list) == old_df.count()[0]:
-            print(new_list.totalCount)
-            print(old_df.count()[0])
             return True
         for new_class in new_list:
             df = old_df.loc[((old_df.id == new_class.id) & (old_df.updated_at == new_class.updated_at))]
@@ -96,9 +97,9 @@ class Utility():
 
         Parameters
         ----------
-        new_paginated_list: PaginatedList
-            new list with id and updated_at.
-        old_df: DataFrame
+        new_paginated_list : PaginatedList
+            new paginated list with id and updated_at.
+        old_df : DataFrame
             old Dataframe.
 
         Returns
@@ -108,10 +109,10 @@ class Utility():
 
         """
         if old_df.empty:
+            if new_paginated_list.totalCount == 0:
+                return False
             return True
         if not new_paginated_list.totalCount == old_df.count()[0]:
-            print(new_paginated_list.totalCount)
-            print(old_df.count()[0])
             return True
         for new_class in new_paginated_list:
             df = old_df.loc[((old_df.id == new_class.id) & (old_df.updated_at == new_class.updated_at))]
@@ -128,11 +129,11 @@ class Utility():
 
         Parameters
         ----------
-        dir: str
+        dir : str
             Path to the desired save dir.
-        file: str
+        file : str
             Name of the file.
-        data_list: list
+        data_list : list
             list of data dictionarys
 
         """
@@ -151,7 +152,7 @@ class Utility():
 
         Parameters
         ----------
-        data_root_dir: str
+        data_root_dir : str
             Data root directory for the repository.
         
         Returns
@@ -165,7 +166,8 @@ class Utility():
             with open(repo_file, 'r') as json_file:
                 repo_data = json.load(json_file)
                 return (repo_data["repo_owner"], repo_data["repo_name"])
-        
+        return None, None
+    
     @staticmethod      
     def get_repo(repo_owner, repo_name, token, data_root_dir):
         """
@@ -175,13 +177,13 @@ class Utility():
 
         Parameters
         ----------
-        repo_owner: str
+        repo_owner : str
             the owner of the desired repository.
-        repo_name: str
+        repo_name : str
             the name of the desired repository.
-        token: str
+        token : str
             A valid Github Token.
-        data_root_dir: str
+        data_root_dir : str
             Data root directory for the repository.
         
         Returns
@@ -202,20 +204,20 @@ class Utility():
         return g.get_repo(repo_owner + "/" + repo_name)
     
     @staticmethod
-    def apply_datetime_format(pd_table, source_column, destination_column = None):
+    def apply_datetime_format(pd_table, source_column, destination_column=None):
         """
-        apply_datetime_format(pd_table, source_column, destination_column)
+        apply_datetime_format(pd_table, source_column, destination_column=None)
 
         Provide equal date formate for all timestamps
 
         Parameters
         ----------
-        pd_table: pandas Dataframe
+        pd_table : pandas Dataframe
             List of NamedUser
-        source_column: str
+        source_column : str
             Source column name.
-        destination_column: str
-            Destination column name.
+        destination_column : str, default=None
+            Destination column name. Saves to Source if None.
 
         Returns
         -------
@@ -238,7 +240,7 @@ class Utility():
 
         Parameters
         ----------
-        data_root_dir: str
+        data_root_dir : str
             Data root directory for the repository.
 
         Returns
@@ -247,7 +249,6 @@ class Utility():
             Pandas DataFrame which includes the users data
 
         """
-        data_root_dir.mkdir(parents=True, exist_ok=True)
         users_file = Path(data_root_dir, Utility.USERS)
         if users_file.is_file():
             return pd.read_pickle(users_file)
@@ -263,7 +264,7 @@ class Utility():
 
         Parameters
         ----------
-        data_root_dir: str
+        data_root_dir : str
             Data root directory for the repository.
 
         Returns
@@ -281,17 +282,17 @@ class Utility():
     @staticmethod
     def extract_assignees(github_assignees, users_ids, data_root_dir):
         """
-        extract_assignees(github_assignees, data_root_dir)
+        extract_assignees(github_assignees, users_ids, data_root_dir)
 
         Get all assignees as one string. 
 
         Parameters
         ----------
-        github_assignees: list
+        github_assignees : list
             List of NamedUser.
-        users_ids: dict
+        users_ids : dict
             Dict of User Ids as Keys and anonym Ids as Value.
-        data_root_dir: str
+        data_root_dir : str
             Data root directory for the repository.
 
         Returns
@@ -320,8 +321,8 @@ class Utility():
 
         Parameters
         ----------
-        github_labels: list
-            List of Label
+        github_labels : list
+            List of Label.
 
         Returns
         -------
@@ -343,17 +344,17 @@ class Utility():
     @staticmethod
     def extract_user_data(user, users_ids, data_root_dir):
         """
-        extract_user_data(author, users_ids, data_root_dir)
+        extract_user_data(user, users_ids, data_root_dir)
 
         Extracting general user data.
 
         Parameters
         ----------
-        user: NamedUser
+        user : NamedUser
             NamedUser object from pygithub.
-        users_ids: dict
+        users_ids : dict
             Dict of User Ids as Keys and anonym Ids as Value.
-        data_root_dir: str
+        data_root_dir : str
             Repo dir of the project.
         Returns
         -------
@@ -395,13 +396,13 @@ class Utility():
 
         Parameters
         ----------
-        repo: Repository
+        repo : Repository
             Repository object from pygithub.
-        sha: str
+        sha : str
             sha from the commit.
-        users_ids: dict
+        users_ids : dict
             Dict of User Ids as Keys and anonym Ids as Value.
-        data_root_dir: str
+        data_root_dir : str
             Data root directory for the repository.
 
         Returns
@@ -424,19 +425,19 @@ class Utility():
     @staticmethod
     def extract_committer_data_from_commit(repo, sha, users_ids, data_root_dir):
         """
-        extract_committer_data_from_commit(repo, sha, data_root_dir)
+        extract_committer_data_from_commit(repo, sha, users_ids, data_root_dir)
 
         Extracting general committer data from a commit.
 
         Parameters
         ----------
-        repo: Repository
+        repo : Repository
             Repository object from pygithub.
-        sha: str
+        sha : str
             sha from the commit.
-        users_ids: dict
+        users_ids : dict
             Dict of User Ids as Keys and anonym Ids as Value.
-        data_root_dir: str
+        data_root_dir : str
             Data root directory for the repository.
 
         Returns
@@ -459,21 +460,21 @@ class Utility():
     @staticmethod
     def extract_reaction_data(reaction, parent_id, parent_name, users_ids, data_root_dir):
         """
-        extract_reaction_data(reaction, parent_id, users_ids, parent_name)
+        extract_reaction_data(reaction, parent_id, parent_name, users_ids, data_root_dir)
 
         Extracting general reaction data.
 
         Parameters
         ----------
-        reaction: Reaction
+        reaction : Reaction
             Reaction object from pygithub.
-        parent_id: int
+        parent_id : int
             Id from parent as foreign key.
-        parent_name: str
+        parent_name : str
             Name of the parent.
-        users_ids: dict
+        users_ids : dict
             Dict of User Ids as Keys and anonym Ids as Value.
-        data_root_dir: str
+        data_root_dir : str
             Repo dir of the project.
 
         Returns
@@ -498,21 +499,21 @@ class Utility():
     @staticmethod
     def extract_event_data(event, parent_id, parent_name, users_ids, data_root_dir):
         """
-        extract_event_data(event, id, parent_name, users_ids, data_root_dir)
+        extract_event_data(event, parent_id, parent_name, users_ids, data_root_dir)
 
         Extracting general event data from a issue or pull request.
 
         Parameters
         ----------
-        event: IssueEvent
+        even t: IssueEvent
             IssueEvent object from pygithub.
-        parent_id: int
+        parent_id : int
             Id from parent as foreign key.
-        parent_name: str
+        parent_name : str
             Name of the parent.
-        users_ids: dict
+        users_ids : dict
             Dict of User Ids as Keys and anonym Ids as Value.
-        data_root_dir: str
+        data_root_dir : str
             Repo dir of the project.
 
         Returns
@@ -550,15 +551,15 @@ class Utility():
 
         Parameters
         ----------
-        comment: github_object 
+        comment : github_object 
             PullRequestComment or IssueComment object from pygithub.
-        parent_id: int
+        parent_id : int
             Id from parent as foreign key.
-        parent_name: str
+        parent_name : str
             Name of the parent.
-        users_ids: dict
+        users_ids : dict
             Dict of User Ids as Keys and anonym Ids as Value.
-        data_root_dir: str
+        data_root_dir : str
             Repo dir of the project.
 
         Returns
