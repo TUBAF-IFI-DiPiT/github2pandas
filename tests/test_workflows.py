@@ -30,6 +30,7 @@ class TestWorkflows(unittest.TestCase):
         pd_workflows_runs = Workflows.get_workflows(self.default_data_folder, Workflows.WORKFLOWS_RUNS)
 
     def test_download_workflow_log_files(self):
+        self.skipTest("Skip Test Fr Workflow")
         for workflow_run in self.repo.get_workflow_runs():
             file_number = Workflows.download_workflow_log_files(self.repo,self.github_token, workflow_run.id, self.default_data_folder)
             self.assertIsNotNone(file_number)
