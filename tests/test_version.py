@@ -3,7 +3,8 @@ import os
 from pathlib import Path
 import pygit2 as git2
 import shutil
-
+import psutil
+import time
 from github2pandas.utility import Utility
 from github2pandas.version import Version
 
@@ -22,27 +23,31 @@ class TestVersion(unittest.TestCase):
     repo = Utility.get_repo(git_repo_owner, git_repo_name, github_token, default_data_folder)
 
     def test_version(self):
-        self.skipTest("Skip Test because it fails to delete the folder on windows")
+        #self.skipTest("Skip Test because it fails to delete the folder on windows")
         # clone_public_repository
         try:
-            result = Version.clone_repository(self.repo, self.default_data_folder, self.github_token)
+            Version.clone_repository(self.repo, self.default_data_folder, self.github_token)
         except git2.GitError:
             self.skipTest("Skip Test because repo is not public")
         
 
         # generate_version_pandas_tables
-        result  = Version.generate_version_pandas_tables(data_root_dir=self.default_data_folder)
+        Version.generate_version_pandas_tables(data_root_dir=self.default_data_folder)
         
         # get_version
         pd_commits = Version.get_version(data_root_dir=self.default_data_folder)
         self.assertTrue( not pd_commits.empty)
         pd_edits = Version.get_version(self.default_data_folder, Version.VERSION_EDITS)
         self.assertTrue( not pd_edits.empty)
+        print("Fertig!!")
     
     def setUp(self):
         self.default_data_folder.mkdir(parents=True, exist_ok=True)
 
     def tearDown(self):
+        for proc in psutil.process_iter():
+            if proc.name() == "git.exe":
+                proc.kill()
         shutil.rmtree(self.test_data_folder.resolve(), onerror=Version.handleError)
 
 if "__main__" == __name__:
