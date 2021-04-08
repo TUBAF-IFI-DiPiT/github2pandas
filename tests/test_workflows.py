@@ -3,11 +3,12 @@ import os
 from pathlib import Path
 import warnings
 import datetime
+import shutil
 
 from github2pandas.workflows import Workflows
 from github2pandas.utility import Utility
 
-class Test_Workflows(unittest.TestCase):
+class TestWorkflows(unittest.TestCase):
     """
     Test case for Workflows class.
     """
@@ -17,9 +18,8 @@ class Test_Workflows(unittest.TestCase):
     git_repo_name = "Extract_Git_Activities"
     git_repo_owner = "TUBAF-IFI-DiPiT"
 
-    default_data_folder = Path("data", git_repo_name)
+    default_data_folder = Path("test_data", git_repo_name)
     repo = Utility.get_repo(git_repo_owner, git_repo_name, github_token, default_data_folder)
-    users_ids = Utility.get_users_ids(default_data_folder)
 
     def test_generate_workflow_pandas_tables(self):
         Workflows.generate_workflow_pandas_tables(self.repo, self.default_data_folder, check_for_updates=False)
@@ -60,6 +60,12 @@ class Test_Workflows(unittest.TestCase):
             conclusion = "test_extract_workflow_data"
         worflow_run_data = Workflows.extract_workflow_run_data(WorkflowRun())
         self.assertIsNotNone(worflow_run_data)
+
+    def setUp(self):
+        self.default_data_folder.mkdir(parents=True, exist_ok=True)
+
+    def tearDown(self):
+        shutil.rmtree("test_data")
 
 if "__main__" == __name__:
     unittest.main()

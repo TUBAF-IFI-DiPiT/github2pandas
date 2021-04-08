@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import datetime
 import github
+import shutil
 
 from github2pandas.utility import Utility
 from github2pandas.pull_requests import PullRequests
@@ -17,7 +18,7 @@ class TestPullRequests(unittest.TestCase):
     git_repo_name = "Extract_Git_Activities"
     git_repo_owner = "TUBAF-IFI-DiPiT"
 
-    default_data_folder = Path("data", git_repo_name)
+    default_data_folder = Path("test_data", git_repo_name)
     repo = Utility.get_repo(git_repo_owner, git_repo_name, github_token, default_data_folder)
     users_ids = Utility.get_users_ids(default_data_folder)
 
@@ -68,9 +69,6 @@ class TestPullRequests(unittest.TestCase):
         self.assertIsNotNone(pull_request_data)
         self.assertFalse("author" in pull_request_data.keys())
         self.assertFalse("merged_by" in pull_request_data.keys())
-        # remove users data
-        os.remove(Path(self.default_data_folder, Utility.USERS))
-        self.users_ids = {}
     
     def test_extract_pull_request_review_data(self):
         pull_requests = self.repo.get_pulls(state='all') 
@@ -99,8 +97,12 @@ class TestPullRequests(unittest.TestCase):
         pull_request_review_data = PullRequests.extract_pull_request_review_data(pull_request_review, 0, self.users_ids, self.default_data_folder)
         self.assertIsNotNone(pull_request_review_data)
         self.assertFalse("author" in pull_request_review_data.keys())
-        # remove users data
-        os.remove(Path(self.default_data_folder, Utility.USERS))
+
+    def setUp(self):
+        self.default_data_folder.mkdir(parents=True, exist_ok=True)
+
+    def tearDown(self):
+        shutil.rmtree("test_data")
         self.users_ids = {}
 
 if __name__ == "__main__":
