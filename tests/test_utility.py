@@ -6,10 +6,12 @@ import warnings
 import pandas as pd
 import datetime
 import time
-from github2pandas.utility import Utility
 import shutil
 import pickle
 import github
+import json
+
+from github2pandas.utility import Utility
 
 class TestUtility(unittest.TestCase):
     """
@@ -20,7 +22,7 @@ class TestUtility(unittest.TestCase):
 
     git_repo_name = "Extract_Git_Activities"
     git_repo_owner = "TUBAF-IFI-DiPiT"
-    default_data_folder = Path("data", git_repo_name)
+    default_data_folder = Path("test_data", git_repo_name)
     repo = Utility.get_repo(git_repo_owner, git_repo_name, github_token, default_data_folder)
     users_ids = Utility.get_users_ids(default_data_folder)
 
@@ -115,6 +117,9 @@ class TestUtility(unittest.TestCase):
         os.remove(pd_file)
 
     def test_get_repo_informations(self):
+        repo_file = Path(self.default_data_folder, Utility.REPO)
+        with open(repo_file, 'w') as json_file:
+            json.dump({"repo_owner": self.git_repo_owner,"repo_name": self.git_repo_name}, json_file)
         owner, name = Utility.get_repo_informations(self.default_data_folder)
         self.assertIsNotNone(owner)
         self.assertIsNotNone(name)
@@ -146,9 +151,6 @@ class TestUtility(unittest.TestCase):
         self.assertFalse(users.empty)
         users = Utility.get_users("no folder")
         self.assertTrue(users.empty)
-        # remove users data
-        os.remove(users_file)
-        self.users_ids = {}
 
     def test_get_users_ids(self):
         users_file = Path(self.default_data_folder, Utility.USERS)
@@ -159,9 +161,6 @@ class TestUtility(unittest.TestCase):
         self.assertTrue(len(users.keys()) == 1)
         users = Utility.get_users_ids("no folder")
         self.assertTrue(len(users.keys()) == 0)
-        # remove users data
-        os.remove(users_file)
-        self.users_ids = {}
 
     def test_extract_assignees(self):
         class UserData:
@@ -173,9 +172,6 @@ class TestUtility(unittest.TestCase):
         self.assertTrue(len(assignees) > 0)
         assignees2 = Utility.extract_assignees([UserData(),UserData()], self.users_ids, self.default_data_folder)
         self.assertTrue(assignees2 == assignees + "&" + assignees)
-        # remove users data
-        os.remove(Path(self.default_data_folder, Utility.USERS))
-        self.users_ids = {}
 
     def test_extract_labels(self):
         class Label:
@@ -201,9 +197,6 @@ class TestUtility(unittest.TestCase):
         user = Utility.extract_user_data(UserData(), self.users_ids, self.default_data_folder)
         self.assertIsNotNone(user)
         self.assertTrue(old_user_id_len == len(self.users_ids.keys()))
-        # remove users data
-        os.remove(Path(self.default_data_folder, Utility.USERS))
-        self.users_ids = {}
     
     def test_extract_author_data_from_commit(self):
         for commit in self.repo.get_commits():
@@ -237,9 +230,6 @@ class TestUtility(unittest.TestCase):
         reaction_data = Utility.extract_reaction_data(reaction,12345,"test",self.users_ids, self.default_data_folder)
         self.assertIsNotNone(reaction_data)
         self.assertFalse("author" in reaction_data.keys())
-        # remove users data
-        os.remove(Path(self.default_data_folder, Utility.USERS))
-        self.users_ids = {}
     
     def test_extract_event_data(self):
         class Label:
@@ -275,9 +265,6 @@ class TestUtility(unittest.TestCase):
         self.assertFalse("label" in event_data.keys())
         self.assertFalse("assignee" in event_data.keys())
         self.assertFalse("assigner" in event_data.keys())
-        # remove users data
-        os.remove(Path(self.default_data_folder, Utility.USERS))
-        self.users_ids = {}
 
     def test_extract_comment_data(self):
         class User:
@@ -299,8 +286,12 @@ class TestUtility(unittest.TestCase):
         comment_data = Utility.extract_comment_data(comment,12345,"test",self.users_ids, self.default_data_folder)
         self.assertIsNotNone(comment_data)
         self.assertFalse("author" in comment_data.keys())
-        # remove users data
-        os.remove(Path(self.default_data_folder, Utility.USERS))
+
+    def setUp(self):
+        self.default_data_folder.mkdir(parents=True, exist_ok=True)
+
+    def tearDown(self):
+        shutil.rmtree("test_data")
         self.users_ids = {}
 
 if __name__ == "__main__":

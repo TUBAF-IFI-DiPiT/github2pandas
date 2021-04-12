@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import github
 import datetime
+import shutil
 
 from github2pandas.utility import Utility
 from github2pandas.issues import Issues
@@ -17,7 +18,7 @@ class TestIssues(unittest.TestCase):
     git_repo_name = "Extract_Git_Activities"
     git_repo_owner = "TUBAF-IFI-DiPiT"
 
-    default_data_folder = Path("data", git_repo_name)
+    default_data_folder = Path("test_data", git_repo_name)
     repo = Utility.get_repo(git_repo_owner, git_repo_name, github_token, default_data_folder)
     users_ids = Utility.get_users_ids(default_data_folder)
 
@@ -68,8 +69,12 @@ class TestIssues(unittest.TestCase):
         self.assertIsNotNone(issue_data)
         self.assertFalse("author" in issue_data.keys())
         self.assertFalse("closed_by" in issue_data.keys())
-        # remove users data
-        os.remove(Path(self.default_data_folder, Utility.USERS))
+
+    def setUp(self):
+        self.default_data_folder.mkdir(parents=True, exist_ok=True)
+
+    def tearDown(self):
+        shutil.rmtree("test_data")
         self.users_ids = {}
 
 if __name__ == "__main__":

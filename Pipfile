@@ -21,6 +21,7 @@ sphinx = "*"
 m2r2 = "*"
 pypiwin32 = {sys_platform = "== 'win32'"}
 human-id = "*"
+psutil = "*"
 
 [dev-packages]
 github2pandas = {editable = true, path = "."}
