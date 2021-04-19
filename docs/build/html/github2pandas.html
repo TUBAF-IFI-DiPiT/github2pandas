@@ -1,0 +1,1668 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>github2pandas package &mdash; github2pandas 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> github2pandas
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="readme_link.html">Readme File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme_link.html#transform-github-activities-to-pandas-dataframes">Transform GitHub Activities to Pandas Dataframes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme_link.html#for-developers">For Developers</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">github2pandas</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>github2pandas package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/github2pandas.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="github2pandas-package">
+<h1>github2pandas package<a class="headerlink" href="#github2pandas-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-github2pandas.git_releases">
+<span id="github2pandas-git-releases-module"></span><h2>github2pandas.git_releases module<a class="headerlink" href="#module-github2pandas.git_releases" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="github2pandas.git_releases.GitReleases">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">github2pandas.git_releases.</span></code><code class="sig-name descname"><span class="pre">GitReleases</span></code><a class="reference internal" href="_modules/github2pandas/git_releases.html#GitReleases"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.git_releases.GitReleases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to aggregate git releases.</p>
+<dl class="py attribute">
+<dt id="github2pandas.git_releases.GitReleases.GIT_RELEASES_DIR">
+<code class="sig-name descname"><span class="pre">GIT_RELEASES_DIR</span></code><a class="headerlink" href="#github2pandas.git_releases.GitReleases.GIT_RELEASES_DIR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Git releases dir where all files are saved in.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.git_releases.GitReleases.GIT_RELEASES">
+<code class="sig-name descname"><span class="pre">GIT_RELEASES</span></code><a class="headerlink" href="#github2pandas.git_releases.GitReleases.GIT_RELEASES" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pandas table file for git releases data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.git_releases.GitReleases.extract_git_releases_data">
+<code class="sig-name descname"><span class="pre">extract_git_releases_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">git_release</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/git_releases.html#GitReleases.extract_git_releases_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.git_releases.GitReleases.extract_git_releases_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general git release data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.git_releases.GitReleases.generate_git_releases_pandas_tables">
+<code class="sig-name descname"><span class="pre">generate_git_releases_pandas_tables</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_for_updates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/git_releases.html#GitReleases.generate_git_releases_pandas_tables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.git_releases.GitReleases.generate_git_releases_pandas_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting the complete git releases data from a repository.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.git_releases.GitReleases.get_git_releases">
+<code class="sig-name descname"><span class="pre">get_git_releases</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">GIT_RELEASES</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/git_releases.html#GitReleases.get_git_releases"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.git_releases.GitReleases.get_git_releases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a genearted pandas table.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="id0">
+<code class="sig-name descname"><span class="pre">GIT_RELEASES</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'pdReleases.p'</span></em><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id1">
+<code class="sig-name descname"><span class="pre">GIT_RELEASES_DIR</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'Issues'</span></em><a class="headerlink" href="#id1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="id2">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">extract_git_releases_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">git_release</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/git_releases.html#GitReleases.extract_git_releases_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general git release data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>GitRelease</strong> (<em>GitRelease</em>) – GitRelease object from pygithub.</p></li>
+<li><p><strong>users_ids</strong> (<em>dict</em>) – Dict of User Ids as Keys and anonym Ids as Value.</p></li>
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary with the extracted general git release data.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>PyGithub GitRelease object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/GitRelease.html">https://pygithub.readthedocs.io/en/latest/github_objects/GitRelease.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id3">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">generate_git_releases_pandas_tables</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_for_updates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/git_releases.html#GitReleases.generate_git_releases_pandas_tables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting the complete git releases data from a repository.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo</strong> (<em>Repository</em>) – Repository object from pygithub.</p></li>
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p></li>
+<li><p><strong>check_for_updates</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Check first if there are any new git releases information.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>PyGithub Repository object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html">https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id4">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">get_git_releases</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">GIT_RELEASES</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/git_releases.html#GitReleases.get_git_releases"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a genearted pandas table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>default=GIT_RELEASES</em>) – Pandas table file for git releases data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Pandas DataFrame which can includes the desired data</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-github2pandas.issues">
+<span id="github2pandas-issues-module"></span><h2>github2pandas.issues module<a class="headerlink" href="#module-github2pandas.issues" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="github2pandas.issues.Issues">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">github2pandas.issues.</span></code><code class="sig-name descname"><span class="pre">Issues</span></code><a class="reference internal" href="_modules/github2pandas/issues.html#Issues"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.issues.Issues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to aggregate Issues</p>
+<dl class="py attribute">
+<dt id="github2pandas.issues.Issues.ISSUES_DIR">
+<code class="sig-name descname"><span class="pre">ISSUES_DIR</span></code><a class="headerlink" href="#github2pandas.issues.Issues.ISSUES_DIR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Issues dir where all files are saved in.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.issues.Issues.ISSUES">
+<code class="sig-name descname"><span class="pre">ISSUES</span></code><a class="headerlink" href="#github2pandas.issues.Issues.ISSUES" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pandas table file for issues data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.issues.Issues.ISSUES_COMMENTS">
+<code class="sig-name descname"><span class="pre">ISSUES_COMMENTS</span></code><a class="headerlink" href="#github2pandas.issues.Issues.ISSUES_COMMENTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pandas table file for comments data in issues.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.issues.Issues.ISSUES_REACTIONS">
+<code class="sig-name descname"><span class="pre">ISSUES_REACTIONS</span></code><a class="headerlink" href="#github2pandas.issues.Issues.ISSUES_REACTIONS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pandas table file for reactions data in issues.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.issues.Issues.ISSUES_EVENTS">
+<code class="sig-name descname"><span class="pre">ISSUES_EVENTS</span></code><a class="headerlink" href="#github2pandas.issues.Issues.ISSUES_EVENTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pandas table file for reviews data in issues.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.issues.Issues.extract_issue_data">
+<code class="sig-name descname"><span class="pre">extract_issue_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issue</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/issues.html#Issues.extract_issue_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.issues.Issues.extract_issue_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general issue data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.issues.Issues.generate_issue_pandas_tables">
+<code class="sig-name descname"><span class="pre">generate_issue_pandas_tables</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_for_updates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/issues.html#Issues.generate_issue_pandas_tables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.issues.Issues.generate_issue_pandas_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting the complete issue data from a repository.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.issues.Issues.get_issues">
+<code class="sig-name descname"><span class="pre">get_issues</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">ISSUES</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/issues.html#Issues.get_issues"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.issues.Issues.get_issues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a genearted pandas table.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="id5">
+<code class="sig-name descname"><span class="pre">ISSUES</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'pdIssues.p'</span></em><a class="headerlink" href="#id5" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id6">
+<code class="sig-name descname"><span class="pre">ISSUES_COMMENTS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'pdIssuesComments.p'</span></em><a class="headerlink" href="#id6" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id7">
+<code class="sig-name descname"><span class="pre">ISSUES_DIR</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'Issues'</span></em><a class="headerlink" href="#id7" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id8">
+<code class="sig-name descname"><span class="pre">ISSUES_EVENTS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'pdIssuesEvents.p'</span></em><a class="headerlink" href="#id8" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id9">
+<code class="sig-name descname"><span class="pre">ISSUES_REACTIONS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'pdIssuesReactions.p'</span></em><a class="headerlink" href="#id9" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="id10">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">extract_issue_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issue</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/issues.html#Issues.extract_issue_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id10" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general issue data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>issue</strong> (<em>Issue</em>) – Issue object from pygithub.</p></li>
+<li><p><strong>users_ids</strong> (<em>dict</em>) – Dict of User Ids as Keys and anonym Ids as Value.</p></li>
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary with the extracted general issue data.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>PyGithub Issue object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/Issue.html">https://pygithub.readthedocs.io/en/latest/github_objects/Issue.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id11">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">generate_issue_pandas_tables</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_for_updates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/issues.html#Issues.generate_issue_pandas_tables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id11" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting the complete issue data from a repository.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo</strong> (<em>Repository</em>) – Repository object from pygithub.</p></li>
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p></li>
+<li><p><strong>reactions</strong> (<em>bool</em><em>, </em><em>default=False</em>) – If reactions should also be exracted. The extraction of all reactions increases significantly the aggregation speed.</p></li>
+<li><p><strong>check_for_updates</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Check first if there are any new issues information.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>PyGithub Repository object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html">https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id12">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">get_issues</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">ISSUES</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/issues.html#Issues.get_issues"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id12" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a genearted pandas table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>default=ISSUES</em>) – Pandas table file for issues or comments or reactions or events data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Pandas DataFrame which can include the desired data</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-github2pandas.pull_requests">
+<span id="github2pandas-pull-requests-module"></span><h2>github2pandas.pull_requests module<a class="headerlink" href="#module-github2pandas.pull_requests" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="github2pandas.pull_requests.PullRequests">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">github2pandas.pull_requests.</span></code><code class="sig-name descname"><span class="pre">PullRequests</span></code><a class="reference internal" href="_modules/github2pandas/pull_requests.html#PullRequests"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.pull_requests.PullRequests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to aggregate Pull Requests</p>
+<dl class="py attribute">
+<dt id="github2pandas.pull_requests.PullRequests.PULL_REQUESTS_DIR">
+<code class="sig-name descname"><span class="pre">PULL_REQUESTS_DIR</span></code><a class="headerlink" href="#github2pandas.pull_requests.PullRequests.PULL_REQUESTS_DIR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pull request dir where all files are saved in.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.pull_requests.PullRequests.PULL_REQUESTS">
+<code class="sig-name descname"><span class="pre">PULL_REQUESTS</span></code><a class="headerlink" href="#github2pandas.pull_requests.PullRequests.PULL_REQUESTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pandas table file for pull request data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.pull_requests.PullRequests.PULL_REQUESTS_COMMENTS">
+<code class="sig-name descname"><span class="pre">PULL_REQUESTS_COMMENTS</span></code><a class="headerlink" href="#github2pandas.pull_requests.PullRequests.PULL_REQUESTS_COMMENTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pandas table file for comments data in pull requests.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.pull_requests.PullRequests.PULL_REQUESTS_REACTIONS">
+<code class="sig-name descname"><span class="pre">PULL_REQUESTS_REACTIONS</span></code><a class="headerlink" href="#github2pandas.pull_requests.PullRequests.PULL_REQUESTS_REACTIONS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pandas table file for reactions data in pull requests.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.pull_requests.PullRequests.PULL_REQUESTS_REVIEWS">
+<code class="sig-name descname"><span class="pre">PULL_REQUESTS_REVIEWS</span></code><a class="headerlink" href="#github2pandas.pull_requests.PullRequests.PULL_REQUESTS_REVIEWS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pandas table file for reviews data in pull requests.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.pull_requests.PullRequests.PULL_REQUESTS_EVENTS">
+<code class="sig-name descname"><span class="pre">PULL_REQUESTS_EVENTS</span></code><a class="headerlink" href="#github2pandas.pull_requests.PullRequests.PULL_REQUESTS_EVENTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pandas table file for events data in pull requests.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.pull_requests.PullRequests.extract_pull_request_data">
+<code class="sig-name descname"><span class="pre">extract_pull_request_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pull_request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/pull_requests.html#PullRequests.extract_pull_request_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.pull_requests.PullRequests.extract_pull_request_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general pull request data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.pull_requests.PullRequests.extract_pull_request_review_data">
+<code class="sig-name descname"><span class="pre">extract_pull_request_review_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">review</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pull_request_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/pull_requests.html#PullRequests.extract_pull_request_review_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.pull_requests.PullRequests.extract_pull_request_review_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general review data from a pull request.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.pull_requests.PullRequests.generate_pull_request_pandas_tables">
+<code class="sig-name descname"><span class="pre">generate_pull_request_pandas_tables</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_for_updates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/pull_requests.html#PullRequests.generate_pull_request_pandas_tables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.pull_requests.PullRequests.generate_pull_request_pandas_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting the complete pull request data from a repository.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.pull_requests.PullRequests.get_pull_requests">
+<code class="sig-name descname"><span class="pre">get_pull_requests</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">data_root_dir</span></em>, <em class="sig-param"><span class="pre">filename=PULL_REQUESTS)</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/pull_requests.html#PullRequests.get_pull_requests"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.pull_requests.PullRequests.get_pull_requests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a genearted pandas table.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="id13">
+<code class="sig-name descname"><span class="pre">PULL_REQUESTS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'pdPullRequests.p'</span></em><a class="headerlink" href="#id13" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id14">
+<code class="sig-name descname"><span class="pre">PULL_REQUESTS_COMMENTS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'pdPullRequestsComments.p'</span></em><a class="headerlink" href="#id14" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id15">
+<code class="sig-name descname"><span class="pre">PULL_REQUESTS_DIR</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'PullRequests'</span></em><a class="headerlink" href="#id15" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id16">
+<code class="sig-name descname"><span class="pre">PULL_REQUESTS_EVENTS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'pdPullRequestsEvents.p'</span></em><a class="headerlink" href="#id16" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id17">
+<code class="sig-name descname"><span class="pre">PULL_REQUESTS_REACTIONS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'pdPullRequestsReactions.p'</span></em><a class="headerlink" href="#id17" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id18">
+<code class="sig-name descname"><span class="pre">PULL_REQUESTS_REVIEWS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'pdPullRequestsReviews.p'</span></em><a class="headerlink" href="#id18" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="id19">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">extract_pull_request_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pull_request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/pull_requests.html#PullRequests.extract_pull_request_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id19" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general pull request data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pull_request</strong> (<em>PullRequest</em>) – PullRequest object from pygithub.</p></li>
+<li><p><strong>users_ids</strong> (<em>dict</em>) – Dict of User Ids as Keys and anonym Ids as Value.</p></li>
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary with the extracted general pull request data.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>PyGithub PullRequest object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/PullRequest.html">https://pygithub.readthedocs.io/en/latest/github_objects/PullRequest.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id20">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">extract_pull_request_review_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">review</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pull_request_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/pull_requests.html#PullRequests.extract_pull_request_review_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id20" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting review data from a pull request.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>review</strong> (<em>PullRequestReview</em>) – PullRequestReview object from pygithub.</p></li>
+<li><p><strong>pull_request_id</strong> (<em>int</em>) – Pull request id as foreign key.</p></li>
+<li><p><strong>users_ids</strong> (<em>dict</em>) – Dict of User Ids as Keys and anonym Ids as Value.</p></li>
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary with the extracted review data.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>PyGithub PullRequestReview object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/PullRequestReview.html">https://pygithub.readthedocs.io/en/latest/github_objects/PullRequestReview.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id21">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">generate_pull_request_pandas_tables</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_for_updates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/pull_requests.html#PullRequests.generate_pull_request_pandas_tables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id21" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting the complete pull request data from a repository.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo</strong> (<em>Repository</em>) – Repository object from pygithub.</p></li>
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p></li>
+<li><p><strong>reactions</strong> (<em>bool</em><em>, </em><em>default=False</em>) – If reactions should also be exracted. The extraction of all reactions increases significantly the aggregation speed.</p></li>
+<li><p><strong>check_for_updates</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Check first if there are any new pull requests information.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>PyGithub Repository object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html">https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id22">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">get_pull_requests</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">data_root_dir</span></em>, <em class="sig-param"><span class="pre">filename=PULL_REQUESTS)</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/pull_requests.html#PullRequests.get_pull_requests"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id22" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a genearted pandas table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>default=PULL_REQUESTS</em>) – Pandas table file for pull requests or comments or reactions or reviews or events data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Pandas DataFrame which can includes the desired data</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-github2pandas.utility">
+<span id="github2pandas-utility-module"></span><h2>github2pandas.utility module<a class="headerlink" href="#module-github2pandas.utility" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="github2pandas.utility.Utility">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">github2pandas.utility.</span></code><code class="sig-name descname"><span class="pre">Utility</span></code><a class="reference internal" href="_modules/github2pandas/utility.html#Utility"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.utility.Utility" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class which contains methods for mutiple modules.</p>
+<dl class="py attribute">
+<dt id="github2pandas.utility.Utility.USERS">
+<code class="sig-name descname"><span class="pre">USERS</span></code><a class="headerlink" href="#github2pandas.utility.Utility.USERS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pandas table file for user data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.utility.Utility.REPO">
+<code class="sig-name descname"><span class="pre">REPO</span></code><a class="headerlink" href="#github2pandas.utility.Utility.REPO" title="Permalink to this definition">¶</a></dt>
+<dd><p>Json file for general repository informations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.utility.Utility.check_for_updates">
+<code class="sig-name descname"><span class="pre">check_for_updates</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">old_df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.check_for_updates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.utility.Utility.check_for_updates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if id and updated_at are in the old_df.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.utility.Utility.check_for_updates_paginated">
+<code class="sig-name descname"><span class="pre">check_for_updates_paginated</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_paginated_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">old_df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.check_for_updates_paginated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.utility.Utility.check_for_updates_paginated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if id and updated_at are in the old_df.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.utility.Utility.save_list_to_pandas_table">
+<code class="sig-name descname"><span class="pre">save_list_to_pandas_table</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.save_list_to_pandas_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.utility.Utility.save_list_to_pandas_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a data list to a pandas table.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.utility.Utility.get_repo_informations">
+<code class="sig-name descname"><span class="pre">get_repo_informations</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.get_repo_informations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.utility.Utility.get_repo_informations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a repository data (owner and name).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.utility.Utility.get_repo">
+<code class="sig-name descname"><span class="pre">get_repo</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo_owner</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repo_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.get_repo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.utility.Utility.get_repo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a repository by owner, name and token.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.utility.Utility.apply_datetime_format">
+<code class="sig-name descname"><span class="pre">apply_datetime_format</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pd_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_column</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.apply_datetime_format"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.utility.Utility.apply_datetime_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide equal date formate for all timestamps.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.utility.Utility.get_users">
+<code class="sig-name descname"><span class="pre">get_users</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.get_users"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.utility.Utility.get_users" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the generated users pandas table.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.utility.Utility.get_users_ids">
+<code class="sig-name descname"><span class="pre">get_users_ids</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.get_users_ids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.utility.Utility.get_users_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the generated useres as dict whith github ids as keys and anonym uuids as values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.utility.Utility.extract_assignees">
+<code class="sig-name descname"><span class="pre">extract_assignees</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">github_assignees</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.extract_assignees"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.utility.Utility.extract_assignees" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all assignees as one string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.utility.Utility.extract_labels">
+<code class="sig-name descname"><span class="pre">extract_labels</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">github_labels</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.extract_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.utility.Utility.extract_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all labels as one string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.utility.Utility.extract_user_data">
+<code class="sig-name descname"><span class="pre">extract_user_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.extract_user_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.utility.Utility.extract_user_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general user data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.utility.Utility.extract_author_data_from_commit">
+<code class="sig-name descname"><span class="pre">extract_author_data_from_commit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.extract_author_data_from_commit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.utility.Utility.extract_author_data_from_commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general author data from a commit.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.utility.Utility.extract_committer_data_from_commit">
+<code class="sig-name descname"><span class="pre">extract_committer_data_from_commit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.extract_committer_data_from_commit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.utility.Utility.extract_committer_data_from_commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general committer data from a commit.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.utility.Utility.extract_reaction_data">
+<code class="sig-name descname"><span class="pre">extract_reaction_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.extract_reaction_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.utility.Utility.extract_reaction_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general reaction data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.utility.Utility.extract_event_data">
+<code class="sig-name descname"><span class="pre">extract_event_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.extract_event_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.utility.Utility.extract_event_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general event data from a issue or pull request.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.utility.Utility.extract_comment_data">
+<code class="sig-name descname"><span class="pre">extract_comment_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comment</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.extract_comment_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.utility.Utility.extract_comment_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general comment data from a pull request or issue.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="id23">
+<code class="sig-name descname"><span class="pre">REPO</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'Repo.json'</span></em><a class="headerlink" href="#id23" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id24">
+<code class="sig-name descname"><span class="pre">USERS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'Users.p'</span></em><a class="headerlink" href="#id24" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="id25">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">apply_datetime_format</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pd_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_column</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.apply_datetime_format"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id25" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide equal date formate for all timestamps</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pd_table</strong> (<em>pandas Dataframe</em>) – List of NamedUser</p></li>
+<li><p><strong>source_column</strong> (<em>str</em>) – Source column name.</p></li>
+<li><p><strong>destination_column</strong> (<em>str</em><em>, </em><em>default=None</em>) – Destination column name. Saves to Source if None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>String which contains all assignees.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id26">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">check_for_updates</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">old_df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.check_for_updates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id26" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if id and updated_at are in the old_df.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>new_list</strong> (<em>list</em>) – new list with id and updated_at.</p></li>
+<li><p><strong>old_df</strong> (<em>DataFrame</em>) – old Dataframe.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the repo needs to be updated. False the List is uptodate.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id27">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">check_for_updates_paginated</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_paginated_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">old_df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.check_for_updates_paginated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id27" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if id and updated_at are in the old_df.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>new_paginated_list</strong> (<em>PaginatedList</em>) – new paginated list with id and updated_at.</p></li>
+<li><p><strong>old_df</strong> (<em>DataFrame</em>) – old Dataframe.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if it need to be updated. False the List is uptodate.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id28">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">extract_assignees</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">github_assignees</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.extract_assignees"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id28" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all assignees as one string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>github_assignees</strong> (<em>list</em>) – List of NamedUser.</p></li>
+<li><p><strong>users_ids</strong> (<em>dict</em>) – Dict of User Ids as Keys and anonym Ids as Value.</p></li>
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>String which contains all assignees and are connected with the char &amp;.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>PyGithub NamedUser object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/NamedUser.html">https://pygithub.readthedocs.io/en/latest/github_objects/NamedUser.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id29">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">extract_author_data_from_commit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.extract_author_data_from_commit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id29" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general author data from a commit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo</strong> (<em>Repository</em>) – Repository object from pygithub.</p></li>
+<li><p><strong>sha</strong> (<em>str</em>) – sha from the commit.</p></li>
+<li><p><strong>users_ids</strong> (<em>dict</em>) – Dict of User Ids as Keys and anonym Ids as Value.</p></li>
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Anonym uuid of user.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>PyGithub Repository object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html">https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id30">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">extract_comment_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comment</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.extract_comment_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id30" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general comment data from a pull request or issue.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>comment</strong> (<em>github_object</em>) – PullRequestComment or IssueComment object from pygithub.</p></li>
+<li><p><strong>parent_id</strong> (<em>int</em>) – Id from parent as foreign key.</p></li>
+<li><p><strong>parent_name</strong> (<em>str</em>) – Name of the parent.</p></li>
+<li><p><strong>users_ids</strong> (<em>dict</em>) – Dict of User Ids as Keys and anonym Ids as Value.</p></li>
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Repo dir of the project.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary with the extracted data.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>CommentData</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>PullRequestComment object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/PullRequestComment.html">https://pygithub.readthedocs.io/en/latest/github_objects/PullRequestComment.html</a>
+IssueComment object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/IssueComment.html">https://pygithub.readthedocs.io/en/latest/github_objects/IssueComment.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id31">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">extract_committer_data_from_commit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.extract_committer_data_from_commit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id31" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general committer data from a commit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo</strong> (<em>Repository</em>) – Repository object from pygithub.</p></li>
+<li><p><strong>sha</strong> (<em>str</em>) – sha from the commit.</p></li>
+<li><p><strong>users_ids</strong> (<em>dict</em>) – Dict of User Ids as Keys and anonym Ids as Value.</p></li>
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Anonym uuid of user.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>PyGithub Repository object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html">https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id32">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">extract_event_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.extract_event_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id32" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general event data from a issue or pull request.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>even</em>) – IssueEvent object from pygithub.</p></li>
+<li><p><strong>parent_id</strong> (<em>int</em>) – Id from parent as foreign key.</p></li>
+<li><p><strong>parent_name</strong> (<em>str</em>) – Name of the parent.</p></li>
+<li><p><strong>users_ids</strong> (<em>dict</em>) – Dict of User Ids as Keys and anonym Ids as Value.</p></li>
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Repo dir of the project.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary with the extracted data.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>EventData</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>IssueEvent object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/IssueEvent.html">https://pygithub.readthedocs.io/en/latest/github_objects/IssueEvent.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id33">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">extract_labels</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">github_labels</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.extract_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id33" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all labels as one string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>github_labels</strong> (<em>list</em>) – List of Label.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>String which contains all labels and are connected with the char &amp;.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>PyGithub Label object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/Label.html">https://pygithub.readthedocs.io/en/latest/github_objects/Label.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id34">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">extract_reaction_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.extract_reaction_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id34" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general reaction data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reaction</strong> (<em>Reaction</em>) – Reaction object from pygithub.</p></li>
+<li><p><strong>parent_id</strong> (<em>int</em>) – Id from parent as foreign key.</p></li>
+<li><p><strong>parent_name</strong> (<em>str</em>) – Name of the parent.</p></li>
+<li><p><strong>users_ids</strong> (<em>dict</em>) – Dict of User Ids as Keys and anonym Ids as Value.</p></li>
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Repo dir of the project.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary with the extracted data.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ReactionData</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Reaction object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/Reaction.html">https://pygithub.readthedocs.io/en/latest/github_objects/Reaction.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id35">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">extract_user_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">users_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.extract_user_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id35" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general user data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>user</strong> (<em>NamedUser</em>) – NamedUser object from pygithub.</p></li>
+<li><p><strong>users_ids</strong> (<em>dict</em>) – Dict of User Ids as Keys and anonym Ids as Value.</p></li>
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Repo dir of the project.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Anonym uuid of user.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>PyGithub NamedUser object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/NamedUser.html">https://pygithub.readthedocs.io/en/latest/github_objects/NamedUser.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id36">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">get_repo</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo_owner</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repo_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.get_repo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id36" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a repository by owner, name and token.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo_owner</strong> (<em>str</em>) – the owner of the desired repository.</p></li>
+<li><p><strong>repo_name</strong> (<em>str</em>) – the name of the desired repository.</p></li>
+<li><p><strong>token</strong> (<em>str</em>) – A valid Github Token.</p></li>
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Repository object from pygithub.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>repo</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>PyGithub Repository object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html">https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id37">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">get_repo_informations</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.get_repo_informations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id37" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a repository data (owner and name).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Repository Owner and name</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id38">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">get_users</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.get_users"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id38" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the generated users pandas table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Pandas DataFrame which includes the users data</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id39">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">get_users_ids</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.get_users_ids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id39" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the generated useres as dict whith github ids as keys and anonym uuids as values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dict whith github ids as keys and anonym uuids as values.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id40">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">save_list_to_pandas_table</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/utility.html#Utility.save_list_to_pandas_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id40" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a data list to a pandas table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dir</strong> (<em>str</em>) – Path to the desired save dir.</p></li>
+<li><p><strong>file</strong> (<em>str</em>) – Name of the file.</p></li>
+<li><p><strong>data_list</strong> (<em>list</em>) – list of data dictionarys</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-github2pandas.version">
+<span id="github2pandas-version-module"></span><h2>github2pandas.version module<a class="headerlink" href="#module-github2pandas.version" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="github2pandas.version.Version">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">github2pandas.version.</span></code><code class="sig-name descname"><span class="pre">Version</span></code><a class="reference internal" href="_modules/github2pandas/version.html#Version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.version.Version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to aggregate Version</p>
+<dl class="py attribute">
+<dt id="github2pandas.version.Version.VERSION_DIR">
+<code class="sig-name descname"><span class="pre">VERSION_DIR</span></code><a class="headerlink" href="#github2pandas.version.Version.VERSION_DIR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Version dir where all files are saved in.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.version.Version.VERSION_REPOSITORY_DIR">
+<code class="sig-name descname"><span class="pre">VERSION_REPOSITORY_DIR</span></code><a class="headerlink" href="#github2pandas.version.Version.VERSION_REPOSITORY_DIR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Folder of cloned repository.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.version.Version.VERSION_COMMITS">
+<code class="sig-name descname"><span class="pre">VERSION_COMMITS</span></code><a class="headerlink" href="#github2pandas.version.Version.VERSION_COMMITS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pandas table file for commits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.version.Version.VERSION_EDITS">
+<code class="sig-name descname"><span class="pre">VERSION_EDITS</span></code><a class="headerlink" href="#github2pandas.version.Version.VERSION_EDITS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pandas table file for edit data per commit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.version.Version.VERSION_BRANCHES">
+<code class="sig-name descname"><span class="pre">VERSION_BRANCHES</span></code><a class="headerlink" href="#github2pandas.version.Version.VERSION_BRANCHES" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pandas table file for branch names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.version.Version.VERSION_DB">
+<code class="sig-name descname"><span class="pre">VERSION_DB</span></code><a class="headerlink" href="#github2pandas.version.Version.VERSION_DB" title="Permalink to this definition">¶</a></dt>
+<dd><p>MYSQL data base file containing version history.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.version.Version.no_of_processes">
+<code class="sig-name descname"><span class="pre">no_of_processes</span></code><a class="headerlink" href="#github2pandas.version.Version.no_of_processes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of processors used for crawling process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.version.Version.COMMIT_DELETEABLE_COLUMNS">
+<code class="sig-name descname"><span class="pre">COMMIT_DELETEABLE_COLUMNS</span></code><a class="headerlink" href="#github2pandas.version.Version.COMMIT_DELETEABLE_COLUMNS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Commit colums from git2net which can be deleted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.version.Version.COMMIT_RENAMING_COLUMNS">
+<code class="sig-name descname"><span class="pre">COMMIT_RENAMING_COLUMNS</span></code><a class="headerlink" href="#github2pandas.version.Version.COMMIT_RENAMING_COLUMNS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Commit Colums from git2net which need to be renamed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.version.Version.EDIT_RENAMING_COLUMNS">
+<code class="sig-name descname"><span class="pre">EDIT_RENAMING_COLUMNS</span></code><a class="headerlink" href="#github2pandas.version.Version.EDIT_RENAMING_COLUMNS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Edit Colums from git2net which need to be renamed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.version.Version.handleError">
+<code class="sig-name descname"><span class="pre">handleError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/version.html#Version.handleError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.version.Version.handleError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Error handler function which will try to change file permission and call the calling function again.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.version.Version.clone_repository">
+<code class="sig-name descname"><span class="pre">clone_repository</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">github_token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/version.html#Version.clone_repository"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.version.Version.clone_repository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cloning repository from git.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.version.Version.generate_data_base">
+<code class="sig-name descname"><span class="pre">generate_data_base</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/version.html#Version.generate_data_base"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.version.Version.generate_data_base" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting version data from a local repository and storing them in a mysql data base.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.version.Version.generate_version_pandas_tables">
+<code class="sig-name descname"><span class="pre">generate_version_pandas_tables</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/version.html#Version.generate_version_pandas_tables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.version.Version.generate_version_pandas_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting edits and commits in a pandas table.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.version.Version.get_version">
+<code class="sig-name descname"><span class="pre">get_version</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">VERSION_COMMITS</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/version.html#Version.get_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.version.Version.get_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the generated pandas table.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="id41">
+<code class="sig-name descname"><span class="pre">COMMIT_DELETEABLE_COLUMNS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">['author_email',</span> <span class="pre">'author_name',</span> <span class="pre">'committer_email',</span> <span class="pre">'committer_name',</span> <span class="pre">'author_date',</span> <span class="pre">'author_timezone',</span> <span class="pre">'commit_message_len',</span> <span class="pre">'project_name',</span> <span class="pre">'merge']</span></em><a class="headerlink" href="#id41" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id42">
+<code class="sig-name descname"><span class="pre">COMMIT_RENAMING_COLUMNS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">{'committer_date':</span> <span class="pre">'commited_at',</span> <span class="pre">'hash':</span> <span class="pre">'commit_sha',</span> <span class="pre">'parents':</span> <span class="pre">'parent_sha'}</span></em><a class="headerlink" href="#id42" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id43">
+<code class="sig-name descname"><span class="pre">EDIT_RENAMING_COLUMNS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">{'commit_hash':</span> <span class="pre">'commit_sha'}</span></em><a class="headerlink" href="#id43" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id44">
+<code class="sig-name descname"><span class="pre">VERSION_BRANCHES</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'pdBrances.p'</span></em><a class="headerlink" href="#id44" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id45">
+<code class="sig-name descname"><span class="pre">VERSION_COMMITS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'pdCommits.p'</span></em><a class="headerlink" href="#id45" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id46">
+<code class="sig-name descname"><span class="pre">VERSION_DB</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'Versions.db'</span></em><a class="headerlink" href="#id46" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id47">
+<code class="sig-name descname"><span class="pre">VERSION_DIR</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'Versions'</span></em><a class="headerlink" href="#id47" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id48">
+<code class="sig-name descname"><span class="pre">VERSION_EDITS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'pdEdits.p'</span></em><a class="headerlink" href="#id48" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id49">
+<code class="sig-name descname"><span class="pre">VERSION_REPOSITORY_DIR</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'repo'</span></em><a class="headerlink" href="#id49" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="id50">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">clone_repository</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">github_token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/version.html#Version.clone_repository"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id50" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clone_repository(repo, data_root_dir, github_token=None)</p>
+<p>Cloning repository from git.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo</strong> (<em>Repository</em>) – Repository object from pygithub.</p></li>
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Repo dir of the project.</p></li>
+<li><p><strong>github_token</strong> (<em>str</em>) – Token string.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Pygit2 documentation: <a class="reference external" href="https://github.com/libgit2/pygit2">https://github.com/libgit2/pygit2</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id51">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">generate_data_base</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/version.html#Version.generate_data_base"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id51" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting version data from a local repository and storing them in a mysql data base.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Be aware of the large number of configuration parameters for appling the crawling process given by
+<a class="reference external" href="https://github.com/gotec/git2net/blob/master/git2net/extraction.py">https://github.com/gotec/git2net/blob/master/git2net/extraction.py</a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">mine_git_repo</span><span class="p">(</span><span class="n">git_repo_dir</span><span class="p">,</span> <span class="n">sqlite_db_file</span><span class="p">,</span> <span class="n">commits</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">use_blocks</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">no_of_processes</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">(),</span> <span class="n">chunksize</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">blame_C</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">blame_w</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_modifications</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">extract_text</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">extract_complexity</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">extract_merges</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">extract_merge_deletions</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">all_branches</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id52">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">generate_version_pandas_tables</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/version.html#Version.generate_version_pandas_tables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id52" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting edits and commits in a pandas table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id53">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">get_version</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">VERSION_COMMITS</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/version.html#Version.get_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id53" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the generated pandas table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>default=VERSION_COMMITS</em>) – Pandas table file for commits or edits.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Pandas DataFrame which includes the commit or edit data set</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id54">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">handleError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/version.html#Version.handleError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id54" title="Permalink to this definition">¶</a></dt>
+<dd><p>Error handler function which will try to change file permission and call the calling function again.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> (<em>Function</em>) – Calling function.</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – Path of the file which causes the Error.</p></li>
+<li><p><strong>exc_info</strong> (<em>str</em>) – Execution information.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.version.Version.no_of_proceses">
+<code class="sig-name descname"><span class="pre">no_of_proceses</span></code><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#github2pandas.version.Version.no_of_proceses" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-github2pandas.workflows">
+<span id="github2pandas-workflows-module"></span><h2>github2pandas.workflows module<a class="headerlink" href="#module-github2pandas.workflows" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="github2pandas.workflows.Workflows">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">github2pandas.workflows.</span></code><code class="sig-name descname"><span class="pre">Workflows</span></code><a class="reference internal" href="_modules/github2pandas/workflows.html#Workflows"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.workflows.Workflows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to aggregate Workflows</p>
+<dl class="py attribute">
+<dt id="github2pandas.workflows.Workflows.WORKFLOWS_DIR">
+<code class="sig-name descname"><span class="pre">WORKFLOWS_DIR</span></code><a class="headerlink" href="#github2pandas.workflows.Workflows.WORKFLOWS_DIR" title="Permalink to this definition">¶</a></dt>
+<dd><p>workflow dir where all files are saved in.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.workflows.Workflows.WORKFLOWS">
+<code class="sig-name descname"><span class="pre">WORKFLOWS</span></code><a class="headerlink" href="#github2pandas.workflows.Workflows.WORKFLOWS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pandas table file for workflow data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="github2pandas.workflows.Workflows.WORKFLOWS_RUNS">
+<code class="sig-name descname"><span class="pre">WORKFLOWS_RUNS</span></code><a class="headerlink" href="#github2pandas.workflows.Workflows.WORKFLOWS_RUNS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pandas table file for run data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.workflows.Workflows.extract_workflow_data">
+<code class="sig-name descname"><span class="pre">extract_workflow_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workflow</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/workflows.html#Workflows.extract_workflow_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.workflows.Workflows.extract_workflow_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general workflow data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.workflows.Workflows.extract_workflow_run_data">
+<code class="sig-name descname"><span class="pre">extract_workflow_run_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workflow_run</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/workflows.html#Workflows.extract_workflow_run_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.workflows.Workflows.extract_workflow_run_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general workflow run data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.workflows.Workflows.generate_workflow_pandas_tables">
+<code class="sig-name descname"><span class="pre">generate_workflow_pandas_tables</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_for_updates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/workflows.html#Workflows.generate_workflow_pandas_tables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.workflows.Workflows.generate_workflow_pandas_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting the complete workflow list and run history from a repository.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.workflows.Workflows.download_workflow_log_files">
+<code class="sig-name descname"><span class="pre">download_workflow_log_files</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">github_token</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workflow_run_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/workflows.html#Workflows.download_workflow_log_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.workflows.Workflows.download_workflow_log_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive workflow log files from GitHub.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="github2pandas.workflows.Workflows.get_workflows">
+<code class="sig-name descname"><span class="pre">get_workflows</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">WORKFLOWS</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/workflows.html#Workflows.get_workflows"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#github2pandas.workflows.Workflows.get_workflows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a generated pandas tables.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="id55">
+<code class="sig-name descname"><span class="pre">WORKFLOWS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'pdWorkflows.p'</span></em><a class="headerlink" href="#id55" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id56">
+<code class="sig-name descname"><span class="pre">WORKFLOWS_DIR</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'Workflows'</span></em><a class="headerlink" href="#id56" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="id57">
+<code class="sig-name descname"><span class="pre">WORKFLOWS_RUNS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'pdWorkflowsRuns.p'</span></em><a class="headerlink" href="#id57" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="id58">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">download_workflow_log_files</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">github_token</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workflow_run_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/workflows.html#Workflows.download_workflow_log_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id58" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive workflow log files from GitHub.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo</strong> (<em>Repository</em>) – Repository object from pygithub.</p></li>
+<li><p><strong>github_token</strong> (<em>str</em>) – Authentication token for GitHub access.</p></li>
+<li><p><strong>workflow_run_id</strong> (<em>int</em>) – Workflow Run Id to download one specific workflow run.</p></li>
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Number of downloaded files.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Download api <a class="reference external" href="https://docs.github.com/en/rest/reference/actions#list-jobs-for-a-workflow-run">https://docs.github.com/en/rest/reference/actions#list-jobs-for-a-workflow-run</a>
+Generation of python code based on <a class="reference external" href="https://curl.trillworks.com/">https://curl.trillworks.com/</a>
+PyGithub Repository object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html">https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html</a>
+PyGithub WorkflowRun object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/WorkflowRun.html">https://pygithub.readthedocs.io/en/latest/github_objects/WorkflowRun.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id59">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">extract_workflow_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workflow</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/workflows.html#Workflows.extract_workflow_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id59" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general workflow data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>workflow</strong> (<em>Workflow</em>) – Workflow object from pygithub.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary with the extracted data.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>PyGithub Workflow object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/Workflow.html">https://pygithub.readthedocs.io/en/latest/github_objects/Workflow.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id60">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">extract_workflow_run_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workflow_run</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/workflows.html#Workflows.extract_workflow_run_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id60" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting general workflow run data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>workflow_run</strong> (<em>WorkflowRun</em>) – WorkflowRun object from pygithub.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary with the extracted data.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>PyGithub WorkflowRun object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/WorkflowRun.html">https://pygithub.readthedocs.io/en/latest/github_objects/WorkflowRun.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id61">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">generate_workflow_pandas_tables</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_for_updates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/workflows.html#Workflows.generate_workflow_pandas_tables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id61" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracting the complete workflow list and run history from a repository.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo</strong> (<em>Repository</em>) – Repository object from pygithub.</p></li>
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p></li>
+<li><p><strong>check_for_updates</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Check first if there are any new workflows or workflow_runs information.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>PyGithub Repository object structure: <a class="reference external" href="https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html">https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id62">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">get_workflows</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">WORKFLOWS</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/github2pandas/workflows.html#Workflows.get_workflows"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id62" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a generated pandas tables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_root_dir</strong> (<em>str</em>) – Data root directory for the repository.</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>default=WORKFLOWS</em>) – Pandas table file for workflows or workflows runs data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Pandas DataFrame which can include the desired data.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-github2pandas">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-github2pandas" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Maximilian Karl, Sebastian Zug.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

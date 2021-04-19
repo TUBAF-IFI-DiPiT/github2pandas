@@ -1,0 +1,425 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>github2pandas.workflows &mdash; github2pandas 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> github2pandas
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme_link.html">Readme File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../readme_link.html#transform-github-activities-to-pandas-dataframes">Transform GitHub Activities to Pandas Dataframes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../readme_link.html#for-developers">For Developers</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">github2pandas</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>github2pandas.workflows</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for github2pandas.workflows</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">zipfile</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">.utility</span> <span class="kn">import</span> <span class="n">Utility</span>
+
+<div class="viewcode-block" id="Workflows"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.workflows.Workflows">[docs]</a><span class="k">class</span> <span class="nc">Workflows</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to aggregate Workflows</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    WORKFLOWS_DIR : str</span>
+<span class="sd">        workflow dir where all files are saved in.</span>
+<span class="sd">    WORKFLOWS : str</span>
+<span class="sd">        Pandas table file for workflow data.</span>
+<span class="sd">    WORKFLOWS_RUNS : str</span>
+<span class="sd">        Pandas table file for run data.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    extract_workflow_data(workflow)</span>
+<span class="sd">        Extracting general workflow data.</span>
+<span class="sd">    extract_workflow_run_data(workflow_run)</span>
+<span class="sd">        Extracting general workflow run data.</span>
+<span class="sd">    generate_workflow_pandas_tables(repo, data_root_dir, check_for_updates=True)</span>
+<span class="sd">        Extracting the complete workflow list and run history from a repository.</span>
+<span class="sd">    download_workflow_log_files(repo, github_token, workflow_run_id, data_root_dir)</span>
+<span class="sd">        Receive workflow log files from GitHub.</span>
+<span class="sd">    get_workflows(data_root_dir, filename=WORKFLOWS)</span>
+<span class="sd">        Get a generated pandas tables.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">WORKFLOWS_DIR</span> <span class="o">=</span> <span class="s2">&quot;Workflows&quot;</span>
+    <span class="n">WORKFLOWS</span> <span class="o">=</span> <span class="s2">&quot;pdWorkflows.p&quot;</span>
+    <span class="n">WORKFLOWS_RUNS</span> <span class="o">=</span>  <span class="s2">&quot;pdWorkflowsRuns.p&quot;</span>
+
+<div class="viewcode-block" id="Workflows.extract_workflow_data"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.workflows.Workflows.extract_workflow_data">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">extract_workflow_data</span><span class="p">(</span><span class="n">workflow</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        extract_workflow_data(workflow)</span>
+
+<span class="sd">        Extracting general workflow data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        workflow : Workflow</span>
+<span class="sd">            Workflow object from pygithub.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dictionary with the extracted data.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">           PyGithub Workflow object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Workflow.html</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">workflow_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">workflow_data</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">workflow_data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">workflow_data</span><span class="p">[</span><span class="s1">&#39;created_at&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">created_at</span>
+        <span class="n">workflow_data</span><span class="p">[</span><span class="s1">&#39;updated_at&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">updated_at</span>
+        <span class="n">workflow_data</span><span class="p">[</span><span class="s2">&quot;state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">state</span>
+        <span class="k">return</span> <span class="n">workflow_data</span></div>
+    
+<div class="viewcode-block" id="Workflows.extract_workflow_run_data"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.workflows.Workflows.extract_workflow_run_data">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">extract_workflow_run_data</span><span class="p">(</span><span class="n">workflow_run</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        extract_workflow_run_data(workflow_run)</span>
+
+<span class="sd">        Extracting general workflow run data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        workflow_run : WorkflowRun</span>
+<span class="sd">            WorkflowRun object from pygithub.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dictionary with the extracted data.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">            PyGithub WorkflowRun object structure: https://pygithub.readthedocs.io/en/latest/github_objects/WorkflowRun.html</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">workflow_run_data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">workflow_run_data</span><span class="p">[</span><span class="s2">&quot;workflow_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">workflow_run</span><span class="o">.</span><span class="n">workflow_id</span>
+        <span class="n">workflow_run_data</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">workflow_run</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">workflow_run_data</span><span class="p">[</span><span class="s1">&#39;commit_sha&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">workflow_run</span><span class="o">.</span><span class="n">head_sha</span>
+        <span class="n">workflow_run_data</span><span class="p">[</span><span class="s1">&#39;pull_requests&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">pr</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">pr</span> <span class="ow">in</span> <span class="n">workflow_run</span><span class="o">.</span><span class="n">pull_requests</span><span class="p">]</span>
+        <span class="n">workflow_run_data</span><span class="p">[</span><span class="s1">&#39;state&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">workflow_run</span><span class="o">.</span><span class="n">status</span>
+        <span class="n">workflow_run_data</span><span class="p">[</span><span class="s1">&#39;event&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">workflow_run</span><span class="o">.</span><span class="n">event</span>
+        <span class="n">workflow_run_data</span><span class="p">[</span><span class="s1">&#39;conclusion&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">workflow_run</span><span class="o">.</span><span class="n">conclusion</span>
+        <span class="n">workflow_run_data</span><span class="p">[</span><span class="s1">&#39;created_at&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">workflow_run</span><span class="o">.</span><span class="n">created_at</span>
+        <span class="n">workflow_run_data</span><span class="p">[</span><span class="s1">&#39;updated_at&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">workflow_run</span><span class="o">.</span><span class="n">updated_at</span>
+        <span class="k">return</span> <span class="n">workflow_run_data</span></div>
+
+<div class="viewcode-block" id="Workflows.generate_workflow_pandas_tables"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.workflows.Workflows.generate_workflow_pandas_tables">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">generate_workflow_pandas_tables</span><span class="p">(</span><span class="n">repo</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">,</span> <span class="n">check_for_updates</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        generate_workflow_pandas_tables(repo, data_root_dir, check_for_updates=True)</span>
+
+<span class="sd">        Extracting the complete workflow list and run history from a repository.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        repo : Repository</span>
+<span class="sd">            Repository object from pygithub.</span>
+<span class="sd">        data_root_dir : str</span>
+<span class="sd">            Data root directory for the repository.</span>
+<span class="sd">        check_for_updates : bool, default=True</span>
+<span class="sd">            Check first if there are any new workflows or workflow_runs information.</span>
+<span class="sd">            </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">workflow_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">,</span> <span class="n">Workflows</span><span class="o">.</span><span class="n">WORKFLOWS_DIR</span><span class="p">)</span>
+        <span class="n">workflow_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">users_ids</span> <span class="o">=</span> <span class="n">Utility</span><span class="o">.</span><span class="n">get_users_ids</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">)</span>
+
+        <span class="n">workflows</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">get_workflows</span><span class="p">()</span>
+        <span class="n">workflow_runs</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">get_workflow_runs</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">check_for_updates</span><span class="p">:</span>
+            <span class="n">old_workflows</span> <span class="o">=</span> <span class="n">Workflows</span><span class="o">.</span><span class="n">get_workflows</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">)</span>
+            <span class="n">check_workflows</span> <span class="o">=</span> <span class="n">Utility</span><span class="o">.</span><span class="n">check_for_updates_paginated</span><span class="p">(</span><span class="n">workflows</span><span class="p">,</span> <span class="n">old_workflows</span><span class="p">)</span>
+            <span class="n">old_workflow_runs</span> <span class="o">=</span> <span class="n">Workflows</span><span class="o">.</span><span class="n">get_workflows</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">,</span><span class="n">Workflows</span><span class="o">.</span><span class="n">WORKFLOWS_RUNS</span><span class="p">)</span>
+            <span class="n">check_workflow_runs</span> <span class="o">=</span> <span class="n">Utility</span><span class="o">.</span><span class="n">check_for_updates_paginated</span><span class="p">(</span><span class="n">workflow_runs</span><span class="p">,</span> <span class="n">old_workflow_runs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">check_workflows</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">check_workflow_runs</span><span class="p">:</span>
+                <span class="k">return</span>
+        
+        <span class="n">workflow_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">workflow</span> <span class="ow">in</span> <span class="n">workflows</span><span class="p">:</span>
+            <span class="n">workflow_data</span> <span class="o">=</span> <span class="n">Workflows</span><span class="o">.</span><span class="n">extract_workflow_data</span><span class="p">(</span><span class="n">workflow</span><span class="p">)</span>
+            <span class="n">workflow_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">workflow_data</span><span class="p">)</span>
+        <span class="n">Utility</span><span class="o">.</span><span class="n">save_list_to_pandas_table</span><span class="p">(</span><span class="n">workflow_dir</span><span class="p">,</span> <span class="n">Workflows</span><span class="o">.</span><span class="n">WORKFLOWS</span><span class="p">,</span> <span class="n">workflow_list</span><span class="p">)</span>
+
+        <span class="n">workflow_run_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">workflow_run</span> <span class="ow">in</span> <span class="n">workflow_runs</span><span class="p">:</span>
+            <span class="n">workflow_run_data</span> <span class="o">=</span> <span class="n">Workflows</span><span class="o">.</span><span class="n">extract_workflow_run_data</span><span class="p">(</span><span class="n">workflow_run</span><span class="p">)</span>
+            <span class="n">workflow_run_data</span><span class="p">[</span><span class="s1">&#39;author&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Utility</span><span class="o">.</span><span class="n">extract_committer_data_from_commit</span><span class="p">(</span><span class="n">repo</span><span class="p">,</span> <span class="n">workflow_run_data</span><span class="p">[</span><span class="s1">&#39;commit_sha&#39;</span><span class="p">],</span> <span class="n">users_ids</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">)</span>
+            <span class="n">workflow_run_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">workflow_run_data</span><span class="p">)</span>
+        <span class="n">Utility</span><span class="o">.</span><span class="n">save_list_to_pandas_table</span><span class="p">(</span><span class="n">workflow_dir</span><span class="p">,</span> <span class="n">Workflows</span><span class="o">.</span><span class="n">WORKFLOWS_RUNS</span><span class="p">,</span> <span class="n">workflow_run_list</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Workflows.download_workflow_log_files"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.workflows.Workflows.download_workflow_log_files">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">download_workflow_log_files</span><span class="p">(</span><span class="n">repo</span><span class="p">,</span> <span class="n">github_token</span><span class="p">,</span> <span class="n">workflow_run_id</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        download_workflow_log_files(repo, github_token, workflow_run_id, data_root_dir)</span>
+
+<span class="sd">        Receive workflow log files from GitHub.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        repo : Repository</span>
+<span class="sd">            Repository object from pygithub.       </span>
+<span class="sd">        github_token : str</span>
+<span class="sd">            Authentication token for GitHub access.</span>
+<span class="sd">        workflow_run_id : int</span>
+<span class="sd">            Workflow Run Id to download one specific workflow run.  </span>
+<span class="sd">        data_root_dir : str</span>
+<span class="sd">            Data root directory for the repository.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            Number of downloaded files.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -------</span>
+<span class="sd">            Download api https://docs.github.com/en/rest/reference/actions#list-jobs-for-a-workflow-run</span>
+<span class="sd">            Generation of python code based on https://curl.trillworks.com/</span>
+<span class="sd">            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html</span>
+<span class="sd">            PyGithub WorkflowRun object structure: https://pygithub.readthedocs.io/en/latest/github_objects/WorkflowRun.html</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;Accept&#39;</span><span class="p">:</span> <span class="s1">&#39;application/vnd.github.v3+json&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">query_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://api.github.com/repos/</span><span class="si">{</span><span class="n">repo</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">login</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">repo</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">/actions/runs/</span><span class="si">{</span><span class="n">workflow_run_id</span><span class="si">}</span><span class="s2">/logs&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">query_url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
+                                <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;username&#39;</span><span class="p">,</span> <span class="n">github_token</span><span class="p">))</span>
+        <span class="k">if</span> <span class="s1">&#39;zip&#39;</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]:</span>
+            <span class="n">zip_obj</span> <span class="o">=</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">))</span>
+            <span class="n">data_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">,</span> <span class="n">Workflows</span><span class="o">.</span><span class="n">WORKFLOWS_DIR</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">workflow_run_id</span><span class="p">))</span>
+            <span class="n">zip_obj</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">data_dir</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">zip_obj</span><span class="o">.</span><span class="n">namelist</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Workflows.get_workflows"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.workflows.Workflows.get_workflows">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_workflows</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">WORKFLOWS</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get_workflows(data_root_dir, filename=WORKFLOWS)</span>
+
+<span class="sd">        Get a generated pandas tables.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data_root_dir : str</span>
+<span class="sd">            Data root directory for the repository.</span>
+<span class="sd">        filename : str, default=WORKFLOWS</span>
+<span class="sd">            Pandas table file for workflows or workflows runs data.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        DataFrame</span>
+<span class="sd">            Pandas DataFrame which can include the desired data.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">workflow_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">,</span> <span class="n">Workflows</span><span class="o">.</span><span class="n">WORKFLOWS_DIR</span><span class="p">)</span>
+        <span class="n">pd_workflows_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">workflow_dir</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pd_workflows_file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="n">pd_workflows_file</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Maximilian Karl, Sebastian Zug.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

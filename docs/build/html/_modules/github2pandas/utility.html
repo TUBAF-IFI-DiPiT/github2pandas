@@ -1,0 +1,785 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>github2pandas.utility &mdash; github2pandas 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> github2pandas
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme_link.html">Readme File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../readme_link.html#transform-github-activities-to-pandas-dataframes">Transform GitHub Activities to Pandas Dataframes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../readme_link.html#for-developers">For Developers</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">github2pandas</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>github2pandas.utility</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for github2pandas.utility</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">github</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">human_id</span> <span class="kn">import</span> <span class="n">generate_id</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<div class="viewcode-block" id="Utility"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.utility.Utility">[docs]</a><span class="k">class</span> <span class="nc">Utility</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class which contains methods for mutiple modules.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    USERS : str</span>
+<span class="sd">        Pandas table file for user data.</span>
+<span class="sd">    REPO : str</span>
+<span class="sd">       Json file for general repository informations.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">        check_for_updates(new_list, old_df)</span>
+<span class="sd">            Check if id and updated_at are in the old_df.</span>
+<span class="sd">        check_for_updates_paginated(new_paginated_list, old_df)</span>
+<span class="sd">            Check if id and updated_at are in the old_df.</span>
+<span class="sd">        save_list_to_pandas_table(dir, file, data_list)</span>
+<span class="sd">            Save a data list to a pandas table.</span>
+<span class="sd">        get_repo_informations(data_root_dir)</span>
+<span class="sd">            Get a repository data (owner and name).</span>
+<span class="sd">        get_repo(repo_owner, repo_name, token, data_root_dir)</span>
+<span class="sd">            Get a repository by owner, name and token.</span>
+<span class="sd">        apply_datetime_format(pd_table, source_column, destination_column=None)</span>
+<span class="sd">            Provide equal date formate for all timestamps.</span>
+<span class="sd">        get_users(data_root_dir)</span>
+<span class="sd">            Get the generated users pandas table.</span>
+<span class="sd">        get_users_ids(data_root_dir)</span>
+<span class="sd">            Get the generated useres as dict whith github ids as keys and anonym uuids as values.</span>
+<span class="sd">        extract_assignees(github_assignees, users_ids, data_root_dir)</span>
+<span class="sd">            Get all assignees as one string.</span>
+<span class="sd">        extract_labels(github_labels)</span>
+<span class="sd">            Get all labels as one string.</span>
+<span class="sd">        extract_user_data(user, users_ids, data_root_dir)</span>
+<span class="sd">            Extracting general user data.</span>
+<span class="sd">        extract_author_data_from_commit(repo, sha, users_ids, data_root_dir)</span>
+<span class="sd">            Extracting general author data from a commit.</span>
+<span class="sd">        extract_committer_data_from_commit(repo, sha, users_ids, data_root_dir)</span>
+<span class="sd">            Extracting general committer data from a commit.</span>
+<span class="sd">        extract_reaction_data(reaction, parent_id, parent_name, users_ids, data_root_dir)</span>
+<span class="sd">            Extracting general reaction data.</span>
+<span class="sd">        extract_event_data(event, parent_id, parent_name, users_ids, data_root_dir)</span>
+<span class="sd">            Extracting general event data from a issue or pull request.</span>
+<span class="sd">        extract_comment_data(comment, parent_id, parent_name, users_ids, data_root_dir)</span>
+<span class="sd">            Extracting general comment data from a pull request or issue.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">USERS</span> <span class="o">=</span> <span class="s2">&quot;Users.p&quot;</span>
+    <span class="n">REPO</span> <span class="o">=</span> <span class="s2">&quot;Repo.json&quot;</span>
+    
+<div class="viewcode-block" id="Utility.check_for_updates"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.utility.Utility.check_for_updates">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">check_for_updates</span><span class="p">(</span><span class="n">new_list</span><span class="p">,</span> <span class="n">old_df</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        check_for_updates(new_list, old_df)</span>
+
+<span class="sd">        Check if id and updated_at are in the old_df.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        new_list : list</span>
+<span class="sd">            new list with id and updated_at.</span>
+<span class="sd">        old_df : DataFrame</span>
+<span class="sd">            old Dataframe.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True if the repo needs to be updated. False the List is uptodate.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">old_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_list</span><span class="p">)</span> <span class="o">==</span> <span class="n">old_df</span><span class="o">.</span><span class="n">count</span><span class="p">()[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">new_class</span> <span class="ow">in</span> <span class="n">new_list</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">old_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[((</span><span class="n">old_df</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">new_class</span><span class="o">.</span><span class="n">id</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">old_df</span><span class="o">.</span><span class="n">updated_at</span> <span class="o">==</span> <span class="n">new_class</span><span class="o">.</span><span class="n">updated_at</span><span class="p">))]</span>
+            <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+    
+<div class="viewcode-block" id="Utility.check_for_updates_paginated"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.utility.Utility.check_for_updates_paginated">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">check_for_updates_paginated</span><span class="p">(</span><span class="n">new_paginated_list</span><span class="p">,</span> <span class="n">old_df</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        check_for_updates_paginated(new_paginated_list, old_df)</span>
+
+<span class="sd">        Check if id and updated_at are in the old_df.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        new_paginated_list : PaginatedList</span>
+<span class="sd">            new paginated list with id and updated_at.</span>
+<span class="sd">        old_df : DataFrame</span>
+<span class="sd">            old Dataframe.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True if it need to be updated. False the List is uptodate.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">old_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">new_paginated_list</span><span class="o">.</span><span class="n">totalCount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">new_paginated_list</span><span class="o">.</span><span class="n">totalCount</span> <span class="o">==</span> <span class="n">old_df</span><span class="o">.</span><span class="n">count</span><span class="p">()[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">new_class</span> <span class="ow">in</span> <span class="n">new_paginated_list</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">old_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[((</span><span class="n">old_df</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">new_class</span><span class="o">.</span><span class="n">id</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">old_df</span><span class="o">.</span><span class="n">updated_at</span> <span class="o">==</span> <span class="n">new_class</span><span class="o">.</span><span class="n">updated_at</span><span class="p">))]</span>
+            <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+    
+<div class="viewcode-block" id="Utility.save_list_to_pandas_table"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.utility.Utility.save_list_to_pandas_table">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">save_list_to_pandas_table</span><span class="p">(</span><span class="nb">dir</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">data_list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        save_list_to_pandas_table(dir, file, data_list)</span>
+
+<span class="sd">        Save a data list to a pandas table.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dir : str</span>
+<span class="sd">            Path to the desired save dir.</span>
+<span class="sd">        file : str</span>
+<span class="sd">            Name of the file.</span>
+<span class="sd">        data_list : list</span>
+<span class="sd">            list of data dictionarys</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Path</span><span class="p">(</span><span class="nb">dir</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">data_frame_</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data_list</span><span class="p">)</span>
+        <span class="n">pd_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="nb">dir</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pd_file</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data_frame_</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="Utility.get_repo_informations"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.utility.Utility.get_repo_informations">[docs]</a>    <span class="nd">@staticmethod</span>      
+    <span class="k">def</span> <span class="nf">get_repo_informations</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get_repo_informations(data_root_dir)</span>
+
+<span class="sd">        Get a repository data (owner and name).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data_root_dir : str</span>
+<span class="sd">            Data root directory for the repository.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            Repository Owner and name</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">repo_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">,</span> <span class="n">Utility</span><span class="o">.</span><span class="n">REPO</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">repo_file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">repo_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
+                <span class="n">repo_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">json_file</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">repo_data</span><span class="p">[</span><span class="s2">&quot;repo_owner&quot;</span><span class="p">],</span> <span class="n">repo_data</span><span class="p">[</span><span class="s2">&quot;repo_name&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+    
+<div class="viewcode-block" id="Utility.get_repo"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.utility.Utility.get_repo">[docs]</a>    <span class="nd">@staticmethod</span>      
+    <span class="k">def</span> <span class="nf">get_repo</span><span class="p">(</span><span class="n">repo_owner</span><span class="p">,</span> <span class="n">repo_name</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get_repo(repo_owner, repo_name, token, data_root_dir)</span>
+
+<span class="sd">        Get a repository by owner, name and token.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        repo_owner : str</span>
+<span class="sd">            the owner of the desired repository.</span>
+<span class="sd">        repo_name : str</span>
+<span class="sd">            the name of the desired repository.</span>
+<span class="sd">        token : str</span>
+<span class="sd">            A valid Github Token.</span>
+<span class="sd">        data_root_dir : str</span>
+<span class="sd">            Data root directory for the repository.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        repo</span>
+<span class="sd">            Repository object from pygithub.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">github</span><span class="o">.</span><span class="n">Github</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+        <span class="n">data_root_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">repo_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">,</span> <span class="n">Utility</span><span class="o">.</span><span class="n">REPO</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">repo_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">({</span><span class="s2">&quot;repo_owner&quot;</span><span class="p">:</span> <span class="n">repo_owner</span><span class="p">,</span><span class="s2">&quot;repo_name&quot;</span><span class="p">:</span><span class="n">repo_name</span><span class="p">},</span> <span class="n">json_file</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">g</span><span class="o">.</span><span class="n">get_repo</span><span class="p">(</span><span class="n">repo_owner</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">repo_name</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="Utility.apply_datetime_format"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.utility.Utility.apply_datetime_format">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">apply_datetime_format</span><span class="p">(</span><span class="n">pd_table</span><span class="p">,</span> <span class="n">source_column</span><span class="p">,</span> <span class="n">destination_column</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        apply_datetime_format(pd_table, source_column, destination_column=None)</span>
+
+<span class="sd">        Provide equal date formate for all timestamps</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pd_table : pandas Dataframe</span>
+<span class="sd">            List of NamedUser</span>
+<span class="sd">        source_column : str</span>
+<span class="sd">            Source column name.</span>
+<span class="sd">        destination_column : str, default=None</span>
+<span class="sd">            Destination column name. Saves to Source if None.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            String which contains all assignees.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">destination_column</span><span class="p">:</span>
+            <span class="n">destination_column</span> <span class="o">=</span> <span class="n">source_column</span>
+        <span class="n">pd_table</span><span class="p">[</span><span class="n">destination_column</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">pd_table</span><span class="p">[</span><span class="n">source_column</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pd_table</span></div>
+    
+<div class="viewcode-block" id="Utility.get_users"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.utility.Utility.get_users">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_users</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get_users(data_root_dir)</span>
+
+<span class="sd">        Get the generated users pandas table.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data_root_dir : str</span>
+<span class="sd">            Data root directory for the repository.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        DataFrame</span>
+<span class="sd">            Pandas DataFrame which includes the users data</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">users_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">,</span> <span class="n">Utility</span><span class="o">.</span><span class="n">USERS</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">users_file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="n">users_file</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Utility.get_users_ids"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.utility.Utility.get_users_ids">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_users_ids</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get_users_ids(data_root_dir)</span>
+
+<span class="sd">        Get the generated useres as dict whith github ids as keys and anonym uuids as values.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data_root_dir : str</span>
+<span class="sd">            Data root directory for the repository.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dict whith github ids as keys and anonym uuids as values.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df_users</span> <span class="o">=</span> <span class="n">Utility</span><span class="o">.</span><span class="n">get_users</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">)</span>
+        <span class="n">users_ids</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df_users</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">users_ids</span><span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;anonym_uuid&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">users_ids</span></div>
+
+<div class="viewcode-block" id="Utility.extract_assignees"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.utility.Utility.extract_assignees">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">extract_assignees</span><span class="p">(</span><span class="n">github_assignees</span><span class="p">,</span> <span class="n">users_ids</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        extract_assignees(github_assignees, users_ids, data_root_dir)</span>
+
+<span class="sd">        Get all assignees as one string. </span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        github_assignees : list</span>
+<span class="sd">            List of NamedUser.</span>
+<span class="sd">        users_ids : dict</span>
+<span class="sd">            Dict of User Ids as Keys and anonym Ids as Value.</span>
+<span class="sd">        data_root_dir : str</span>
+<span class="sd">            Data root directory for the repository.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            String which contains all assignees and are connected with the char &amp;.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">            PyGithub NamedUser object structure: https://pygithub.readthedocs.io/en/latest/github_objects/NamedUser.html</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">assignees</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">assignee</span> <span class="ow">in</span> <span class="n">github_assignees</span><span class="p">:</span>
+            <span class="n">assignees</span> <span class="o">+=</span> <span class="n">Utility</span><span class="o">.</span><span class="n">extract_user_data</span><span class="p">(</span><span class="n">assignee</span><span class="p">,</span> <span class="n">users_ids</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;&amp;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">assignees</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">assignees</span> <span class="o">=</span> <span class="n">assignees</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">assignees</span></div>
+
+<div class="viewcode-block" id="Utility.extract_labels"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.utility.Utility.extract_labels">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">extract_labels</span><span class="p">(</span><span class="n">github_labels</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        extract_labels(github_labels)</span>
+
+<span class="sd">        Get all labels as one string.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        github_labels : list</span>
+<span class="sd">            List of Label.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            String which contains all labels and are connected with the char &amp;.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">            PyGithub Label object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Label.html</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">github_labels</span><span class="p">:</span>
+            <span class="n">labels</span> <span class="o">+=</span> <span class="n">label</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;&amp;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">labels</span></div>
+
+<div class="viewcode-block" id="Utility.extract_user_data"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.utility.Utility.extract_user_data">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">extract_user_data</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">users_ids</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        extract_user_data(user, users_ids, data_root_dir)</span>
+
+<span class="sd">        Extracting general user data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        user : NamedUser</span>
+<span class="sd">            NamedUser object from pygithub.</span>
+<span class="sd">        users_ids : dict</span>
+<span class="sd">            Dict of User Ids as Keys and anonym Ids as Value.</span>
+<span class="sd">        data_root_dir : str</span>
+<span class="sd">            Repo dir of the project.</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            Anonym uuid of user.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">            PyGithub NamedUser object structure: https://pygithub.readthedocs.io/en/latest/github_objects/NamedUser.html</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">user</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No User. This call was slow!!! Should be fixed&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">user</span><span class="o">.</span><span class="n">node_id</span> <span class="ow">in</span> <span class="n">users_ids</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">users_ids</span><span class="p">[</span><span class="n">user</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span>
+        <span class="n">users_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">data_root_dir</span><span class="p">,</span> <span class="n">Utility</span><span class="o">.</span><span class="n">USERS</span><span class="p">)</span>
+        <span class="n">users_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">users_file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="n">users_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="n">users_file</span><span class="p">)</span>
+        <span class="n">user_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">user_data</span><span class="p">[</span><span class="s2">&quot;anonym_uuid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">generate_id</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">user</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
+        <span class="n">users_ids</span><span class="p">[</span><span class="n">user</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_data</span><span class="p">[</span><span class="s2">&quot;anonym_uuid&quot;</span><span class="p">]</span>
+        <span class="n">user_data</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">node_id</span>
+        <span class="n">user_data</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">user_data</span><span class="p">[</span><span class="s2">&quot;email&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">email</span>
+        <span class="n">user_data</span><span class="p">[</span><span class="s2">&quot;login&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">login</span>
+        <span class="n">users_df</span> <span class="o">=</span> <span class="n">users_df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">user_data</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">users_file</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">users_df</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">user_data</span><span class="p">[</span><span class="s2">&quot;anonym_uuid&quot;</span><span class="p">]</span></div>
+    
+<div class="viewcode-block" id="Utility.extract_author_data_from_commit"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.utility.Utility.extract_author_data_from_commit">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">extract_author_data_from_commit</span><span class="p">(</span><span class="n">repo</span><span class="p">,</span> <span class="n">sha</span><span class="p">,</span> <span class="n">users_ids</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        extract_author_data_from_commit(repo, sha, users_ids, data_root_dir)</span>
+
+<span class="sd">        Extracting general author data from a commit.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        repo : Repository</span>
+<span class="sd">            Repository object from pygithub.</span>
+<span class="sd">        sha : str</span>
+<span class="sd">            sha from the commit.</span>
+<span class="sd">        users_ids : dict</span>
+<span class="sd">            Dict of User Ids as Keys and anonym Ids as Value.</span>
+<span class="sd">        data_root_dir : str</span>
+<span class="sd">            Data root directory for the repository.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            Anonym uuid of user.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sha</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">commit</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">get_commit</span><span class="p">(</span><span class="n">sha</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">commit</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">Utility</span><span class="o">.</span><span class="n">extract_user_data</span><span class="p">(</span><span class="n">commit</span><span class="o">.</span><span class="n">author</span><span class="p">,</span> <span class="n">users_ids</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">)</span></div>
+               
+<div class="viewcode-block" id="Utility.extract_committer_data_from_commit"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.utility.Utility.extract_committer_data_from_commit">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">extract_committer_data_from_commit</span><span class="p">(</span><span class="n">repo</span><span class="p">,</span> <span class="n">sha</span><span class="p">,</span> <span class="n">users_ids</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        extract_committer_data_from_commit(repo, sha, users_ids, data_root_dir)</span>
+
+<span class="sd">        Extracting general committer data from a commit.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        repo : Repository</span>
+<span class="sd">            Repository object from pygithub.</span>
+<span class="sd">        sha : str</span>
+<span class="sd">            sha from the commit.</span>
+<span class="sd">        users_ids : dict</span>
+<span class="sd">            Dict of User Ids as Keys and anonym Ids as Value.</span>
+<span class="sd">        data_root_dir : str</span>
+<span class="sd">            Data root directory for the repository.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            Anonym uuid of user.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sha</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">commit</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">get_commit</span><span class="p">(</span><span class="n">sha</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">commit</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">Utility</span><span class="o">.</span><span class="n">extract_user_data</span><span class="p">(</span><span class="n">commit</span><span class="o">.</span><span class="n">committer</span><span class="p">,</span> <span class="n">users_ids</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Utility.extract_reaction_data"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.utility.Utility.extract_reaction_data">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">extract_reaction_data</span><span class="p">(</span><span class="n">reaction</span><span class="p">,</span> <span class="n">parent_id</span><span class="p">,</span> <span class="n">parent_name</span><span class="p">,</span> <span class="n">users_ids</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        extract_reaction_data(reaction, parent_id, parent_name, users_ids, data_root_dir)</span>
+
+<span class="sd">        Extracting general reaction data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        reaction : Reaction</span>
+<span class="sd">            Reaction object from pygithub.</span>
+<span class="sd">        parent_id : int</span>
+<span class="sd">            Id from parent as foreign key.</span>
+<span class="sd">        parent_name : str</span>
+<span class="sd">            Name of the parent.</span>
+<span class="sd">        users_ids : dict</span>
+<span class="sd">            Dict of User Ids as Keys and anonym Ids as Value.</span>
+<span class="sd">        data_root_dir : str</span>
+<span class="sd">            Repo dir of the project.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ReactionData</span>
+<span class="sd">            Dictionary with the extracted data.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">            Reaction object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Reaction.html</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reaction_data</span> <span class="o">=</span> <span class="p">{}</span> 
+        <span class="n">reaction_data</span><span class="p">[</span><span class="n">parent_name</span> <span class="o">+</span> <span class="s2">&quot;_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parent_id</span>
+        <span class="n">reaction_data</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reaction</span><span class="o">.</span><span class="n">content</span>
+        <span class="n">reaction_data</span><span class="p">[</span><span class="s2">&quot;created_at&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reaction</span><span class="o">.</span><span class="n">created_at</span>
+        <span class="n">reaction_data</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reaction</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">reaction</span><span class="o">.</span><span class="n">_user</span> <span class="o">==</span> <span class="n">github</span><span class="o">.</span><span class="n">GithubObject</span><span class="o">.</span><span class="n">NotSet</span><span class="p">:</span>
+            <span class="n">reaction_data</span><span class="p">[</span><span class="s2">&quot;author&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Utility</span><span class="o">.</span><span class="n">extract_user_data</span><span class="p">(</span><span class="n">reaction</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">users_ids</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">reaction_data</span></div>
+    
+<div class="viewcode-block" id="Utility.extract_event_data"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.utility.Utility.extract_event_data">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">extract_event_data</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">parent_id</span><span class="p">,</span> <span class="n">parent_name</span><span class="p">,</span> <span class="n">users_ids</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        extract_event_data(event, parent_id, parent_name, users_ids, data_root_dir)</span>
+
+<span class="sd">        Extracting general event data from a issue or pull request.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        even t: IssueEvent</span>
+<span class="sd">            IssueEvent object from pygithub.</span>
+<span class="sd">        parent_id : int</span>
+<span class="sd">            Id from parent as foreign key.</span>
+<span class="sd">        parent_name : str</span>
+<span class="sd">            Name of the parent.</span>
+<span class="sd">        users_ids : dict</span>
+<span class="sd">            Dict of User Ids as Keys and anonym Ids as Value.</span>
+<span class="sd">        data_root_dir : str</span>
+<span class="sd">            Repo dir of the project.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        EventData</span>
+<span class="sd">            Dictionary with the extracted data.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">            IssueEvent object structure: https://pygithub.readthedocs.io/en/latest/github_objects/IssueEvent.html</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">issue_event_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">issue_event_data</span><span class="p">[</span><span class="n">parent_name</span> <span class="o">+</span> <span class="s2">&quot;_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parent_id</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">event</span><span class="o">.</span><span class="n">_actor</span> <span class="o">==</span> <span class="n">github</span><span class="o">.</span><span class="n">GithubObject</span><span class="o">.</span><span class="n">NotSet</span><span class="p">:</span>
+            <span class="n">issue_event_data</span><span class="p">[</span><span class="s2">&quot;author&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Utility</span><span class="o">.</span><span class="n">extract_user_data</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">actor</span><span class="p">,</span> <span class="n">users_ids</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">)</span>
+        <span class="n">issue_event_data</span><span class="p">[</span><span class="s2">&quot;commit_sha&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">commit_id</span>
+        <span class="n">issue_event_data</span><span class="p">[</span><span class="s2">&quot;created_at&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">created_at</span>
+        <span class="n">issue_event_data</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">event</span>
+        <span class="n">issue_event_data</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">event</span><span class="o">.</span><span class="n">_label</span> <span class="o">==</span> <span class="n">github</span><span class="o">.</span><span class="n">GithubObject</span><span class="o">.</span><span class="n">NotSet</span><span class="p">:</span>
+            <span class="n">issue_event_data</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">event</span><span class="o">.</span><span class="n">_assignee</span> <span class="o">==</span> <span class="n">github</span><span class="o">.</span><span class="n">GithubObject</span><span class="o">.</span><span class="n">NotSet</span><span class="p">:</span>
+            <span class="n">issue_event_data</span><span class="p">[</span><span class="s2">&quot;assignee&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Utility</span><span class="o">.</span><span class="n">extract_user_data</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">assignee</span><span class="p">,</span> <span class="n">users_ids</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">event</span><span class="o">.</span><span class="n">_assigner</span> <span class="o">==</span> <span class="n">github</span><span class="o">.</span><span class="n">GithubObject</span><span class="o">.</span><span class="n">NotSet</span><span class="p">:</span>
+            <span class="n">issue_event_data</span><span class="p">[</span><span class="s2">&quot;assigner&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Utility</span><span class="o">.</span><span class="n">extract_user_data</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">assigner</span><span class="p">,</span> <span class="n">users_ids</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">issue_event_data</span></div>
+    
+<div class="viewcode-block" id="Utility.extract_comment_data"><a class="viewcode-back" href="../../github2pandas.html#github2pandas.utility.Utility.extract_comment_data">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">extract_comment_data</span><span class="p">(</span><span class="n">comment</span><span class="p">,</span> <span class="n">parent_id</span><span class="p">,</span> <span class="n">parent_name</span><span class="p">,</span> <span class="n">users_ids</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        extract_comment_data(comment, parent_id, parent_name, users_ids, data_root_dir)</span>
+
+<span class="sd">        Extracting general comment data from a pull request or issue.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        comment : github_object </span>
+<span class="sd">            PullRequestComment or IssueComment object from pygithub.</span>
+<span class="sd">        parent_id : int</span>
+<span class="sd">            Id from parent as foreign key.</span>
+<span class="sd">        parent_name : str</span>
+<span class="sd">            Name of the parent.</span>
+<span class="sd">        users_ids : dict</span>
+<span class="sd">            Dict of User Ids as Keys and anonym Ids as Value.</span>
+<span class="sd">        data_root_dir : str</span>
+<span class="sd">            Repo dir of the project.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        CommentData</span>
+<span class="sd">            Dictionary with the extracted data.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">            PullRequestComment object structure: https://pygithub.readthedocs.io/en/latest/github_objects/PullRequestComment.html</span>
+<span class="sd">            IssueComment object structure: https://pygithub.readthedocs.io/en/latest/github_objects/IssueComment.html</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">comment_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">comment_data</span><span class="p">[</span><span class="n">parent_name</span> <span class="o">+</span> <span class="s2">&quot;_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parent_id</span>
+        <span class="n">comment_data</span><span class="p">[</span><span class="s2">&quot;body&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">comment</span><span class="o">.</span><span class="n">body</span>
+        <span class="n">comment_data</span><span class="p">[</span><span class="s2">&quot;created_at&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">comment</span><span class="o">.</span><span class="n">created_at</span>
+        <span class="n">comment_data</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">comment</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">comment</span><span class="o">.</span><span class="n">_user</span> <span class="o">==</span> <span class="n">github</span><span class="o">.</span><span class="n">GithubObject</span><span class="o">.</span><span class="n">NotSet</span><span class="p">:</span>
+            <span class="n">comment_data</span><span class="p">[</span><span class="s2">&quot;author&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Utility</span><span class="o">.</span><span class="n">extract_user_data</span><span class="p">(</span><span class="n">comment</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">users_ids</span><span class="p">,</span> <span class="n">data_root_dir</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">comment_data</span></div></div>
+    
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Maximilian Karl, Sebastian Zug.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

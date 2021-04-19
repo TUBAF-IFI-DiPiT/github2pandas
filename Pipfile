@@ -22,6 +22,7 @@ m2r2 = "*"
 pypiwin32 = {sys_platform = "== 'win32'"}
 human-id = "*"
 psutil = "*"
+sphinx-rtd-theme = "*"
 
 [dev-packages]
 github2pandas = {editable = true, path = "."}
