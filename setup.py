@@ -2,7 +2,7 @@
 # https://pypi.org/project/pipenv-setup/
 
 from setuptools import setup
-from myproject import __version__
+from github2pandas import __version__
 
 
 with open("README.md", "r") as f:

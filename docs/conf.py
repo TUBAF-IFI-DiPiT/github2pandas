@@ -13,7 +13,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../github2pandas'))
-from myproject import __version__
+from github2pandas import __version__
 # -- Project information -----------------------------------------------------
 
 project = 'github2pandas'
