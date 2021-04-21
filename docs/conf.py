@@ -13,7 +13,6 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../github2pandas'))
-from github2pandas import __version__
 # -- Project information -----------------------------------------------------
 
 project = 'github2pandas'
@@ -21,9 +20,9 @@ copyright = '2021, Maximilian Karl & Sebastian Zug'
 author = 'Maximilian Karl & Sebastian Zug'
 
 # The full version, including alpha/beta/rc tags
-version = __version__
+version = "1.0.0"
 # The full version, including alpha/beta/rc tags.
-release = __version__
+release = "1.0.0"
 
 
 # -- General configuration ---------------------------------------------------
