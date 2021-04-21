@@ -2,6 +2,7 @@
 # https://pypi.org/project/pipenv-setup/
 
 from setuptools import setup
+from myproject import __version__
 
 
 with open("README.md", "r") as f:
@@ -11,7 +12,7 @@ with open("README.md", "r") as f:
 
 setup(
    name="github2pandas",
-   version="1.0.1",
+   version=__version__,
    packages=["github2pandas"],
    license="BSD 2",
    description="github2pandas supports the aggregation of project activities in a GitHub repository and makes them available in pandas dataframes",
