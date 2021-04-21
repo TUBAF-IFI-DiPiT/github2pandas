@@ -17,3 +17,6 @@ secret.yml
 /github2pandas.egg-info
 /docu/build/*
 .ipynb_checkpoints
+/dist/
+/build/
+.pypirc

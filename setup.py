@@ -3,18 +3,21 @@
 
 from setuptools import setup
 
+
 with open("README.md", "r") as f:
    long_description = f.read()
 
+
+
 setup(
    name="github2pandas",
-   version="1.0",
+   version="1.0.1",
    packages=["github2pandas"],
-   license="MIT",
+   license="BSD 2",
    description="github2pandas supports the aggregation of project activities in a GitHub repository and makes them available in pandas dataframes",
    long_description = long_description,
+   long_description_content_type="text/markdown",
    author="Maximilian Karl & Sebastian Zug",
-   author_email="your.email@domain.com",
    url="https://github.com/TUBAF-IFI-DiPiT/github2pandas",
    download_url="https://github.com/user/reponame/archive/v_01.tar.gz",
    keywords=["git", "github", "collaborative code development", "git mining"],
@@ -123,7 +126,6 @@ setup(
    ], 
    classifiers=[
       "Programming Language :: Python :: 3",
-      "License :: OSI Approved :: MIT License",
       "Operating System :: OS Independent",
    ],
    python_requires=">=3.8"
