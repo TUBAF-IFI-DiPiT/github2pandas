@@ -12,47 +12,42 @@ The package implements Python functions for
 
 ```
 data                                     <- Root directory given as parameter
-├── My_Github_Repository_0               <- Repository name
-│   ├── Repo.json                        <- Json file containing user and repo name
-│   ├── Issues
-│   │   ├── pdIssuesComments.p
-│   │   ├── pdIssuesEvents.p
-│   │   ├── pdIssues.p
-│   │   └── pdIssuesReactions.p
-│   ├── PullRequests
-│   │   ├── pdPullRequestsComments.p
-│   │   ├── pdPullRequestsEvents.p
-│   │   ├── pdPullRequests.p
-│   │   ├── pdPullRequestsReactions.p
-│   │   └── pdPullRequestsReviews.p
-│   ├── Users.p
-│   ├── Versions
-│   │   ├── pdCommits.p
-│   │   ├── pdEdits.p
-│   │   ├── pdBranches.p
-│   │   ├── repo                         <- Repository clone
-│   │   │   ├── ..
-│   |   |   └── ..
-│   │   └── Versions.db
-│   └── Workflows
-│       └── pdWorkflows.p
-├── My_Github_Repository_1
+|-- My_Github_Repository_0               <- Repository name
+|   |- Repo.json                         <- Json file containing user and repo name
+|   |- Issues
+|   │   |- pdIssuesComments.p
+|   │   |- pdIssuesEvents.p
+|   │   |- pdIssues.p
+|   │   |- pdIssuesReactions.p
+|   |- PullRequests
+|   │   |- pdPullRequestsComments.p
+|   │   |- pdPullRequestsEvents.p
+|   │   |- pdPullRequests.p
+|   │   |- pdPullRequestsReactions.p
+|   │   |- pdPullRequestsReviews.p
+|   |- Users.p
+|   |- Versions
+|   │   |- pdCommits.p
+|   │   |- pdEdits.p
+|   │   |- pdBranches.p
+|   │   |- pVersions.db
+|   │   |- repo                         <- Repository clone
+|   │   │   |- ..
+|   |- Workflows
+|       |- pdWorkflows.p
+|-- My_Github_Repository_1
 ...
 ```
 The internal structure and relations of the data frames are included in the project's [wiki](https://github.com/TUBAF-IFI-DiPiT/github2pandas/wiki).
 
 ## Installation
 
-Due to the early stage of development the `github2pandas` package is not yet available as a pip package. Installations should be done accordingly as follows:
+`github2pandas` is available on [pypi](https://pypi.org/project/github2pandas/). Use pip to install the package.
 
-1. Generate local clone of the package
-    ```
-    git clone https://github.com/TUBAF-IFI-DiPiT/github2pandas.git
-    ```
-2. Include the specific folder to your python path 
-    ```
-    pipenv install --dev
-    ```
+```
+sudo pip3 install github2pandas
+```
+
 
 ## Application examples 
 
@@ -66,7 +61,7 @@ GitHub token is required for use, which is used for authentication. The [website
 | Issues              | [Issue_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Issues_Example.ipynb)               |                     |
 | Pull-Requests       | [Pull_Requests_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Pull_Requests_Example.ipynb)|                     | 
 
-The documentation of the module is available at XXX. 
+The documentation of the module is available at [https://github2pandas.readthedocs.io/en/9-documentation/](https://github2pandas.readthedocs.io/en/9-documentation/). 
 
 # For Developers
 
@@ -83,18 +78,3 @@ Naming conventions: https://namingconvention.org/python/
 | Run all tests in a specific folder          | `pipenv run python -m unittest discover -s 'tests'`     |
 | Run all tests with specific filename        | `pipenv run python -m unittest discover -p 'test_*.py'` |
 | Start Jupyter server in virtual environment | `pipenv run jupyter notebook`                           | 
-
-## Generating documentation
-
-1. Run following command in main folder
-
-```
-pipenv run  sphinx-apidoc -o ./docu/source/ ./github2pandas
-```
-
-2. Generate html documentation 
-
-```
-cd docu
-make html
-```
