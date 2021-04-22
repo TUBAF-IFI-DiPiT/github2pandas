@@ -61,7 +61,7 @@ class Version():
     VERSION_DB = "Versions.db"
     no_of_proceses = 1
 
-    COMMIT_DELETEABLE_COLUMNS = ['author_email', 'author_name', 'committer_email', 'committer_name', 'author_date', 'author_timezone', 'commit_message_len', 'project_name', 'merge']
+    COMMIT_DELETEABLE_COLUMNS = ['author_email', 'author_name', 'committer_email', 'author_date', 'author_timezone', 'commit_message_len', 'project_name', 'merge']
 
     COMMIT_RENAMING_COLUMNS = {'hash':'commit_sha', 'committer_date': 'commited_at', 'parents': 'parent_sha'}
 
@@ -212,7 +212,7 @@ class Version():
 
         version_folder = Path(data_root_dir, Version.VERSION_DIR)
         sqlite_db_file = version_folder.joinpath(Version.VERSION_DB)
-
+        print("1")
         db = sqlite3.connect(sqlite_db_file)
         pd_commits = pd.read_sql_query("SELECT * FROM commits", db)
         pd_edits = pd.read_sql_query("SELECT * FROM edits", db)
@@ -226,10 +226,13 @@ class Version():
         # Embed author uuid
         users_ids = Utility.get_users_ids(data_root_dir)
         pd_commits['author'] = ""
-        for index, commit in pd_commits.iterrows():
-            user_id = Utility.extract_committer_data_from_commit(repo, commit['commit_sha'], 
-                                                                 users_ids, data_root_dir)
-            pd_commits.at[index, 'author'] = user_id
+        commiter_list = pd_commits.committer_name.unique()
+        for commiter_name in commiter_list:
+            commit_sha = pd_commits[pd_commits.committer_name == commiter_name].iloc[0].commit_sha 
+            user_id = Utility.extract_committer_data_from_commit(repo, commit_sha, 
+                                                                 users_ids, data_root_dir)   
+            pd_commits.loc[pd_commits.committer_name == commiter_name, 'author'] = user_id  
+        pd_commits.drop(['committer_name'], axis=1, inplace=True)  
 
         # Extract branch names
         branch_entries = [x.split(',') for x in pd_commits.branches.values]
