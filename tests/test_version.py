@@ -32,7 +32,7 @@ class TestVersion(unittest.TestCase):
         
 
         # generate_version_pandas_tables
-        Version.generate_version_pandas_tables(data_root_dir=self.default_data_folder)
+        Version.generate_version_pandas_tables(repo = self.repo, data_root_dir=self.default_data_folder)
         
         # get_version
         pd_commits = Version.get_version(data_root_dir=self.default_data_folder)

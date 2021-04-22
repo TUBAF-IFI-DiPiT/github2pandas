@@ -46,7 +46,7 @@ class Version():
         Cloning repository from git.
     generate_data_base(data_root_dir)
         Extracting version data from a local repository and storing them in a mysql data base.
-    generate_version_pandas_tables(data_root_dir)
+    generate_version_pandas_tables(repo, data_root_dir)
         Extracting edits and commits in a pandas table.
     get_version(data_root_dir, filename=VERSION_COMMITS)
         Get the generated pandas table.
@@ -193,14 +193,16 @@ class Version():
                               max_modifications=1000)
 
     @staticmethod
-    def generate_version_pandas_tables(data_root_dir):
+    def generate_version_pandas_tables(repo, data_root_dir):
         """
-        generate_version_pandas_tables(data_root_dir)
+        generate_version_pandas_tables(repo, data_root_dir)
 
         Extracting edits and commits in a pandas table.
 
         Parameters
         ----------
+        repo : Repository
+            Repository object from pygithub.
         data_root_dir: str
             Data root directory for the repository.
 
@@ -220,6 +222,14 @@ class Version():
         pd_commits = Utility.apply_datetime_format(pd_commits, 'commited_at')
 
         pd_edits.rename(columns=Version.EDIT_RENAMING_COLUMNS, inplace = True)
+
+        # Embed author uuid
+        users_ids = Utility.get_users_ids(data_root_dir)
+        pd_commits['author'] = ""
+        for index, commit in pd_commits.iterrows():
+            user_id = Utility.extract_committer_data_from_commit(repo, commit['commit_sha'], 
+                                                                 users_ids, data_root_dir)
+            pd_commits.at[index, 'author'] = user_id
 
         # Extract branch names
         branch_entries = [x.split(',') for x in pd_commits.branches.values]
