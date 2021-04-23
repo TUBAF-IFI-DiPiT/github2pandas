@@ -1,7 +1,6 @@
 /repos/
 data/
 secret.yml
-*.txt
 *.pyc
 *.db
 *.p
@@ -10,7 +9,6 @@ secret.yml
 .vs/
 /repo/
 secret.yml
-*.txt
 *.pyc
 *.db
 *.p
@@ -19,3 +17,6 @@ secret.yml
 /github2pandas.egg-info
 /docu/build/*
 .ipynb_checkpoints
+/dist/
+/build/
+.pypirc
