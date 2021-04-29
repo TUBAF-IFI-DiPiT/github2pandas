@@ -11,31 +11,30 @@ The package implements Python functions for
 `github2pandas` stores the collected information in a collection of pandas DataFrames starting from a user defined root folder. The structure beyond that (file names, folder names) is defined as a member variable in the corresponding classes and can be overwritten. The default configuration results in the following file structure.
 
 ```
-data                                     <- Root directory given as parameter
-├── My_Github_Repository_0               <- Repository name
-│   ├── Repo.json                        <- Json file containing user and repo name
-│   ├── Issues
-│   │   ├── pdIssuesComments.p
-│   │   ├── pdIssuesEvents.p
-│   │   ├── pdIssues.p
-│   │   └── pdIssuesReactions.p
-│   ├── PullRequests
-│   │   ├── pdPullRequestsComments.p
-│   │   ├── pdPullRequestsEvents.p
-│   │   ├── pdPullRequests.p
-│   │   ├── pdPullRequestsReactions.p
-│   │   └── pdPullRequestsReviews.p
-│   ├── Users.p
-│   ├── Versions
-│   │   ├── pdCommits.p
-│   │   ├── pdEdits.p
-│   │   ├── pdBranches.p
-│   │   ├── repo                         <- Repository clone
-│   │   │   ├── ..
-│   │   └── Versions.db
-│   └── Workflows
-│       └── pdWorkflows.p
-├── My_Github_Repository_1
+|-- My_Github_Repository_0               <- Repository name
+|   |- Repo.json                         <- Json file containing user and repo name
+|   |- Issues
+|   |   |- pdIssuesComments.p
+|   |   |- pdIssuesEvents.p
+|   |   |- pdIssues.p
+|   |   |- pdIssuesReactions.p
+|   |- PullRequests
+|   |   |- pdPullRequestsComments.p
+|   |   |- pdPullRequestsEvents.p
+|   |   |- pdPullRequests.p
+|   |   |- pdPullRequestsReactions.p
+|   |   |- pdPullRequestsReviews.p
+|   |- Users.p
+|   |- Versions
+|   |   |- pdCommits.p
+|   |   |- pdEdits.p
+|   |   |- pdBranches.p
+|   |   |- pVersions.db
+|   |   |- repo                         <- Repository clone
+|   |   |   |- ..
+|   |- Workflows
+|       |- pdWorkflows.p
+|-- My_Github_Repository_1
 ...
 ```
 The internal structure and relations of the data frames are included in the project's [wiki](https://github.com/TUBAF-IFI-DiPiT/github2pandas/wiki).
