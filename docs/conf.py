@@ -19,10 +19,11 @@ project = 'github2pandas'
 copyright = '2021, Maximilian Karl & Sebastian Zug'
 author = 'Maximilian Karl & Sebastian Zug'
 
+from github2pandas import __version__
+
 # The full version, including alpha/beta/rc tags
-version = "1.0.0"
-# The full version, including alpha/beta/rc tags.
-release = "1.0.0"
+version = __version__
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------
