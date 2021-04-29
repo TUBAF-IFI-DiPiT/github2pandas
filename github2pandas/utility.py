@@ -115,9 +115,12 @@ class Utility():
         if not new_paginated_list.totalCount == old_df.count()[0]:
             return True
         for new_class in new_paginated_list:
-            df = old_df.loc[((old_df.id == new_class.id) & (old_df.updated_at == new_class.updated_at))]
-            if df.empty:
-                return True
+            try:
+                df = old_df.loc[((old_df.id == new_class.id) & (old_df.updated_at == new_class.updated_at))]
+                if df.empty:
+                    return True
+            except:
+                return False
         return False
     
     @staticmethod
