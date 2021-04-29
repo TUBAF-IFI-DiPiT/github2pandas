@@ -12,30 +12,30 @@ The package implements Python functions for
 
 ```
 data                                     <- Root directory given as parameter
-|-- My_Github_Repository_0               <- Repository name
-|   |- Repo.json                         <- Json file containing user and repo name
-|   |- Issues
-|   │   |- pdIssuesComments.p
-|   │   |- pdIssuesEvents.p
-|   │   |- pdIssues.p
-|   │   |- pdIssuesReactions.p
-|   |- PullRequests
-|   │   |- pdPullRequestsComments.p
-|   │   |- pdPullRequestsEvents.p
-|   │   |- pdPullRequests.p
-|   │   |- pdPullRequestsReactions.p
-|   │   |- pdPullRequestsReviews.p
-|   |- Users.p
-|   |- Versions
-|   │   |- pdCommits.p
-|   │   |- pdEdits.p
-|   │   |- pdBranches.p
-|   │   |- pVersions.db
-|   │   |- repo                         <- Repository clone
-|   │   │   |- ..
-|   |- Workflows
-|       |- pdWorkflows.p
-|-- My_Github_Repository_1
+├── My_Github_Repository_0               <- Repository name
+│   ├── Repo.json                        <- Json file containing user and repo name
+│   ├── Issues
+│   │   ├── pdIssuesComments.p
+│   │   ├── pdIssuesEvents.p
+│   │   ├── pdIssues.p
+│   │   └── pdIssuesReactions.p
+│   ├── PullRequests
+│   │   ├── pdPullRequestsComments.p
+│   │   ├── pdPullRequestsEvents.p
+│   │   ├── pdPullRequests.p
+│   │   ├── pdPullRequestsReactions.p
+│   │   └── pdPullRequestsReviews.p
+│   ├── Users.p
+│   ├── Versions
+│   │   ├── pdCommits.p
+│   │   ├── pdEdits.p
+│   │   ├── pdBranches.p
+│   │   ├── repo                         <- Repository clone
+│   │   │   ├── ..
+│   │   └── Versions.db
+│   └── Workflows
+│       └── pdWorkflows.p
+├── My_Github_Repository_1
 ...
 ```
 The internal structure and relations of the data frames are included in the project's [wiki](https://github.com/TUBAF-IFI-DiPiT/github2pandas/wiki).
@@ -61,9 +61,10 @@ GitHub token is required for use, which is used for authentication. The [website
 | Issues              | [Issue_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Issues_Example.ipynb)               |                     |
 | Pull-Requests       | [Pull_Requests_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Pull_Requests_Example.ipynb)|                     | 
 
-The documentation of the module is available at [https://github2pandas.readthedocs.io/en/9-documentation/](https://github2pandas.readthedocs.io/en/9-documentation/). 
 
-# For Developers
+The documentation of the module is available at [https://github2pandas.readthedocs.io/](https://github2pandas.readthedocs.io/).
+
+# For Contributors
 
 Naming conventions: https://namingconvention.org/python/
 
