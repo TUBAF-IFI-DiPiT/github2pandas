@@ -9,6 +9,5 @@ Welcome to github2pandas's documentation!
 .. toctree::
    :maxdepth: 1
 
-   readme
    github2pandas
    changes
