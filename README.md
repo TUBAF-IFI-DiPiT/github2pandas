@@ -42,16 +42,12 @@ The internal structure and relations of the data frames are included in the proj
 
 ## Installation
 
-Due to the early stage of development the `github2pandas` package is not yet available as a pip package. Installations should be done accordingly as follows:
+`github2pandas` is available on [pypi](https://pypi.org/project/github2pandas/). Use pip to install the package.
 
-1. Generate local clone of the package
-    ```
-    git clone https://github.com/TUBAF-IFI-DiPiT/github2pandas.git
-    ```
-2. Include the specific folder to your python path 
-    ```
-    pipenv install --dev
-    ```
+```
+sudo pip3 install github2pandas
+```
+
 
 ## Application examples 
 
@@ -65,7 +61,8 @@ GitHub token is required for use, which is used for authentication. The [website
 | Issues              | [Issue_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Issues_Example.ipynb)               |                     |
 | Pull-Requests       | [Pull_Requests_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Pull_Requests_Example.ipynb)|                     | 
 
-The documentation of the module is available at [https://github2pandas.readthedocs.io/](https://github2pandas.readthedocs.io/). 
+
+The documentation of the module is available at [https://github2pandas.readthedocs.io/](https://github2pandas.readthedocs.io/).
 
 # For Contributors
 
@@ -82,18 +79,3 @@ Naming conventions: https://namingconvention.org/python/
 | Run all tests in a specific folder          | `pipenv run python -m unittest discover -s 'tests'`     |
 | Run all tests with specific filename        | `pipenv run python -m unittest discover -p 'test_*.py'` |
 | Start Jupyter server in virtual environment | `pipenv run jupyter notebook`                           | 
-
-## Generating documentation
-
-1. Run following command in main folder
-
-```
-pipenv run  sphinx-apidoc -o ./docu/source/ ./github2pandas
-```
-
-2. Generate html documentation 
-
-```
-cd docu
-make html
-```
