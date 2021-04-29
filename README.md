@@ -65,7 +65,7 @@ GitHub token is required for use, which is used for authentication. The [website
 | Issues              | [Issue_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Issues_Example.ipynb)               |                     |
 | Pull-Requests       | [Pull_Requests_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Pull_Requests_Example.ipynb)|                     | 
 
-The documentation of the module is available at https://github2pandas.readthedocs.io/. 
+The documentation of the module is available at [https://github2pandas.readthedocs.io/](https://github2pandas.readthedocs.io/). 
 
 # For Contributors
 
