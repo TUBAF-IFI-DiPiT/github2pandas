@@ -14,5 +14,5 @@ Version 1.0.2 (April 23, 2021)
 Version 1.0.2 (April 29, 2021)
 -----------------------------------
 
-* documentation improvemetns
+* documentation improvements
 * minor bug fix
