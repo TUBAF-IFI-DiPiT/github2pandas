@@ -21,3 +21,10 @@ Version 1.0.31 (April 29, 2021)
 -----------------------------------
 
 * readme fix for pypi
+
+Version 1.1.0 (Mai 3, 2021)
+-----------------------------------
+
+* Add Tag Names to Commits
+* Add Author and committer to Commits (the committer was the author before)
+* Adapt documentation
