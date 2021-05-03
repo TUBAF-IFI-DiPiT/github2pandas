@@ -26,7 +26,7 @@ class GitReleases():
     
     """
 
-    GIT_RELEASES_DIR = "Issues"
+    GIT_RELEASES_DIR = "Releases"
     GIT_RELEASES = "pdReleases.p"
 
     @staticmethod
@@ -38,7 +38,7 @@ class GitReleases():
 
         Parameters
         ----------
-        GitRelease : GitRelease
+        git_release : GitRelease
             GitRelease object from pygithub.
         users_ids : dict
             Dict of User Ids as Keys and anonym Ids as Value.

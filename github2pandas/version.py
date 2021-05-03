@@ -226,13 +226,34 @@ class Version():
         # Embed author uuid
         users_ids = Utility.get_users_ids(data_root_dir)
         pd_commits['author'] = ""
+        pd_commits['committer'] = ""
         commiter_list = pd_commits.committer_name.unique()
         for commiter_name in commiter_list:
-            commit_sha = pd_commits[pd_commits.committer_name == commiter_name].iloc[0].commit_sha 
-            user_id = Utility.extract_committer_data_from_commit(repo, commit_sha, 
+            if commiter_name == "GitHub":
+                pd_selected_commits = pd_commits[pd_commits.committer_name == commiter_name]
+                for index, row in pd_selected_commits.iterrows():
+                    author_id = Utility.extract_author_data_from_commit(repo, row.commit_sha, 
                                                                  users_ids, data_root_dir)   
-            pd_commits.loc[pd_commits.committer_name == commiter_name, 'author'] = user_id  
+                    committer_id = Utility.extract_committer_data_from_commit(repo, row.commit_sha, 
+                                                                        users_ids, data_root_dir)   
+                    pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'author'] = author_id   
+                    pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'committer'] = committer_id 
+            else:
+                commit_sha = pd_commits[pd_commits.committer_name == commiter_name].iloc[0].commit_sha 
+                author_id = Utility.extract_author_data_from_commit(repo, commit_sha, 
+                                                                    users_ids, data_root_dir)   
+                committer_id = Utility.extract_committer_data_from_commit(repo, commit_sha, 
+                                                                    users_ids, data_root_dir)   
+                pd_commits.loc[pd_commits.committer_name == commiter_name, 'author'] = author_id   
+                pd_commits.loc[pd_commits.committer_name == commiter_name, 'committer'] = committer_id 
         pd_commits.drop(['committer_name'], axis=1, inplace=True)  
+
+        # Extract Tags
+        pd_commits['tag'] = ""
+        tags = repo.get_tags()
+        for tag in tags:
+            pd_commits.loc[pd_commits.commit_sha == tag.commit.sha, 'tag'] = tag.name   
+            
 
         # Extract branch names
         branch_entries = [x.split(',') for x in pd_commits.branches.values]
