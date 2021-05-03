@@ -15,7 +15,7 @@ class TestGitReleases(unittest.TestCase):
     
     github_token = os.environ['TOKEN']
 
-    git_repo_name = "Extract_Git_Activities"
+    git_repo_name = "github2pandas"
     git_repo_owner = "TUBAF-IFI-DiPiT"
 
     default_data_folder = Path("test_data", git_repo_name)
