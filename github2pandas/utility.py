@@ -204,13 +204,13 @@ class Utility():
         g = github.Github(token)
         relevant_repos = []
         for repo in g.get_user().get_repos():
-            if whitelist_pattern in repo.name: 
-                if not blacklist_pattern in repo.name:
-                    repo_dir = Path(data_root_dir, repo.owner + "/" + repo.name)
+            if whitelist_pattern == "" or whitelist_pattern == None or whitelist_pattern in repo.name:
+                if blacklist_pattern == "" or blacklist_pattern == None or not blacklist_pattern in repo.name:
+                    repo_dir = Path(data_root_dir, repo.owner.login + "/" + repo.name)
                     repo_dir.mkdir(parents=True, exist_ok=True)
                     repo_file = Path(repo_dir, Utility.REPO)
                     with open(repo_file, 'w') as json_file:
-                        json.dump({"repo_owner": repo.owner,"repo_name":repo.name}, json_file)
+                        json.dump({"repo_owner": repo.owner.login,"repo_name":repo.name}, json_file)
                     relevant_repos.append(repo)
         return relevant_repos
 
