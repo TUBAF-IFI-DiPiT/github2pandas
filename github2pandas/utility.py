@@ -27,6 +27,8 @@ class Utility():
             Save a data list to a pandas table.
         get_repo_informations(data_root_dir)
             Get a repository data (owner and name).
+        get_repos(repo_name_pattern, blacklist_pattern, token, data_root_dir)
+            Get mutiple repositorys by pattern and token.
         get_repo(repo_owner, repo_name, token, data_root_dir)
             Get a repository by owner, name and token.
         apply_datetime_format(pd_table, source_column, destination_column=None)
@@ -171,6 +173,47 @@ class Utility():
                 return (repo_data["repo_owner"], repo_data["repo_name"])
         return None, None
     
+    @staticmethod
+    def get_repos(whitelist_pattern, blacklist_pattern, token, data_root_dir):
+        """
+        get_repos(repo_name_pattern, blacklist_pattern, token, data_root_dir)
+
+        Get mutiple repositorys by pattern and token.
+
+        Parameters
+        ----------
+        whitelist_pattern : str
+            the whitelist pattern of the desired repository.
+        blacklist_pattern : str
+            the blacklist pattern of the desired repository.
+        token : str
+            A valid Github Token.
+        data_root_dir : str
+            Data root directory for the repositorys.
+        
+        Returns
+        -------
+        List
+            List of Repository objects from pygithub.
+
+        Notes
+        -----
+            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
+
+        """
+        g = github.Github(token)
+        relevant_repos = []
+        for repo in g.get_user().get_repos():
+            if whitelist_pattern in repo.name: 
+                if not blacklist_pattern in repo.name:
+                    repo_dir = Path(data_root_dir, repo.owner + "/" + repo.name)
+                    repo_dir.mkdir(parents=True, exist_ok=True)
+                    repo_file = Path(repo_dir, Utility.REPO)
+                    with open(repo_file, 'w') as json_file:
+                        json.dump({"repo_owner": repo.owner,"repo_name":repo.name}, json_file)
+                    relevant_repos.append(repo)
+        return relevant_repos
+
     @staticmethod      
     def get_repo(repo_owner, repo_name, token, data_root_dir):
         """
