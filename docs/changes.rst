@@ -28,3 +28,9 @@ Version 1.1.0 (Mai 3, 2021)
 * Add Tag Names to Commits
 * Add Author and committer to Commits (the committer was the author before)
 * Adapt documentation
+
+
+Version 1.1.1 (Mai 19, 2021)
+-----------------------------------
+
+* Add get mutiple repositorys by whitelist and blacklist pattern
