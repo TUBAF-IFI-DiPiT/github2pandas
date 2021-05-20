@@ -34,3 +34,9 @@ Version 1.1.1 (Mai 19, 2021)
 -----------------------------------
 
 * Add get mutiple repositorys by whitelist and blacklist pattern
+
+
+Version 1.1.2 (Mai 20, 2021)
+-----------------------------------
+
+* Fix get mutiple repositorys by whitelist and blacklist pattern

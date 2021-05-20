@@ -127,11 +127,6 @@ class TestUtility(unittest.TestCase):
         self.assertIsNone(owner)
         self.assertIsNone(name)
 
-    def test_get_repos(self):
-        warnings.simplefilter ("ignore", ResourceWarning)
-        repos = Utility.get_repos("github2pandas",None,self.github_token, "test_data")
-        self.assertNotEqual(repos,[])
-
     def test_get_repo(self):
         warnings.simplefilter ("ignore", ResourceWarning)
         repo = Utility.get_repo(self.git_repo_owner, self.git_repo_name, self.github_token, self.default_data_folder)
