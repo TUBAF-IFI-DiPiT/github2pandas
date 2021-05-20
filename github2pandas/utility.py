@@ -428,9 +428,15 @@ class Utility():
         try:
             user_data["name"] = user.name
         except:
-            user_data["name"] = "unknown User"
-        user_data["email"] = user.email
-        user_data["login"] = user.login
+            user_data["name"] = "exception Name"
+        try:
+            user_data["email"] = user.email
+        except:
+            user_data["email"] = "exception Email"
+        try:
+            user_data["login"] = user.login
+        except:
+            user_data["login"] = "exception Login"
         users_df = users_df.append(user_data, ignore_index=True)
         with open(users_file, "wb") as f:
             pickle.dump(users_df, f)

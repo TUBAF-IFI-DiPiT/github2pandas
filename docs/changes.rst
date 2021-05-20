@@ -46,3 +46,8 @@ Version 1.1.3 (Mai 20, 2021)
 
 * Fix extract_user_data.
 * User name can cause an unknown Github exception 
+
+Version 1.1.4 (Mai 20, 2021)
+-----------------------------------
+
+* enhance Fix extract_user_data.
