@@ -40,3 +40,9 @@ Version 1.1.2 (Mai 20, 2021)
 -----------------------------------
 
 * Fix get mutiple repositorys by whitelist and blacklist pattern
+
+Version 1.1.3 (Mai 20, 2021)
+-----------------------------------
+
+* Fix extract_user_data.
+* User name can cause an unknown Github exception 

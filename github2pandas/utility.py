@@ -425,7 +425,10 @@ class Utility():
         user_data["anonym_uuid"] = generate_id(seed=user.node_id)
         users_ids[user.node_id] = user_data["anonym_uuid"]
         user_data["id"] = user.node_id
-        user_data["name"] = user.name
+        try:
+            user_data["name"] = user.name
+        except:
+            user_data["name"] = "unknown User"
         user_data["email"] = user.email
         user_data["login"] = user.login
         users_df = users_df.append(user_data, ignore_index=True)
