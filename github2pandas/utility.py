@@ -475,6 +475,8 @@ class Utility():
         commit = repo.get_commit(sha)
         if not commit:
             return None
+        if commit._author == github.GithubObject.NotSet:
+            return None
         return Utility.extract_user_data(commit.author, users_ids, data_root_dir)
                
     @staticmethod
@@ -509,6 +511,8 @@ class Utility():
             return None
         commit = repo.get_commit(sha)
         if not commit:
+            return None
+        if commit._committer == github.GithubObject.NotSet:
             return None
         return Utility.extract_user_data(commit.committer, users_ids, data_root_dir)
 
