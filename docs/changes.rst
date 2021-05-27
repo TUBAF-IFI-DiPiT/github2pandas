@@ -51,3 +51,12 @@ Version 1.1.4 (Mai 20, 2021)
 -----------------------------------
 
 * enhance Fix extract_user_data.
+
+Version 1.1.5 (Mai 27, 2021)
+-----------------------------------
+
+* add commits sha on pull_request
+* solve author and committer problem
+* add define_unknown_user to Version
+* add get unknown_user from commits
+* get_repos has now mutiple whitelist and blacklist pattern and are optional now
