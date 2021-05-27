@@ -27,7 +27,7 @@ class Utility():
             Save a data list to a pandas table.
         get_repo_informations(data_root_dir)
             Get a repository data (owner and name).
-        get_repos(repo_name_pattern, blacklist_pattern, token, data_root_dir)
+        get_repos(token, data_root_dir, whitelist_patterns=None, blacklist_patterns=None)
             Get mutiple repositorys by pattern and token.
         get_repo(repo_owner, repo_name, token, data_root_dir)
             Get a repository by owner, name and token.
@@ -174,17 +174,17 @@ class Utility():
         return None, None
     
     @staticmethod
-    def get_repos(whitelist_pattern, blacklist_pattern, token, data_root_dir):
+    def get_repos(token, data_root_dir, whitelist_patterns=None, blacklist_patterns=None):
         """
-        get_repos(repo_name_pattern, blacklist_pattern, token, data_root_dir)
+        get_repos(token, data_root_dir, whitelist_patterns=None, blacklist_patterns=None)
 
-        Get mutiple repositorys by pattern and token.
+        Get mutiple repositorys by mutiple pattern and token.
 
         Parameters
         ----------
-        whitelist_pattern : str
+        whitelist_patterns : list
             the whitelist pattern of the desired repository.
-        blacklist_pattern : str
+        blacklist_patterns : list
             the blacklist pattern of the desired repository.
         token : str
             A valid Github Token.
@@ -201,11 +201,26 @@ class Utility():
             PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
 
         """
+
         g = github.Github(token)
         relevant_repos = []
         for repo in g.get_user().get_repos():
-            if whitelist_pattern == "" or whitelist_pattern == None or whitelist_pattern in repo.name:
-                if blacklist_pattern == "" or blacklist_pattern == None or not blacklist_pattern in repo.name:
+            whitelist_pass = False
+            if whitelist_patterns == [] or whitelist_patterns == None:
+                whitelist_pass = True
+            else:
+                for whitelist_pattern in whitelist_patterns:
+                    if whitelist_pattern in repo.name:
+                        whitelist_pass = True
+                        break
+            if whitelist_pass:
+                blacklist_pass = True
+                if blacklist_patterns != [] or blacklist_patterns is not None:
+                    for blacklist_pattern in blacklist_patterns:
+                        if blacklist_pattern in repo.name:
+                            blacklist_pass = False
+                            break
+                if blacklist_pass:
                     repo_dir = Path(data_root_dir, repo.owner.login + "/" + repo.name)
                     repo_dir.mkdir(parents=True, exist_ok=True)
                     repo_file = Path(repo_dir, Utility.REPO)
@@ -402,6 +417,7 @@ class Utility():
             Dict of User Ids as Keys and anonym Ids as Value.
         data_root_dir : str
             Repo dir of the project.
+        
         Returns
         -------
         str
@@ -413,8 +429,7 @@ class Utility():
 
         """
         if not user:
-            print("No User. This call was slow!!! Should be fixed")
-            return
+            return None
         if user.node_id in users_ids:
             return users_ids[user.node_id]
         users_file = Path(data_root_dir, Utility.USERS)
