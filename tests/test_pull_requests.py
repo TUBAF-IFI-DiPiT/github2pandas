@@ -108,7 +108,7 @@ class TestPullRequests(unittest.TestCase):
         class Commit:
             sha = "test_extract_pull_request_commit_data"
         
-        pull_request_commit_data = PullRequests.extract_pull_request_review_data(Commit(), 0, self.users_ids, self.default_data_folder)
+        pull_request_commit_data = PullRequests.extract_pull_request_commit_data(Commit(), 0)
         self.assertIsNotNone(pull_request_commit_data)
         self.assertFalse("author" in pull_request_review_data.keys())
 
