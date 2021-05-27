@@ -20,6 +20,7 @@ The package implements Python functions for
 |   |   |- pdIssuesReactions.p
 |   |- PullRequests
 |   |   |- pdPullRequestsComments.p
+|   |   |- pdPullRequestsCommits.p
 |   |   |- pdPullRequestsEvents.p
 |   |   |- pdPullRequests.p
 |   |   |- pdPullRequestsReactions.p

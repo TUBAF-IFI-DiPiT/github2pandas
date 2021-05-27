@@ -33,6 +33,7 @@ class TestPullRequests(unittest.TestCase):
         pull_requests_reactions = PullRequests.get_pull_requests(self.default_data_folder, filename=PullRequests.PULL_REQUESTS_REACTIONS)
         pull_requests_reviews = PullRequests.get_pull_requests(self.default_data_folder, filename=PullRequests.PULL_REQUESTS_REVIEWS)
         pull_requests_events = PullRequests.get_pull_requests(self.default_data_folder, filename=PullRequests.PULL_REQUESTS_EVENTS)
+        pull_requests_commits = PullRequests.get_pull_requests(self.default_data_folder, filename=PullRequests.PULL_REQUESTS_COMMITS)
 
     def test_extract_pull_request_data(self):
         pull_requests = self.repo.get_pulls(state='all') 
@@ -96,6 +97,19 @@ class TestPullRequests(unittest.TestCase):
         pull_request_review._user = github.GithubObject.NotSet
         pull_request_review_data = PullRequests.extract_pull_request_review_data(pull_request_review, 0, self.users_ids, self.default_data_folder)
         self.assertIsNotNone(pull_request_review_data)
+
+    def test_extract_pull_request_commit_data(self):
+        pull_requests = self.repo.get_pulls(state='all') 
+        for pull_request in pull_requests:
+            for commit in pull_request.get_commits():
+                pull_request_review_data = PullRequests.extract_pull_request_commit_data(commit, pull_request.id)
+                break
+            break
+        class Commit:
+            sha = "test_extract_pull_request_commit_data"
+        
+        pull_request_commit_data = PullRequests.extract_pull_request_review_data(Commit(), 0, self.users_ids, self.default_data_folder)
+        self.assertIsNotNone(pull_request_commit_data)
         self.assertFalse("author" in pull_request_review_data.keys())
 
     def setUp(self):

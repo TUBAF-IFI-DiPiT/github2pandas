@@ -23,6 +23,8 @@ class PullRequests():
         Pandas table file for reviews data in pull requests.
     PULL_REQUESTS_EVENTS : str
         Pandas table file for events data in pull requests.
+    PULL_REQUESTS_COMMITS : str
+        Pandas table file for commits data in pull requests.
 
     Methods
     -------
@@ -30,6 +32,8 @@ class PullRequests():
         Extracting general pull request data.
     extract_pull_request_review_data(review, pull_request_id, users_ids, data_root_dir)
         Extracting general review data from a pull request.
+    extract_pull_request_commit_data(review, users_ids, pull_request_id)
+        Extracting commit data from a pull request.
     generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False, check_for_updates=True)
         Extracting the complete pull request data from a repository.
     get_pull_requests(data_root_dir, filename=PULL_REQUESTS))
@@ -42,6 +46,7 @@ class PullRequests():
     PULL_REQUESTS_REACTIONS = "pdPullRequestsReactions.p"
     PULL_REQUESTS_REVIEWS = "pdPullRequestsReviews.p"
     PULL_REQUESTS_EVENTS = "pdPullRequestsEvents.p"
+    PULL_REQUESTS_COMMITS = "pdPullRequestsCommits.p"
     
     @staticmethod
     def extract_pull_request_data(pull_request, users_ids, data_root_dir):
@@ -131,6 +136,36 @@ class PullRequests():
         return review_data
     
     @staticmethod
+    def extract_pull_request_commit_data(commit, pull_request_id):
+        """
+        extract_pull_request_commit_data(review, users_ids, pull_request_id)
+
+        Extracting commit data from a pull request.
+
+        Parameters
+        ----------
+        commit : Commit
+            Commit object from pygithub.
+        pull_request_id : int
+            Pull request id as foreign key.
+
+        Returns
+        -------
+        dict
+            Dictionary with the extracted commit data.
+
+        Notes
+        -----
+            PyGithub Commit object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Commit.html
+
+        """
+
+        commit_data = {}
+        commit_data["pull_request_id"] = pull_request_id
+        commit_data["commit_sha"] = commit.sha
+        return commit_data
+    
+    @staticmethod
     def generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False, check_for_updates=True):
         """
         generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False, check_for_updates=True)
@@ -167,6 +202,8 @@ class PullRequests():
         pull_request_reaction_list = []
         pull_request_review_list = []
         pull_request_event_list = []
+        pull_request_commit_list = []
+
         # pull request data
         for pull_request in pull_requests:
             pull_request_data = PullRequests.extract_pull_request_data(pull_request, users_ids, data_root_dir)
@@ -197,6 +234,11 @@ class PullRequests():
             for event in pull_request.get_issue_events():
                 pull_request_event_data = Utility.extract_event_data(event, pull_request.id, "pull_request", users_ids, data_root_dir)
                 pull_request_event_list.append(pull_request_event_data)
+            # pull request commits
+            for commit in pull_request.get_commits():
+                pull_request_commit_data = PullRequests.extract_pull_request_commit_data(commit, pull_request.id)
+                pull_request_commit_list.append(pull_request_commit_data)
+
         # Save lists
         Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS, pull_request_list)
         Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS_COMMENTS, pull_request_comment_list)
@@ -204,6 +246,7 @@ class PullRequests():
             Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS_REACTIONS, pull_request_reaction_list)
         Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS_REVIEWS, pull_request_review_list)
         Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS_EVENTS, pull_request_event_list)
+        Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS_COMMITS, pull_request_commit_list)
     
     @staticmethod
     def get_pull_requests(data_root_dir, filename=PULL_REQUESTS):
