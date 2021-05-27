@@ -402,6 +402,7 @@ class Utility():
             Dict of User Ids as Keys and anonym Ids as Value.
         data_root_dir : str
             Repo dir of the project.
+        
         Returns
         -------
         str
@@ -413,8 +414,7 @@ class Utility():
 
         """
         if not user:
-            print("No User. This call was slow!!! Should be fixed")
-            return
+            return None
         if user.node_id in users_ids:
             return users_ids[user.node_id]
         users_file = Path(data_root_dir, Utility.USERS)

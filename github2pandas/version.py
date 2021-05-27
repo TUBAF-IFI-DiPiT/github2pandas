@@ -8,7 +8,7 @@ import git2net
 import shutil
 from pathlib import Path
 import stat
-
+import numpy
 from .utility import Utility
 
 class Version():
@@ -48,6 +48,10 @@ class Version():
         Extracting version data from a local repository and storing them in a mysql data base.
     generate_version_pandas_tables(repo, data_root_dir)
         Extracting edits and commits in a pandas table.
+    define_unknown_users(user_list, data_root_dir)
+        Define unknown users in commits pandas table
+    get_unknown_users(data_root_dir)
+        Get all unknown users in from commits.
     get_version(data_root_dir, filename=VERSION_COMMITS)
         Get the generated pandas table.
 
@@ -238,6 +242,9 @@ class Version():
                                                                         users_ids, data_root_dir)   
                     pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'author'] = author_id   
                     pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'committer'] = committer_id 
+                    if (author_id is None) and (committer_id is None):
+                        pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'unknown_user'] = row.committer_name
+
             else:
                 commit_sha = pd_commits[pd_commits.committer_name == commiter_name].iloc[0].commit_sha 
                 author_id = Utility.extract_author_data_from_commit(repo, commit_sha, 
@@ -246,8 +253,21 @@ class Version():
                                                                     users_ids, data_root_dir)   
                 pd_commits.loc[pd_commits.committer_name == commiter_name, 'author'] = author_id   
                 pd_commits.loc[pd_commits.committer_name == commiter_name, 'committer'] = committer_id 
+                if (author_id is None) and (committer_id is None):
+                    pd_commits.loc[pd_commits.committer_name == commiter_name, 'unknown_user'] = commiter_name 
         pd_commits.drop(['committer_name'], axis=1, inplace=True)  
 
+        users = Utility.get_users(data_root_dir)
+        if "unknown_user" in pd_commits:
+            unknown_user_commits = pd_commits.loc[pd_commits.unknown_user.notna()]
+            unknown_users = unknown_user_commits.unknown_user.unique()
+            for unknown_user in unknown_users:
+                if not users.empty:
+                    for index, row in users.iterrows():
+                        if (row["email"] == unknown_user) or (row["name"] == unknown_user) or (row["login"] == unknown_user):
+                            pd_commits.loc[pd_commits.unknown_user == unknown_user, 'author'] = row["anonym_uuid"]
+                            pd_commits.loc[pd_commits.unknown_user == unknown_user, 'committer'] = row["anonym_uuid"]
+                            pd_commits.loc[pd_commits.unknown_user == unknown_user, 'unknown_user'] = numpy.NaN
         # Extract Tags
         pd_commits['tag'] = ""
         tags = repo.get_tags()
@@ -279,6 +299,80 @@ class Version():
         pd_branches_file = Path(version_folder, Version.VERSION_BRANCHES)
         with open(pd_branches_file, "wb") as f:
             pickle.dump(pd_Branches, f)          
+
+    @staticmethod
+    def define_unknown_users(user_list, data_root_dir):
+        """
+        define_unknown_users(user_list, data_root_dir)
+
+        Define unknown users in commits pandas table
+
+        Parameters
+        ----------
+        user_list: list
+            List which contains users. 
+        data_root_dir : str
+            Data root directory for the repository.
+
+        Notes
+        -----
+        Example User: {"node_id": "unique_id_0", "email":"mail", "name": "name", "login": "login"}
+        All keys are optional.
+        
+        """
+        pd_commits = Version.get_version(data_root_dir)
+        if "unknown_user" in pd_commits:
+            unknown_user_commits = pd_commits.loc[pd_commits.unknown_user.notna()]
+            unknown_users = unknown_user_commits.unknown_user.unique()
+            for unknown_user in unknown_users:
+                for user in user_list:
+                    if (user["email"] == unknown_user) or (user["name"] == unknown_user) or (user["login"] == unknown_user):
+                        if "node_id" not in user:
+                            user["node_id"] = "node_id"
+                        if "name" not in user:
+                            user["name"] = numpy.NaN
+                        if "email" not in user:
+                            user["email"] = numpy.NaN
+                        if "login" not in user:
+                            user["login"] = numpy.NaN
+                        class UserData:
+                            node_id = user["node_id"]
+                            name = user["name"]
+                            email = user["email"]
+                            login = user["login"]
+                        users_ids = Utility.get_users_ids(data_root_dir)
+                        uuid = Utility.extract_user_data(UserData(),users_ids,data_root_dir)
+                        pd_commits.loc[pd_commits.unknown_user == unknown_user, 'author'] = uuid
+                        pd_commits.loc[pd_commits.unknown_user == unknown_user, 'committer'] = uuid
+                        pd_commits.loc[pd_commits.unknown_user == unknown_user, 'unknown_user'] = numpy.NaN
+            version_folder = Path(data_root_dir, Version.VERSION_DIR)
+            pd_commits_file = Path(version_folder, Version.VERSION_COMMITS)
+            with open(pd_commits_file, "wb") as f:
+                pickle.dump(pd_commits, f)
+        
+    @staticmethod
+    def get_unknown_users(data_root_dir):
+        """
+        get_unknown_users(data_root_dir)
+
+        Get all unknown users in from commits.
+
+        Parameters
+        ----------
+        data_root_dir : str
+            Data root directory for the repository.
+
+        Returns
+        -------
+        List
+            List of unknown user names
+        
+        """
+        pd_commits = Version.get_version(data_root_dir)
+        if "unknown_user" in pd_commits:
+            unknown_user_commits = pd_commits.loc[pd_commits.unknown_user.notna()]
+            unknown_users = unknown_user_commits.unknown_user.unique()
+            return unknown_users
 
     @staticmethod
     def get_version(data_root_dir, filename=VERSION_COMMITS):
