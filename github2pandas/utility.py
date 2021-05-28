@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import numpy
 import pandas as pd
 import github
 import pickle
@@ -440,18 +441,14 @@ class Utility():
         user_data["anonym_uuid"] = generate_id(seed=user.node_id)
         users_ids[user.node_id] = user_data["anonym_uuid"]
         user_data["id"] = user.node_id
+        user_data["name"] = user.name
+        user_data["email"] = user.email
+        user_data["login"] = user.login
         try:
-            user_data["name"] = user.name
+            user_data["alias"] = user.alias
         except:
-            user_data["name"] = "exception Name"
-        try:
-            user_data["email"] = user.email
-        except:
-            user_data["email"] = "exception Email"
-        try:
-            user_data["login"] = user.login
-        except:
-            user_data["login"] = "exception Login"
+            pass
+
         users_df = users_df.append(user_data, ignore_index=True)
         with open(users_file, "wb") as f:
             pickle.dump(users_df, f)
@@ -656,3 +653,32 @@ class Utility():
             comment_data["author"] = Utility.extract_user_data(comment.user, users_ids, data_root_dir)
         return comment_data
     
+    @staticmethod
+    def define_unknown_user(user_dict, unknown_user, data_root_dir):
+        users = Utility.get_users(data_root_dir)
+        if unknown_user in user_dict:
+            p_user = users.loc[users.id == user_dict[unknown_user]]
+            if not p_user.empty:
+                alias = ""
+                user = p_user.iloc[0]
+                if "alias" in user:
+                    if (user["alias"] == numpy.NAN) or (user["alias"] is None):
+                        alias = unknown_user
+                    else:
+                        alias = user["alias"] + ";" + unknown_user
+                else:
+                    alias = unknown_user
+                users.loc[users.id == user_dict[unknown_user], 'alias'] = alias
+                pd_file = Path(data_root_dir, Utility.USERS)
+                with open(pd_file, "wb") as f:
+                    pickle.dump(users, f)
+                return user["anonym_uuid"]
+            
+            class UserData:
+                node_id = user_dict[unknown_user]
+                name = numpy.NaN
+                email = numpy.NaN
+                login = numpy.NaN
+                alias = unknown_user  
+            users_ids = Utility.get_users_ids(data_root_dir)
+            return Utility.extract_user_data(UserData(),users_ids,data_root_dir)

@@ -60,3 +60,9 @@ Version 1.1.5 (Mai 27, 2021)
 * add define_unknown_user to Version
 * add get unknown_user from commits
 * get_repos has now mutiple whitelist and blacklist pattern and are optional now
+
+
+Version 1.1.6 (Mai 28, 2021)
+-----------------------------------
+
+* define unknown users takes now a dictionary in with unknown user as key and id as value. If the user is doesnt exists then a new user will be added.

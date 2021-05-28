@@ -301,23 +301,23 @@ class Version():
             pickle.dump(pd_Branches, f)          
 
     @staticmethod
-    def define_unknown_users(user_list, data_root_dir):
+    def define_unknown_users(user_dict, data_root_dir):
         """
-        define_unknown_users(user_list, data_root_dir)
+        define_unknown_users(user_dict, data_root_dir)
 
         Define unknown users in commits pandas table
 
         Parameters
         ----------
-        user_list: list
-            List which contains users. 
+        user_dict: dict
+            Dictionary which contains users. 
         data_root_dir : str
             Data root directory for the repository.
 
         Notes
         -----
-        Example User: {"node_id": "unique_id_0", "email":"mail", "name": "name", "login": "login"}
-        All keys are optional.
+        Example User: {"unknown_user": "real user node id"}
+        If the real user node id does not exist in the users table then a new user will be created
         
         """
         pd_commits = Version.get_version(data_root_dir)
@@ -325,26 +325,12 @@ class Version():
             unknown_user_commits = pd_commits.loc[pd_commits.unknown_user.notna()]
             unknown_users = unknown_user_commits.unknown_user.unique()
             for unknown_user in unknown_users:
-                for user in user_list:
-                    if (user["email"] == unknown_user) or (user["name"] == unknown_user) or (user["login"] == unknown_user):
-                        if "node_id" not in user:
-                            user["node_id"] = "node_id"
-                        if "name" not in user:
-                            user["name"] = numpy.NaN
-                        if "email" not in user:
-                            user["email"] = numpy.NaN
-                        if "login" not in user:
-                            user["login"] = numpy.NaN
-                        class UserData:
-                            node_id = user["node_id"]
-                            name = user["name"]
-                            email = user["email"]
-                            login = user["login"]
-                        users_ids = Utility.get_users_ids(data_root_dir)
-                        uuid = Utility.extract_user_data(UserData(),users_ids,data_root_dir)
-                        pd_commits.loc[pd_commits.unknown_user == unknown_user, 'author'] = uuid
-                        pd_commits.loc[pd_commits.unknown_user == unknown_user, 'committer'] = uuid
-                        pd_commits.loc[pd_commits.unknown_user == unknown_user, 'unknown_user'] = numpy.NaN
+                uuid = Utility.define_unknown_user(user_dict,unknown_user,data_root_dir)
+                if uuid is not None:
+                    pd_commits.loc[pd_commits.unknown_user == unknown_user, 'author'] = uuid
+                    pd_commits.loc[pd_commits.unknown_user == unknown_user, 'committer'] = uuid
+                    pd_commits.loc[pd_commits.unknown_user == unknown_user, 'unknown_user'] = numpy.NaN
+
             version_folder = Path(data_root_dir, Version.VERSION_DIR)
             pd_commits_file = Path(version_folder, Version.VERSION_COMMITS)
             with open(pd_commits_file, "wb") as f:
