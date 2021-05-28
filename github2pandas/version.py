@@ -49,7 +49,7 @@ class Version():
     generate_version_pandas_tables(repo, data_root_dir)
         Extracting edits and commits in a pandas table.
     define_unknown_users(user_list, data_root_dir)
-        Define unknown users in commits pandas table
+        Define unknown users in commits pandas table.
     get_unknown_users(data_root_dir)
         Get all unknown users in from commits.
     get_version(data_root_dir, filename=VERSION_COMMITS)
@@ -305,7 +305,7 @@ class Version():
         """
         define_unknown_users(user_dict, data_root_dir)
 
-        Define unknown users in commits pandas table
+        Define unknown users in commits pandas table.
 
         Parameters
         ----------
@@ -358,7 +358,7 @@ class Version():
         if "unknown_user" in pd_commits:
             unknown_user_commits = pd_commits.loc[pd_commits.unknown_user.notna()]
             unknown_users = unknown_user_commits.unknown_user.unique()
-            return unknown_users
+            return list(unknown_users)
 
     @staticmethod
     def get_version(data_root_dir, filename=VERSION_COMMITS):

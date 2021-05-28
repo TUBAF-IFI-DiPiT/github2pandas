@@ -54,6 +54,8 @@ class Utility():
             Extracting general event data from a issue or pull request.
         extract_comment_data(comment, parent_id, parent_name, users_ids, data_root_dir)
             Extracting general comment data from a pull request or issue.
+        define_unknown_user(user_dict, unknown_user, data_root_dir)
+            Defines a unknown user. Add unknown user to alias.
     
     """
     USERS = "Users.p"
@@ -183,14 +185,14 @@ class Utility():
 
         Parameters
         ----------
-        whitelist_patterns : list
-            the whitelist pattern of the desired repository.
-        blacklist_patterns : list
-            the blacklist pattern of the desired repository.
         token : str
             A valid Github Token.
         data_root_dir : str
             Data root directory for the repositorys.
+        whitelist_patterns : list
+            the whitelist pattern of the desired repository.
+        blacklist_patterns : list
+            the blacklist pattern of the desired repository.
         
         Returns
         -------
@@ -655,6 +657,31 @@ class Utility():
     
     @staticmethod
     def define_unknown_user(user_dict, unknown_user, data_root_dir):
+        """
+        define_unknown_user(user_dict, unknown_user, data_root_dir)
+
+        Defines a unknown user. Add unknown user to alias.
+
+        Parameters
+        ----------
+        user_dict: dict
+            Dictionary which contains users. 
+        unknown_user : str
+            Name of a unknown user.
+        data_root_dir : str
+            Repo dir of the project.
+
+        Returns
+        -------
+        str
+            Uuid of the user.
+
+        Notes
+        -----
+            Example User Dict: {"unknown_user": "real user node id"}
+            If the real user node id does not exist in the users table then a new user will be created
+
+        """
         users = Utility.get_users(data_root_dir)
         if unknown_user in user_dict:
             p_user = users.loc[users.id == user_dict[unknown_user]]
