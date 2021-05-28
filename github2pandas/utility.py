@@ -443,9 +443,21 @@ class Utility():
         user_data["anonym_uuid"] = generate_id(seed=user.node_id)
         users_ids[user.node_id] = user_data["anonym_uuid"]
         user_data["id"] = user.node_id
-        user_data["name"] = user.name
-        user_data["email"] = user.email
-        user_data["login"] = user.login
+        try:
+            user_data["name"] = user.name
+        except:
+            print("No User name in:")
+            print(data_root_dir)
+        try:
+            user_data["email"] = user.email
+        except:
+            print("No User email in:")
+            print(data_root_dir)
+        try:
+            user_data["login"] = user.login
+        except:
+            print("No User login in:")
+            print(data_root_dir)
         try:
             user_data["alias"] = user.alias
         except:

@@ -66,3 +66,8 @@ Version 1.1.6 (Mai 28, 2021)
 -----------------------------------
 
 * define unknown users takes now a dictionary in with unknown user as key and id as value. If the user is doesnt exists then a new user will be added.
+
+Version 1.1.7 (Mai 28, 2021)
+-----------------------------------
+
+* Fix extract user. A name is sometimes not set!
