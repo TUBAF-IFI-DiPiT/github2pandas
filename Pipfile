@@ -16,7 +16,6 @@ pysqlite3 = "*"
 selenium = "*"
 python-dotenv = "*"
 pandas = "*"
-jupyter = "*"
 sphinx = "*"
 m2r2 = "*"
 pypiwin32 = {sys_platform = "== 'win32'"}

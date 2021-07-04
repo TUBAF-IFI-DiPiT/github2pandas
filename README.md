@@ -48,28 +48,13 @@ The internal structure and relations of the data frames are included in the proj
 sudo pip3 install github2pandas
 ```
 
-
-## Application examples 
+## Application  
 
 GitHub token is required for use, which is used for authentication. The [website](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) describes how you can generate this for your GitHub account. Customise the username and project name and explore any public or private repository you have access to with your account!
 
-| Aspect              | Example                                                                                                                        | Executable notebook | 
-|:------------------- |:------------------------------------------------------------------------------------------------------------------------------ |:------------------- |
-| Overview Example    | [Overview_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Overview_Example.ipynb)          | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/TUBAF-IFI-DiPiT/github2pandas/HEAD?filepath=%2Fnotebooks)  |
-| Commits & Edits     | [Version_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Version_Example.ipynb)            |                     |
-| Workflows / Actions | [Workflow_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Workflow_Example.ipynb)          |                     |
-| Issues              | [Issue_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Issues_Example.ipynb)               |                     |
-| Pull-Requests       | [Pull_Requests_Example.ipynb](https://github.com/TUBAF-IFI-DiPiT/github2pandas/blob/main/notebooks/Pull_Requests_Example.ipynb)|                     | 
-
-
 The documentation of the module is available at [https://github2pandas.readthedocs.io/](https://github2pandas.readthedocs.io/).
 
-# For Contributors
-
-Naming conventions: https://namingconvention.org/python/
-
 ## Working with pipenv
-
 
 | Process                                     | Command                                                 |
 | ------------------------------------------- | ------------------------------------------------------- |
@@ -79,3 +64,7 @@ Naming conventions: https://namingconvention.org/python/
 | Run all tests in a specific folder          | `pipenv run python -m unittest discover -s 'tests'`     |
 | Run all tests with specific filename        | `pipenv run python -m unittest discover -p 'test_*.py'` |
 | Start Jupyter server in virtual environment | `pipenv run jupyter notebook`                           | 
+
+# For Contributors
+
+Naming conventions: https://namingconvention.org/python/
