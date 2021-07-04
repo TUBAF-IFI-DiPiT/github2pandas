@@ -52,6 +52,8 @@ sudo pip3 install github2pandas
 
 GitHub token is required for use, which is used for authentication. The [website](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) describes how you can generate this for your GitHub account. Customise the username and project name and explore any public or private repository you have access to with your account!
 
+The corresponding [github2pandas_notebooks](https://github.com/TUBAF-IFI-DiPiT/github2pandas_notebooks/blob/main/README.md) repository illustrates the usage with examplary investigations.
+
 The documentation of the module is available at [https://github2pandas.readthedocs.io/](https://github2pandas.readthedocs.io/).
 
 ## Working with pipenv
