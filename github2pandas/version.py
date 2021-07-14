@@ -227,6 +227,8 @@ class Version():
 
         pd_edits.rename(columns=Version.EDIT_RENAMING_COLUMNS, inplace = True)
 
+        pd_edits = pd_edits.astype({'total_added_lines' : 'int', 'total_removed_lines' : 'int'})
+
         # Embed author uuid
         users_ids = Utility.get_users_ids(data_root_dir)
         pd_commits['author'] = ""
