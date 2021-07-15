@@ -71,3 +71,9 @@ Version 1.1.7 (Mai 28, 2021)
 -----------------------------------
 
 * Fix extract user. A name is sometimes not set!
+
+Version 1.1.8 (July 15, 2021)
+-----------------------------------
+
+* Remove Example notebooks
+* bugfix from type in version.py

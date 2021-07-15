@@ -35,7 +35,6 @@ setup(
       "selenium==3.141.0",
       "python-dotenv==0.17.0",
       "pandas==1.2.4",
-      "jupyter==1.0.0",
       "sphinx==3.5.4",
       "m2r2==0.2.7",
       "pypiwin32==223; sys_platform == 'win32'",
