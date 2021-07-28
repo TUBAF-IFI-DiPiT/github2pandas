@@ -77,3 +77,14 @@ Version 1.1.8 (July 15, 2021)
 
 * Remove Example notebooks
 * bugfix from type in version.py
+
+
+Version 1.1.9 (July 28, 2021)
+-----------------------------------
+
+* bugfix in extracting user data from commit
+
+Version 1.1.10 (July 28, 2021)
+-----------------------------------
+
+* hotfix for 1.1.9

@@ -441,7 +441,6 @@ class Utility():
             users_df = pd.read_pickle(users_file)
         user_data = {}
         user_data["anonym_uuid"] = generate_id(seed=user.node_id)
-        users_ids[user.node_id] = user_data["anonym_uuid"]
         user_data["id"] = user.node_id
         try:
             user_data["name"] = user.name
@@ -458,11 +457,11 @@ class Utility():
         except:
             print("No User login in:")
             print(data_root_dir)
-        try:
-            user_data["alias"] = user.alias
-        except:
-            pass
+        if "login" in user_data:
+            if user_data["login"] == "invalid-email-address" and not "name" in user_data:
+                return None
 
+        users_ids[user.node_id] = user_data["anonym_uuid"]
         users_df = users_df.append(user_data, ignore_index=True)
         with open(users_file, "wb") as f:
             pickle.dump(users_df, f)
