@@ -88,3 +88,9 @@ Version 1.1.10 (July 28, 2021)
 -----------------------------------
 
 * hotfix for 1.1.9
+
+Version 1.1.11 (July 29, 2021)
+-----------------------------------
+
+* change define unknown user in Utility!
+* users can now be referenced with uuids from other users or a new user will be created

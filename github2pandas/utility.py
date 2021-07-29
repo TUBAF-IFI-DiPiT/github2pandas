@@ -6,6 +6,7 @@ import github
 import pickle
 from human_id import generate_id
 import json
+import uuid
 
 class Utility():
     """
@@ -689,13 +690,13 @@ class Utility():
 
         Notes
         -----
-            Example User Dict: {"unknown_user": "real user node id"}
-            If the real user node id does not exist in the users table then a new user will be created
+            Example User Dict: {"unknown_user": "user uuid"}
+            If the real user node id does not exist in the users table then a new user will be created and the user uuid will be the node Id
 
         """
         users = Utility.get_users(data_root_dir)
         if unknown_user in user_dict:
-            p_user = users.loc[users.id == user_dict[unknown_user]]
+            p_user = users.loc[users.anonym_uuid == user_dict[unknown_user]]
             if not p_user.empty:
                 alias = ""
                 user = p_user.iloc[0]
@@ -706,7 +707,7 @@ class Utility():
                         alias = user["alias"] + ";" + unknown_user
                 else:
                     alias = unknown_user
-                users.loc[users.id == user_dict[unknown_user], 'alias'] = alias
+                users.loc[users.anonym_uuid == user_dict[unknown_user], 'alias'] = alias
                 pd_file = Path(data_root_dir, Utility.USERS)
                 with open(pd_file, "wb") as f:
                     pickle.dump(users, f)
@@ -714,9 +715,8 @@ class Utility():
             
             class UserData:
                 node_id = user_dict[unknown_user]
-                name = numpy.NaN
+                name = unknown_user
                 email = numpy.NaN
                 login = numpy.NaN
-                alias = unknown_user  
             users_ids = Utility.get_users_ids(data_root_dir)
             return Utility.extract_user_data(UserData(),users_ids,data_root_dir)
