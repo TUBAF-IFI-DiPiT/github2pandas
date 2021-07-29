@@ -8,6 +8,7 @@ import git2net
 import shutil
 from pathlib import Path
 import stat
+import subprocess
 import numpy
 from .utility import Utility
 
@@ -99,7 +100,7 @@ class Version():
             func(path)
 
     @staticmethod
-    def clone_repository(repo, data_root_dir, github_token=None):
+    def clone_repository(repo, data_root_dir, github_token=None, new_clone=False):
         """
         Clone_repository(repo, data_root_dir, github_token=None)
 
@@ -113,6 +114,8 @@ class Version():
             Repo dir of the project.
         github_token : str
             Token string.
+        new_clone : bool
+            Initiating a completely new clone of the repository
 
         Notes
         -----
@@ -127,6 +130,13 @@ class Version():
         version_folder.mkdir(parents=True, exist_ok=True)
 
         repo_dir = version_folder.joinpath(Version.VERSION_REPOSITORY_DIR)
+        if (repo_dir.exists ()) & (not new_clone):
+            old_path = Path.cwd()
+            os.chdir(repo_dir)
+            subprocess.check_output(["git", "pull"])
+            os.chdir(old_path)
+            return
+
         if repo_dir.exists ():
             shutil.rmtree(repo_dir.resolve(), onerror=Version.handleError)
 
@@ -197,7 +207,7 @@ class Version():
                               max_modifications=1000)
 
     @staticmethod
-    def generate_version_pandas_tables(repo, data_root_dir):
+    def generate_version_pandas_tables(repo, data_root_dir, check_for_updates=True):
         """
         generate_version_pandas_tables(repo, data_root_dir)
 
@@ -212,11 +222,16 @@ class Version():
 
         """
 
+        if check_for_updates:
+            commits = repo.get_commits() 
+            old_commits = Version.get_version(data_root_dir, filename=Version.VERSION_COMMITS)
+            if not Utility.check_for_updates_paginated(commits, old_commits):
+                return
+
         Version.generate_data_base(data_root_dir)
 
         version_folder = Path(data_root_dir, Version.VERSION_DIR)
         sqlite_db_file = version_folder.joinpath(Version.VERSION_DB)
-        print("1")
         db = sqlite3.connect(sqlite_db_file)
         pd_commits = pd.read_sql_query("SELECT * FROM commits", db)
         pd_edits = pd.read_sql_query("SELECT * FROM edits", db)
