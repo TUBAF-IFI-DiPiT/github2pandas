@@ -302,6 +302,8 @@ class TestUtility(unittest.TestCase):
              login = "test_define_unknown_user2"
         user2 = Utility.extract_user_data(User2(), self.users_ids, self.default_data_folder)
         new_user = Utility.define_unknown_user({"test2":user2},"test2",self.default_data_folder)
+        new_user = Utility.define_unknown_user({"test3":user2},"test3",self.default_data_folder)
+        new_user = Utility.define_unknown_user({"test3":user2},"test3",self.default_data_folder)
         print(Utility.get_users(self.default_data_folder))
 
     def setUp(self):

@@ -701,10 +701,14 @@ class Utility():
                 alias = ""
                 user = p_user.iloc[0]
                 if "alias" in user:
-                    if numpy.isnan(user["alias"]) or (user["alias"] is None):
+                    if pd.isnull(user["alias"]) or (user["alias"] is None):
                         alias = unknown_user
                     else:
-                        alias = user["alias"] + ";" + unknown_user
+                        all_alias = user["alias"].split(';')
+                        if not unknown_user in all_alias:
+                            alias = user["alias"] + ";" + unknown_user
+                        else:
+                            alias = user["alias"]
                 else:
                     alias = unknown_user
                 users.loc[users.anonym_uuid == user_dict[unknown_user], 'alias'] = alias

@@ -99,3 +99,8 @@ Version 1.1.12 (July 29, 2021)
 -----------------------------------
 
 * solved error: check for numpy is nan in Utility
+
+Version 1.1.13 (July 29, 2021)
+-----------------------------------
+
+* solved error: ignore Alias if already there in Utility(define_unknown_user)
