@@ -94,3 +94,8 @@ Version 1.1.11 (July 29, 2021)
 
 * change define unknown user in Utility!
 * users can now be referenced with uuids from other users or a new user will be created
+
+Version 1.1.12 (July 29, 2021)
+-----------------------------------
+
+* solved error: check for numpy is nan in Utility

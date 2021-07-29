@@ -701,7 +701,7 @@ class Utility():
                 alias = ""
                 user = p_user.iloc[0]
                 if "alias" in user:
-                    if (user["alias"] == numpy.NAN) or (user["alias"] is None):
+                    if numpy.isnan(user["alias"]) or (user["alias"] is None):
                         alias = unknown_user
                     else:
                         alias = user["alias"] + ";" + unknown_user

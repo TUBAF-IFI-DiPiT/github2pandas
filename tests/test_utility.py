@@ -287,6 +287,23 @@ class TestUtility(unittest.TestCase):
         self.assertIsNotNone(comment_data)
         self.assertFalse("author" in comment_data.keys())
 
+    def test_define_unknown_user(self):
+        class User:
+             node_id = "test_define_unknown_user"
+             name = "test_define_unknown_user"
+             email = "test_define_unknown_user@test.de"
+             login = "test_define_unknown_user"
+        user = Utility.extract_user_data(User(), self.users_ids, self.default_data_folder)
+        new_user = Utility.define_unknown_user({"test":user},"test",self.default_data_folder)
+        class User2:
+             node_id = "test_define_unknown_user2"
+             name = "test_define_unknown_use2r"
+             email = "test_define_unknown_user2@test.de"
+             login = "test_define_unknown_user2"
+        user2 = Utility.extract_user_data(User2(), self.users_ids, self.default_data_folder)
+        new_user = Utility.define_unknown_user({"test2":user2},"test2",self.default_data_folder)
+        print(Utility.get_users(self.default_data_folder))
+
     def setUp(self):
         self.default_data_folder.mkdir(parents=True, exist_ok=True)
 
