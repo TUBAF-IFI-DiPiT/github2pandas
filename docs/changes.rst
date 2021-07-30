@@ -104,3 +104,9 @@ Version 1.1.13 (July 29, 2021)
 -----------------------------------
 
 * solved error: ignore Alias if already there in Utility(define_unknown_user)
+
+Version 1.1.14 (July 29, 2021)
+-----------------------------------
+* version download will check if there are defined user for unknown user
+* comment out some print
+* verion checks now if there are updates before downloading

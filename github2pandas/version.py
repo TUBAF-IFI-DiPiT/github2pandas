@@ -265,8 +265,22 @@ class Version():
                     pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'author'] = author_id   
                     pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'committer'] = committer_id 
                     if (author_id is None) and (committer_id is None):
-                        pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'unknown_user'] = row.committer_name
-
+                        users = Utility.get_users(data_root_dir)
+                        found = False
+                        if "alias" in users:
+                            for index2, row2 in users.iterrows():
+                                if not pd.isnull(row2["alias"]) and row2["alias"] is not None:
+                                    all_alias = row2["alias"].split(';')
+                                    for alias in all_alias:
+                                        if commiter_name == alias:
+                                            pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'author'] = row2["anonym_uuid"] 
+                                            pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'committer'] = row2["anonym_uuid"]
+                                            found = True
+                                            break
+                                if found:
+                                    break
+                        if not found:
+                            pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'unknown_user'] = row.committer_name
             else:
                 commit_sha = pd_commits[pd_commits.committer_name == commiter_name].iloc[0].commit_sha 
                 author_id = Utility.extract_author_data_from_commit(repo, commit_sha, 
@@ -276,7 +290,22 @@ class Version():
                 pd_commits.loc[pd_commits.committer_name == commiter_name, 'author'] = author_id   
                 pd_commits.loc[pd_commits.committer_name == commiter_name, 'committer'] = committer_id 
                 if (author_id is None) and (committer_id is None):
-                    pd_commits.loc[pd_commits.committer_name == commiter_name, 'unknown_user'] = commiter_name 
+                    users = Utility.get_users(data_root_dir)
+                    found = False
+                    if "alias" in users:
+                        for index, row in users.iterrows():
+                            if not pd.isnull(row["alias"]) and row["alias"] is not None:
+                                all_alias = row["alias"].split(';')
+                                for alias in all_alias:
+                                    if commiter_name == alias:
+                                        pd_commits.loc[pd_commits.committer_name == commiter_name, 'author'] = row["anonym_uuid"] 
+                                        pd_commits.loc[pd_commits.committer_name == commiter_name, 'committer'] = row["anonym_uuid"]
+                                        found = True
+                                        break
+                            if found:
+                                break
+                    if not found:
+                        pd_commits.loc[pd_commits.committer_name == commiter_name, 'unknown_user'] = commiter_name 
         pd_commits.drop(['committer_name'], axis=1, inplace=True)  
 
         users = Utility.get_users(data_root_dir)

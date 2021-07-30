@@ -446,18 +446,21 @@ class Utility():
         try:
             user_data["name"] = user.name
         except:
-            print("No User name in:")
-            print(data_root_dir)
+            # print("No User name in:")
+            # print(data_root_dir)
+            pass
         try:
             user_data["email"] = user.email
         except:
-            print("No User email in:")
-            print(data_root_dir)
+            #print("No User email in:")
+            #print(data_root_dir)
+            pass
         try:
             user_data["login"] = user.login
         except:
-            print("No User login in:")
-            print(data_root_dir)
+            # print("No User login in:")
+            # print(data_root_dir)
+            pass
         if "login" in user_data:
             if user_data["login"] == "invalid-email-address" and not "name" in user_data:
                 return None
