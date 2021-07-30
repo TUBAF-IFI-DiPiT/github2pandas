@@ -4,6 +4,7 @@ import pickle
 import pandas as pd
 import pygit2 as git2
 import git
+import sys
 import git2net
 import shutil
 from pathlib import Path
@@ -165,7 +166,7 @@ class Version():
                     print(" -> An exception occurred")
 
     @staticmethod
-    def generate_data_base(data_root_dir):
+    def generate_data_base(data_root_dir, new_extraction=False):
         """
         generate_data_base(data_root_dir)
 
@@ -175,6 +176,8 @@ class Version():
         ----------
         data_root_dir : str
             Data root directory for the repository.
+        new_extraction: bool, default = False
+            Start a new complete extraction run
         
         Notes
         -----
@@ -196,15 +199,15 @@ class Version():
         repo_dir = version_folder.joinpath(Version.VERSION_REPOSITORY_DIR)
         sqlite_db_file = version_folder.joinpath(Version.VERSION_DB)
 
-        if os.path.exists(sqlite_db_file):
+        if new_extraction & os.path.exists(sqlite_db_file):
             os.remove(sqlite_db_file)
 
         git2net.mine_git_repo(repo_dir, sqlite_db_file,
-                              extract_complexity=True,
-                              extract_text=True,
-                              no_of_processes=Version.no_of_proceses,
-                              all_branches=True,
-                              max_modifications=1000)
+                                extract_complexity=True,
+                                extract_text=True,
+                                no_of_processes=Version.no_of_proceses,
+                                all_branches=True,
+                                max_modifications=1000)
 
     @staticmethod
     def generate_version_pandas_tables(repo, data_root_dir, check_for_updates=True):
