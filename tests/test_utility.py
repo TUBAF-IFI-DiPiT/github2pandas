@@ -294,17 +294,17 @@ class TestUtility(unittest.TestCase):
              email = "test_define_unknown_user@test.de"
              login = "test_define_unknown_user"
         user = Utility.extract_user_data(User(), self.users_ids, self.default_data_folder)
-        new_user = Utility.define_unknown_user({"test":user},"test",self.default_data_folder)
+        new_user = Utility.define_unknown_user("test",user,self.default_data_folder)
         class User2:
              node_id = "test_define_unknown_user2"
-             name = "test_define_unknown_use2r"
+             name = "test_define_unknown_user2"
              email = "test_define_unknown_user2@test.de"
              login = "test_define_unknown_user2"
         user2 = Utility.extract_user_data(User2(), self.users_ids, self.default_data_folder)
-        new_user = Utility.define_unknown_user({"test2":user2},"test2",self.default_data_folder)
-        new_user = Utility.define_unknown_user({"test3":user2},"test3",self.default_data_folder)
-        new_user = Utility.define_unknown_user({"test3":user2},"test3",self.default_data_folder)
-        print(Utility.get_users(self.default_data_folder))
+        new_user = Utility.define_unknown_user("test2",user2,self.default_data_folder)
+        new_user = Utility.define_unknown_user("test3",user2,self.default_data_folder)
+        new_user = Utility.define_unknown_user("test3",user2,self.default_data_folder)
+        #print(Utility.get_users(self.default_data_folder))
 
     def setUp(self):
         self.default_data_folder.mkdir(parents=True, exist_ok=True)

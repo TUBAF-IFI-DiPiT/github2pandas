@@ -43,7 +43,7 @@ class Utility():
             Get all assignees as one string.
         extract_labels(github_labels)
             Get all labels as one string.
-        extract_user_data(user, users_ids, data_root_dir)
+        extract_user_data(user, users_ids, data_root_dir, node_id_to_anonym_uuid=False)
             Extracting general user data.
         extract_author_data_from_commit(repo, sha, users_ids, data_root_dir)
             Extracting general author data from a commit.
@@ -55,8 +55,8 @@ class Utility():
             Extracting general event data from a issue or pull request.
         extract_comment_data(comment, parent_id, parent_name, users_ids, data_root_dir)
             Extracting general comment data from a pull request or issue.
-        define_unknown_user(user_dict, unknown_user, data_root_dir)
-            Defines a unknown user. Add unknown user to alias.
+        define_unknown_user(unknown_user_name, uuid, data_root_dir, new_user=False)
+            Defines a unknown user. Add unknown user to alias or creates new user
     
     """
     USERS = "Users.p"
@@ -407,9 +407,9 @@ class Utility():
         return labels
 
     @staticmethod
-    def extract_user_data(user, users_ids, data_root_dir):
+    def extract_user_data(user, users_ids, data_root_dir, node_id_to_anonym_uuid=False):
         """
-        extract_user_data(user, users_ids, data_root_dir)
+        extract_user_data(user, users_ids, data_root_dir, node_id_to_anonym_uuid=False)
 
         Extracting general user data.
 
@@ -421,6 +421,8 @@ class Utility():
             Dict of User Ids as Keys and anonym Ids as Value.
         data_root_dir : str
             Repo dir of the project.
+        node_id_to_anonym_uuid : bool, default=False
+            Node_id will be the anonym_uuid
         
         Returns
         -------
@@ -441,7 +443,10 @@ class Utility():
         if users_file.is_file():
             users_df = pd.read_pickle(users_file)
         user_data = {}
-        user_data["anonym_uuid"] = generate_id(seed=user.node_id)
+        if node_id_to_anonym_uuid:
+            user_data["anonym_uuid"] = user.node_id
+        else:
+            user_data["anonym_uuid"] = generate_id(seed=user.node_id)
         user_data["id"] = user.node_id
         try:
             user_data["name"] = user.name
@@ -671,59 +676,57 @@ class Utility():
         return comment_data
     
     @staticmethod
-    def define_unknown_user(user_dict, unknown_user, data_root_dir):
+    def define_unknown_user(unknown_user_name, uuid, data_root_dir, new_user=False):
         """
-        define_unknown_user(user_dict, unknown_user, data_root_dir)
+        define_unknown_user(unknown_user_name, uuid, data_root_dir, new_user=False)
 
-        Defines a unknown user. Add unknown user to alias.
+        Defines a unknown user. Add unknown user to alias or creates new user
 
         Parameters
         ----------
-        user_dict: dict
-            Dictionary which contains users. 
-        unknown_user : str
-            Name of a unknown user.
+        unknown_user_name: str
+            Name of unknown user. 
+        uuid: str
+            Uuid can be the anonym uuid of another user or random uuid for a new user. 
         data_root_dir : str
-            Repo dir of the project.
+            Data root directory for the repository.
+        new_user : bool, default=False
+            A complete new user with anonym_uuid will be generated.
 
         Returns
         -------
         str
             Uuid of the user.
 
-        Notes
-        -----
-            Example User Dict: {"unknown_user": "user uuid"}
-            If the real user node id does not exist in the users table then a new user will be created and the user uuid will be the node Id
-
         """
         users = Utility.get_users(data_root_dir)
-        if unknown_user in user_dict:
-            p_user = users.loc[users.anonym_uuid == user_dict[unknown_user]]
-            if not p_user.empty:
-                alias = ""
-                user = p_user.iloc[0]
-                if "alias" in user:
-                    if pd.isnull(user["alias"]) or (user["alias"] is None):
-                        alias = unknown_user
-                    else:
-                        all_alias = user["alias"].split(';')
-                        if not unknown_user in all_alias:
-                            alias = user["alias"] + ";" + unknown_user
-                        else:
-                            alias = user["alias"]
+        p_user = users.loc[users.anonym_uuid == uuid]
+        if not p_user.empty:
+            alias = ""
+            user = p_user.iloc[0]
+            if "alias" in user:
+                if pd.isnull(user["alias"]) or (user["alias"] is None):
+                    alias = unknown_user_name
                 else:
-                    alias = unknown_user
-                users.loc[users.anonym_uuid == user_dict[unknown_user], 'alias'] = alias
-                pd_file = Path(data_root_dir, Utility.USERS)
-                with open(pd_file, "wb") as f:
-                    pickle.dump(users, f)
-                return user["anonym_uuid"]
-            
-            class UserData:
-                node_id = user_dict[unknown_user]
-                name = unknown_user
-                email = numpy.NaN
-                login = numpy.NaN
-            users_ids = Utility.get_users_ids(data_root_dir)
+                    all_alias = user["alias"].split(';')
+                    if not unknown_user_name in all_alias:
+                        alias = user["alias"] + ";" + unknown_user_name
+                    else:
+                        alias = user["alias"]
+            else:
+                alias = unknown_user_name
+            users.loc[users.anonym_uuid == uuid, 'alias'] = alias
+            pd_file = Path(data_root_dir, Utility.USERS)
+            with open(pd_file, "wb") as f:
+                pickle.dump(users, f)
+            return user["anonym_uuid"]
+        
+        class UserData:
+            node_id = uuid
+            name = unknown_user_name
+            email = numpy.NaN
+            login = numpy.NaN
+        users_ids = Utility.get_users_ids(data_root_dir)
+        if new_user:
             return Utility.extract_user_data(UserData(),users_ids,data_root_dir)
+        return Utility.extract_user_data(UserData(),users_ids,data_root_dir, node_id_to_anonym_uuid=True)

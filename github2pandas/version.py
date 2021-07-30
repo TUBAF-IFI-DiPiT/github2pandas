@@ -50,8 +50,8 @@ class Version():
         Extracting version data from a local repository and storing them in a mysql data base.
     generate_version_pandas_tables(repo, data_root_dir, check_for_updates=True)
         Extracting edits and commits in a pandas table.
-    define_unknown_users(user_list, data_root_dir)
-        Define unknown users in commits pandas table.
+    define_unknown_user(unknown_user_name, uuid, data_root_dir, new_user=False)
+        Define unknown user in commits pandas table.
     get_unknown_users(data_root_dir)
         Get all unknown users in from commits.
     get_version(data_root_dir, filename=VERSION_COMMITS)
@@ -352,35 +352,33 @@ class Version():
             pickle.dump(pd_Branches, f)          
 
     @staticmethod
-    def define_unknown_users(user_dict, data_root_dir):
+    def define_unknown_user(unknown_user_name, uuid, data_root_dir, new_user=False):
         """
-        define_unknown_users(user_dict, data_root_dir)
+        define_unknown_user(unknown_user_name, uuid, data_root_dir, new_user=False)
 
-        Define unknown users in commits pandas table.
+        Define unknown user in commits pandas table.
 
         Parameters
         ----------
-        user_dict: dict
-            Dictionary which contains users. 
+        unknown_user_name: str
+            Name of unknown user. 
+        uuid: str
+            Uuid can be the anonym uuid of another user or random uuid for a new user. 
         data_root_dir : str
             Data root directory for the repository.
+        new_user : bool, default=False
+            A complete new user with uuid will be generated.
 
-        Notes
-        -----
-        Example User: {"unknown_user": "real user node id"}
-        If the real user node id does not exist in the users table then a new user will be created
-        
         """
         pd_commits = Version.get_version(data_root_dir)
         if "unknown_user" in pd_commits:
-            unknown_user_commits = pd_commits.loc[pd_commits.unknown_user.notna()]
-            unknown_users = unknown_user_commits.unknown_user.unique()
-            for unknown_user in unknown_users:
-                uuid = Utility.define_unknown_user(user_dict,unknown_user,data_root_dir)
-                if uuid is not None:
-                    pd_commits.loc[pd_commits.unknown_user == unknown_user, 'author'] = uuid
-                    pd_commits.loc[pd_commits.unknown_user == unknown_user, 'committer'] = uuid
-                    pd_commits.loc[pd_commits.unknown_user == unknown_user, 'unknown_user'] = numpy.NaN
+            unknown_users = pd_commits.unknown_user.unique()
+            if unknown_user_name in unknown_users:
+                new_uuid = Utility.define_unknown_user(unknown_user_name, uuid,data_root_dir, new_user=new_user)
+                if new_uuid is not None:
+                    pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'author'] = new_uuid
+                    pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'committer'] = new_uuid
+                    pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'unknown_user'] = numpy.NaN
 
             version_folder = Path(data_root_dir, Version.VERSION_DIR)
             pd_commits_file = Path(version_folder, Version.VERSION_COMMITS)

@@ -105,8 +105,14 @@ Version 1.1.13 (July 29, 2021)
 
 * solved error: ignore Alias if already there in Utility(define_unknown_user)
 
-Version 1.1.14 (July 29, 2021)
+Version 1.1.14 (July 30, 2021)
 -----------------------------------
 * version download will check if there are defined user for unknown user
 * comment out some print
 * verion checks now if there are updates before downloading
+
+Version 1.1.15 (July 30, 2021)
+-----------------------------------
+* define unknown user in Version works now only for one user
+* if a anonym_uuid is known from a different repository for this unknown user then this anonym uuid will be extract_user_data
+* The same unknown Author name will be connected to the same anonym_uuid
