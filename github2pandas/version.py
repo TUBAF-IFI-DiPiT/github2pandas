@@ -43,11 +43,11 @@ class Version():
     -------
     handleError(func, path, exc_info)
         Error handler function which will try to change file permission and call the calling function again.
-    clone_repository(repo, data_root_dir, github_token=None)
+    clone_repository(repo, data_root_dir, github_token=None, new_clone=False):
         Cloning repository from git.
     generate_data_base(data_root_dir)
         Extracting version data from a local repository and storing them in a mysql data base.
-    generate_version_pandas_tables(repo, data_root_dir)
+    generate_version_pandas_tables(repo, data_root_dir, check_for_updates=True)
         Extracting edits and commits in a pandas table.
     define_unknown_users(user_list, data_root_dir)
         Define unknown users in commits pandas table.
@@ -114,7 +114,7 @@ class Version():
             Repo dir of the project.
         github_token : str
             Token string.
-        new_clone : bool
+        new_clone : bool, default=True
             Initiating a completely new clone of the repository
 
         Notes
@@ -219,6 +219,8 @@ class Version():
             Repository object from pygithub.
         data_root_dir: str
             Data root directory for the repository.
+        check_for_updates : bool, default=True
+            Check first if there are any new pull requests information.
 
         """
 
