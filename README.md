@@ -13,6 +13,8 @@ The package implements Python functions for
 ```
 |-- My_Github_Repository_0               <- Repository name
 |   |- Repo.json                         <- Json file containing user and repo name
+|   |- Repository
+|   |   |- Repository.p  
 |   |- Issues
 |   |   |- pdIssuesComments.p
 |   |   |- pdIssuesEvents.p
