@@ -59,14 +59,14 @@ class Repository(object):
         try:
             # problem: No commits in repo
             last_commit_date = pd.to_datetime(commits[0].commit.committer.date , format="%Y-%m-%d M:%S")
-        except GithubException as e:
+        except GithubException:
             print("No commits found!")   
         
         contributor = repo.get_contributors( 'all')
         try:
             # problem: history or contributor is too large to list them via the API.
             contributors_count = len (list (contributor))
-        except GithubException as e:
+        except GithubException:
             print("Too many contributors, not covered by API!")   
             contributors_count = 999999
 
@@ -75,7 +75,7 @@ class Repository(object):
             for contributor in contributor:
                 try:
                     companies.append(contributor.company)
-                except GithubException as e:
+                except GithubException:
                     print('Contributor does not exist anymore')
                     continue
         filtered_companies = list(filter(None.__ne__, companies))
@@ -83,7 +83,7 @@ class Repository(object):
         try:
             # problem: readme.md does not exist
             readme_content = repo.get_readme().content
-        except GithubException as e:
+        except GithubException:
             readme_content = ""
             print("Readme does not exist")
         # problem: sometimes get_readme outputs a NoneType result
@@ -96,7 +96,7 @@ class Repository(object):
         try:
             # problem: empty list of tags
             tag_count = repo.get_tags().totalCount
-        except GithubException as e:
+        except GithubException:
             tag_count = 0
             print("No tags assigned to repository")
 
@@ -112,7 +112,7 @@ class Repository(object):
         try:
             # problem: no pull request comments
             pulls_review_comments = repo.get_pulls_review_comments().totalCount
-        except GithubException as e:
+        except GithubException:
             pulls_review_comments = "not known"
             print("No pull request comments")
 
@@ -177,7 +177,6 @@ class Repository(object):
 
         repository_dir = Path(data_root_dir, Repository.REPOSITORY_DIR)
         repository_dir.mkdir(parents=True, exist_ok=True)
-        users_ids = Utility.get_users_ids(data_root_dir)
 
         repository_data = Repository.extract_repository_data(repo, contributor_companies_included)
        
