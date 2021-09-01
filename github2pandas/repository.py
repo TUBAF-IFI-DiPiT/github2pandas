@@ -2,6 +2,7 @@ import pandas as pd
 from pathlib import Path
 from github import GithubException
 from .utility import Utility
+import numpy as np
 
 class Repository(object):
     """
@@ -59,16 +60,19 @@ class Repository(object):
         try:
             # problem: No commits in repo
             last_commit_date = pd.to_datetime(commits[0].commit.committer.date , format="%Y-%m-%d M:%S")
+            commit_count = commits.totalCount
         except GithubException:
+            commit_count = 0
+            last_commit_date = np.nan
             print("No commits found!")   
-        
+
         contributor = repo.get_contributors( 'all')
         try:
             # problem: history or contributor is too large to list them via the API.
             contributors_count = len (list (contributor))
         except GithubException:
             print("Too many contributors, not covered by API!")   
-            contributors_count = 999999
+            contributors_count = np.nan
 
         companies = []
         if contributor_companies_included:
@@ -130,7 +134,7 @@ class Repository(object):
             'repo_url': repo.url,
             'repo_html_url':repo.html_url,
             'branch_count': repo.get_branches().totalCount,
-            'commit_count': commits.totalCount,
+            'commit_count': commit_count,
             'commit_comment_count': repo.get_comments().totalCount,
             'last_commit_date': last_commit_date,
             'labels_count': repo.get_labels().totalCount,
@@ -149,6 +153,7 @@ class Repository(object):
             'has_downloads': bool(repo.has_downloads),
             'watchers_count': bool(repo.watchers_count),
             'is_fork': repo.fork,
+            'prog_language': repo.language
         }
         return repository_data
     
