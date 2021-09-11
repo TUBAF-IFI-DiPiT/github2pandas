@@ -114,8 +114,12 @@ class Utility():
             True if it need to be updated. False the List is uptodate.
 
         """
+        import sys
         if old_df.empty:
-            if new_paginated_list.totalCount == 0:
+            # .totalCount crashes in case of a total empty repository
+            try:
+                new_paginated_list.totalCount == 0
+            except:
                 return False
             return True
         if not new_paginated_list.totalCount == old_df.count()[0]:

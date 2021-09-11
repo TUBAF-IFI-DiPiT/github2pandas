@@ -134,7 +134,10 @@ class Version():
         if (repo_dir.exists ()) & (not new_clone):
             old_path = Path.cwd()
             os.chdir(repo_dir)
-            subprocess.check_output(["git", "pull"])
+            try:
+                subprocess.check_output(["git", "pull"])
+            except:
+                print("This repository is empty, git pull generates an error")
             os.chdir(old_path)
             return
 
