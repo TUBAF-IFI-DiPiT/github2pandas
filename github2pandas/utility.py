@@ -118,8 +118,10 @@ class Utility():
         if old_df.empty:
             # .totalCount crashes in case of a total empty repository
             try:
-                new_paginated_list.totalCount == 0
+                count = new_paginated_list.totalCount
             except:
+                return False
+            if count == 0:
                 return False
             return True
         if not new_paginated_list.totalCount == old_df.count()[0]:
