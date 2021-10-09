@@ -135,9 +135,10 @@ class Version():
             old_path = Path.cwd()
             os.chdir(repo_dir)
             try:
-                subprocess.check_output(["git", "pull"])
+                git2output = subprocess.check_output(["git", "pull"])
             except:
                 print("This repository is empty, git pull generates an error")
+                print('git said:', git2output)
             os.chdir(old_path)
             return
 
