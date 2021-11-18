@@ -116,3 +116,8 @@ Version 1.1.15 (July 30, 2021)
 * define unknown user in Version works now only for one user
 * if a anonym_uuid is known from a different repository for this unknown user then this anonym uuid will be extract_user_data
 * The same unknown Author name will be connected to the same anonym_uuid
+
+Version 1.1.17 (November 11, 2021)
+-----------------------------------
+* add output for crashed git pull operatins
+* fix empty repositories
