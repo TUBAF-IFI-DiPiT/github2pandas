@@ -120,6 +120,13 @@ class Repository(object):
             pulls_review_comments = "not known"
             print("No pull request comments")
 
+        try:
+            # problem: ???
+            release_count = repo.get_releases().totalCount,
+        except GithubException:
+            release_count = 0
+            print("Wrong release count output")
+
         repository_data = {
             'repo_name': repo_name,
             'organization_name' : organization_name,
@@ -142,7 +149,7 @@ class Repository(object):
             'milestone_count': repo.get_milestones(state="all").totalCount,
             'pullrequest_count': repo.get_pulls(state="all").totalCount,
             'pullrequest_review_count': pulls_review_comments,
-            'release_count':  repo.get_releases().totalCount,
+            'release_count':  release_count,
             'workflow_count': repo.get_workflows().totalCount,
             'readme_length': readme_length,
             'issues_count': repo.get_issues(state="all").totalCount,
