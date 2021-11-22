@@ -131,16 +131,17 @@ class Version():
         version_folder.mkdir(parents=True, exist_ok=True)
 
         repo_dir = version_folder.joinpath(Version.VERSION_REPOSITORY_DIR)
-        if (repo_dir.exists ()) & (not new_clone):
-            old_path = Path.cwd()
-            os.chdir(repo_dir)
-            try:
-                git2output = subprocess.check_output(["git", "pull"])
-            except:
-                print("This repository is empty, git pull generates an error")
-                print('git said:', git2output)
-            os.chdir(old_path)
-            return
+        # Issue  #62
+        #if (repo_dir.exists ()) & (not new_clone):
+        #    old_path = Path.cwd()
+        #    os.chdir(repo_dir)
+        #    try:
+        #        git2output = subprocess.check_output(["git", "pull"])
+        #    except:
+        #        print("This repository is empty, git pull generates an error")
+        #        print('git said:', git2output)
+        #    os.chdir(old_path)
+        #    return
 
         if repo_dir.exists ():
             shutil.rmtree(repo_dir.resolve(), onerror=Version.handleError)
