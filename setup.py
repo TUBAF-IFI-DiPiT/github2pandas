@@ -20,7 +20,7 @@ setup(
    long_description_content_type="text/markdown",
    author="Maximilian Karl & Sebastian Zug",
    url="https://github.com/TUBAF-IFI-DiPiT/github2pandas",
-   download_url="https://github.com/user/reponame/archive/v_01.tar.gz",
+   download_url=f"https://github.com/TUBAF-IFI-DiPiT/github2pandas/archive/github2pandas-{__version__}.tar.gz",
    keywords=["git", "github", "collaborative code development", "git mining"],
    install_requires=[
       "pygit2==1.5.0",

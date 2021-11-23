@@ -121,3 +121,9 @@ Version 1.1.17 (November 11, 2021)
 -----------------------------------
 * add output for crashed git pull operatins
 * fix empty repositories
+
+Version 1.1.18 (November 11, 2021)
+-----------------------------------
+* change README intructions
+* Excrption handling for release count
+* replace git pull by generation of a new clone
