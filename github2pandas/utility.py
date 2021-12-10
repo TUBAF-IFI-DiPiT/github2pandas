@@ -7,6 +7,9 @@ import pickle
 from human_id import generate_id
 import json
 import uuid
+from github import Github
+import time
+import sys
 
 class Utility():
     """
@@ -736,3 +739,42 @@ class Utility():
         if new_user:
             return Utility.extract_user_data(UserData(),users_ids,data_root_dir)
         return Utility.extract_user_data(UserData(),users_ids,data_root_dir, node_id_to_anonym_uuid=True)
+
+    @staticmethod
+    def get_github_connection(github_token):
+        return Github(github_token)
+
+    @staticmethod
+    def get_remaining_github_requests(github_connection):
+        requests_remaning, requests_limit = github_connection.rate_limiting
+        return requests_remaning
+
+    @staticmethod
+    def check_estimated_request_limit(github_connection, remaining_requests_counter, min_requests=100):
+        if remaining_requests_counter < min_requests:
+            github_connection.get_rate_limit()
+            real_remaining_requests = Utility.get_remaining_github_requests(github_connection)
+            print(real_remaining_requests)
+            if real_remaining_requests < min_requests:
+                print("Waiting for request limit refresh ...")
+                reset_timestamp = github_connection.rate_limiting_resettime
+                seconds_until_reset = reset_timestamp - time.time()
+                sleep_step_width = 1
+                sleeping_range = range(int(seconds_until_reset / sleep_step_width))
+                for i in Utility.progressbar(sleeping_range, "Sleeping : ", 60):
+                    time.sleep(sleep_step_width)
+                remaining_requests_counter = Utility.get_remaining_github_requests(github_connection)
+
+    @staticmethod
+    def progressbar(it, prefix="", size=60, file=sys.stdout):
+        count = len(it)
+        def show(j):
+            x = int(size*j/count)
+            file.write("%s[%s%s] %i/%i\r" % (prefix, "#"*x, "."*(size-x), j, count))
+            file.flush()        
+        show(0)
+        for i, item in enumerate(it):
+            yield item
+            show(i+1)
+        file.write("\n")
+        file.flush()

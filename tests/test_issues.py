@@ -15,17 +15,18 @@ class TestIssues(unittest.TestCase):
     
     github_token = os.environ['TOKEN']
 
-    git_repo_name = "github2pandas"
-    git_repo_owner = "TUBAF-IFI-DiPiT"
+    git_repo_name = "fluentui"#"github2pandas"
+    git_repo_owner = "microsoft"#TUBAF-IFI-DiPiT"
 
     default_data_folder = Path("test_data", git_repo_name)
+    github_connection = Utility.get_github_connection(github_token)
     repo = Utility.get_repo(git_repo_owner, git_repo_name, github_token, default_data_folder)
     users_ids = Utility.get_users_ids(default_data_folder)
 
     def test_generate_issue_pandas_tables(self):
-        Issues.generate_issue_pandas_tables(self.repo, self.default_data_folder, check_for_updates=False)
-        Issues.generate_issue_pandas_tables(self.repo, self.default_data_folder)
-        Issues.generate_issue_pandas_tables(self.repo, self.default_data_folder, reactions=True, check_for_updates=False)
+        Issues.generate_issue_pandas_tables(self.repo, self.default_data_folder, self.github_connection, check_for_updates=False)
+        Issues.generate_issue_pandas_tables(self.repo, self.default_data_folder, self.github_connection)
+        Issues.generate_issue_pandas_tables(self.repo, self.default_data_folder, self.github_connection, reactions=True, check_for_updates=False)
 
     def test_get_issues(self):
         issues = Issues.get_issues(self.default_data_folder)
