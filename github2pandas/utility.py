@@ -271,6 +271,8 @@ class Utility():
 
         """
         g = github.Github(token)
+        requests_remaning, requests_limit = g.rate_limiting
+        print(requests_remaning)
         data_root_dir.mkdir(parents=True, exist_ok=True)
         repo_file = Path(data_root_dir, Utility.REPO)
         with open(repo_file, 'w') as json_file:
@@ -457,28 +459,15 @@ class Utility():
         else:
             user_data["anonym_uuid"] = generate_id(seed=user.node_id)
         user_data["id"] = user.node_id
-        try:
+        if "name" in user_data:
             user_data["name"] = user.name
-        except:
-            # print("No User name in:")
-            # print(data_root_dir)
-            pass
-        try:
+        if "email" in user_data:
             user_data["email"] = user.email
-        except:
-            #print("No User email in:")
-            #print(data_root_dir)
-            pass
-        try:
+        if "login" in user_data:
             user_data["login"] = user.login
-        except:
-            # print("No User login in:")
-            # print(data_root_dir)
-            pass
         if "login" in user_data:
             if user_data["login"] == "invalid-email-address" and not "name" in user_data:
                 return None
-
         users_ids[user.node_id] = user_data["anonym_uuid"]
         users_df = users_df.append(user_data, ignore_index=True)
         with open(users_file, "wb") as f:
@@ -599,7 +588,7 @@ class Utility():
         return reaction_data
     
     @staticmethod
-    def extract_event_data(event, parent_id, parent_name, users_ids, data_root_dir):
+    def extract_event_data(event, users_ids, data_root_dir):
         """
         extract_event_data(event, parent_id, parent_name, users_ids, data_root_dir)
 
@@ -629,23 +618,31 @@ class Utility():
 
         """
         issue_event_data = {}
-        issue_event_data[parent_name + "_id"] = parent_id
         if not event._actor == github.GithubObject.NotSet:
             issue_event_data["author"] = Utility.extract_user_data(event.actor, users_ids, data_root_dir)
-        issue_event_data["commit_sha"] = event.commit_id
-        issue_event_data["created_at"] = event.created_at
-        issue_event_data["event"] = event.event
-        issue_event_data["id"] = event.id
-        if not event._label == github.GithubObject.NotSet:
-            issue_event_data["label"] = event.label.name
         if not event._assignee == github.GithubObject.NotSet:
             issue_event_data["assignee"] = Utility.extract_user_data(event.assignee, users_ids, data_root_dir)
         if not event._assigner == github.GithubObject.NotSet:
             issue_event_data["assigner"] = Utility.extract_user_data(event.assigner, users_ids, data_root_dir)
+        issue_event_data["commit_sha"] = event.commit_id
+        issue_event_data["created_at"] = event.created_at
+        # dismissed_review ?
+        issue_event_data["event"] = event.event
+        issue_event_data["id"] = event.id
+        issue_event_data["issue_id"] = event.issue.id
+        if not event._label == github.GithubObject.NotSet:
+            issue_event_data["label"] = event.label.name
+        issue_event_data["last_modified"] = event.last_modified
+        # lock_reason ?
+        # milestone ?
+        # node_id ?
+        # rename ?
+        # requested_reviewer ?
+        # review_requesters ?
         return issue_event_data
     
     @staticmethod
-    def extract_comment_data(comment, parent_id, parent_name, users_ids, data_root_dir):
+    def extract_comment_data(comment, users_ids, data_root_dir):
         """
         extract_comment_data(comment, parent_id, parent_name, users_ids, data_root_dir)
 
@@ -676,10 +673,10 @@ class Utility():
 
         """
         comment_data = {}
-        comment_data[parent_name + "_id"] = parent_id
         comment_data["body"] = comment.body
         comment_data["created_at"] = comment.created_at
         comment_data["id"] = comment.id
+        comment_data["issue_url"] = comment.issue_url
         if not comment._user == github.GithubObject.NotSet:
             comment_data["author"] = Utility.extract_user_data(comment.user, users_ids, data_root_dir)
         return comment_data
@@ -766,6 +763,17 @@ class Utility():
                 remaining_requests_counter = Utility.get_remaining_github_requests(github_connection)
 
     @staticmethod
+    def wait_for_reset(github_token):
+        print("Waiting for request limit refresh ...")
+        github_connection = Github(github_token)
+        reset_timestamp = github_connection.rate_limiting_resettime
+        seconds_until_reset = reset_timestamp - time.time()
+        sleep_step_width = 1
+        sleeping_range = range(int(seconds_until_reset / sleep_step_width))
+        for i in Utility.progressbar(sleeping_range, "Sleeping : ", 60):
+            time.sleep(sleep_step_width)
+
+    @staticmethod
     def progressbar(it, prefix="", size=60, file=sys.stdout):
         count = len(it)
         def show(j):
@@ -778,3 +786,25 @@ class Utility():
             show(i+1)
         file.write("\n")
         file.flush()
+
+    @staticmethod
+    def get_collaborators(repo, user_ids, data_root_dir):
+        collaborators = repo.get_collaborators()
+        for collaborator in collaborators:
+            Utility.extract_user_data(collaborator,user_ids,data_root_dir)
+
+    @staticmethod
+    def save_api_call(function, github_token, *args, **kwargs):
+        try:
+            return function(*args, **kwargs)
+        except github.GithubException:
+            Utility.wait_for_reset(github_token)
+            return function(*args, **kwargs) 
+    
+    @staticmethod
+    def get_save_api_data(data, index, github_token):
+        try:
+            return data[index]
+        except github.GithubException:
+            Utility.wait_for_reset(github_token)
+            return data[index]
