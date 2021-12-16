@@ -77,7 +77,6 @@ class Issues():
         
         """
         issues = Utility.save_api_call(self.repo.get_issues, self.github_token, state='all')
-        # TODO: check
         if check_for_updates:
             old_issues = Issues.get_issues(self.data_root_dir)
             if not Utility.check_for_updates_paginated(issues, old_issues):
@@ -111,7 +110,7 @@ class Issues():
                     self.extract_issue_comments(issue.get_comments, extract_reactions)
                 # events data
                 if events_overflow:
-                    self.extract_issue_events(issue.get_events)
+                    self.extract_issue_events(issue.get_events, issue_id=issue.id)
             if issues.totalCount == self.request_maximum:
                 issues = Utility.save_api_call(self.repo.get_issues, self.github_token, state='all', since=issue_data["created_at"])
             else:
@@ -187,7 +186,7 @@ class Issues():
         reactions = Utility.save_api_call(extract_function, self.github_token)
         for i in range(reactions.totalCount):
             reaction = Utility.get_save_api_data(reactions, i, self.github_token)
-            reaction_data = Utility.extract_reaction_data(reaction,parent_id, parent_name, self.users_ids, self.data_root_dir)
+            reaction_data = Utility.save_api_call(self.extract_reaction_data, self.github_token, reaction, parent_id, parent_name)
             self.issue_reaction_list.append(reaction_data) 
 
     def extract_reaction_data(self, reaction:GitHubReaction, parent_id:int, parent_name:str):
@@ -232,7 +231,7 @@ class Issues():
         comments = Utility.save_api_call(extract_function, self.github_token)
         for i in range(comments.totalCount):
             comment = Utility.get_save_api_data(comments, i, self.github_token)
-            issue_comment_data = self.extract_issue_comment_data(comment)
+            issue_comment_data = Utility.save_api_call(self.extract_issue_comment_data, self.github_token, comment)
             self.issue_comment_list.append(issue_comment_data)
             # issue comment reaction data
             if extract_reactions:
@@ -280,14 +279,14 @@ class Issues():
             issue_comment_data["author"] = Utility.extract_user_data(issue_comment.user, self.users_ids, self.data_root_dir)
         return issue_comment_data
 
-    def extract_issue_events(self, extract_function):
+    def extract_issue_events(self, extract_function, issue_id:int=None):
         events = Utility.save_api_call(extract_function, self.github_token)
         for i in range(events.totalCount):
             event = Utility.get_save_api_data(events, i, self.github_token)
-            issue_event_data = self.extract_issue_event_data(event)
+            issue_event_data = Utility.save_api_call(self.extract_issue_event_data, self.github_token, event, issue_id=issue_id)
             self.issue_event_list.append(issue_event_data)
 
-    def extract_issue_event_data(self, issue_event:GitHubIssueEvent):
+    def extract_issue_event_data(self, issue_event:GitHubIssueEvent, issue_id:int=None):
         """
         extract_event_data(event, parent_id, parent_name, users_ids, data_root_dir)
 
@@ -328,7 +327,10 @@ class Issues():
         # dismissed_review ?
         issue_event_data["event"] = issue_event.event
         issue_event_data["id"] = issue_event.id
-        issue_event_data["issue_id"] = issue_event.issue.id
+        if issue_id is None:
+            issue_event_data["issue_id"] = issue_event.issue.id
+        else:
+            issue_event_data["issue_id"] = issue_id
         if not issue_event._label == GithubObject.NotSet:
             issue_event_data["label"] = issue_event.label.name
         issue_event_data["last_modified"] = issue_event.last_modified
