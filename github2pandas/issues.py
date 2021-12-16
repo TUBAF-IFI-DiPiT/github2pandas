@@ -84,22 +84,19 @@ class Issues():
 
         comments = Utility.save_api_call(self.repo.get_issues_comments, self.github_token)
         comments_overflow = False
-        if comments.totalCount == self.request_maximum:
+        if Utility.get_save_total_count(comments,self.github_token) == self.request_maximum:
             comments_overflow = True
         events = Utility.save_api_call(self.repo.get_issues_events, self.github_token)
         events_overflow = False
-        if events.totalCount == self.request_maximum:
+        if Utility.get_save_total_count(events,self.github_token) == self.request_maximum:
             events_overflow = True
-
-        print(f"Issues: {issues.totalCount}")
-        print(f"Issues comments {comments.totalCount}")
-        print(f"Issues events {events.totalCount}")
 
         self.users_ids = Utility.get_users_ids(self.data_root_dir)
         #issue data
         while True:
-            total_count = issues.totalCount
+            total_count = Utility.get_save_total_count(issues, self.github_token)
             for i in range(total_count):
+                print(f"Issue: {i}")
                 issue = Utility.get_save_api_data(issues, i, self.github_token)
                 issue_data = self.extract_issue_data(issue)
                 self.issue_list.append(issue_data)
@@ -112,7 +109,7 @@ class Issues():
                 # events data
                 if events_overflow:
                     self.extract_issue_events(issue.get_events, issue_id=issue.id)
-            if issues.totalCount == self.request_maximum:
+            if total_count == self.request_maximum:
                 issues = Utility.save_api_call(self.repo.get_issues, self.github_token, state='all', since=issue_data["created_at"])
             else:
                 break
@@ -185,7 +182,7 @@ class Issues():
 
     def extract_issue_reactions(self, extract_function, parent_id:int, parent_name:str):
         reactions = Utility.save_api_call(extract_function, self.github_token)
-        total_count = reactions.totalCount
+        total_count = Utility.get_save_total_count(reactions, self.github_token)
         for i in range(total_count):
             reaction = Utility.get_save_api_data(reactions, i, self.github_token)
             reaction_data = Utility.save_api_call(self.extract_reaction_data, self.github_token, reaction, parent_id, parent_name)
@@ -231,7 +228,7 @@ class Issues():
 
     def extract_issue_comments(self, extract_function, extract_reactions:bool):
         comments = Utility.save_api_call(extract_function, self.github_token)
-        total_count = comments.totalCount
+        total_count = Utility.get_save_total_count(comments, self.github_token)
         for i in range(total_count):
             comment = Utility.get_save_api_data(comments, i, self.github_token)
             issue_comment_data = Utility.save_api_call(self.extract_issue_comment_data, self.github_token, comment)
@@ -284,7 +281,7 @@ class Issues():
 
     def extract_issue_events(self, extract_function, issue_id:int=None):
         events = Utility.save_api_call(extract_function, self.github_token)
-        total_count = events.totalCount
+        total_count = Utility.get_save_total_count(events, self.github_token)
         for i in range(total_count):
             event = Utility.get_save_api_data(events, i, self.github_token)
             issue_event_data = Utility.save_api_call(self.extract_issue_event_data, self.github_token, event, issue_id=issue_id)

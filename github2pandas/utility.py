@@ -8,6 +8,7 @@ from human_id import generate_id
 import json
 import uuid
 from github import Github
+from github.GithubException import RateLimitExceededException
 import time
 import sys
 
@@ -797,7 +798,7 @@ class Utility():
     def save_api_call(function, github_token, *args, **kwargs):
         try:
             return function(*args, **kwargs)
-        except github.GithubException:
+        except RateLimitExceededException:
             Utility.wait_for_reset(github_token)
             return function(*args, **kwargs) 
     
@@ -805,6 +806,14 @@ class Utility():
     def get_save_api_data(data, index, github_token):
         try:
             return data[index]
-        except github.GithubException:
+        except RateLimitExceededException:
             Utility.wait_for_reset(github_token)
             return data[index]
+    
+    @staticmethod
+    def get_save_total_count(paginated_list, github_token):
+        try:
+            return paginated_list.totalCount
+        except RateLimitExceededException:
+            Utility.wait_for_reset(github_token)
+            return paginated_list.totalCount
