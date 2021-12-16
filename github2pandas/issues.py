@@ -98,7 +98,8 @@ class Issues():
         self.users_ids = Utility.get_users_ids(self.data_root_dir)
         #issue data
         while True:
-            for i in range(issues.totalCount):
+            total_count = issues.totalCount
+            for i in range(total_count):
                 issue = Utility.get_save_api_data(issues, i, self.github_token)
                 issue_data = self.extract_issue_data(issue)
                 self.issue_list.append(issue_data)
@@ -184,7 +185,8 @@ class Issues():
 
     def extract_issue_reactions(self, extract_function, parent_id:int, parent_name:str):
         reactions = Utility.save_api_call(extract_function, self.github_token)
-        for i in range(reactions.totalCount):
+        total_count = reactions.totalCount
+        for i in range(total_count):
             reaction = Utility.get_save_api_data(reactions, i, self.github_token)
             reaction_data = Utility.save_api_call(self.extract_reaction_data, self.github_token, reaction, parent_id, parent_name)
             self.issue_reaction_list.append(reaction_data) 
@@ -229,7 +231,8 @@ class Issues():
 
     def extract_issue_comments(self, extract_function, extract_reactions:bool):
         comments = Utility.save_api_call(extract_function, self.github_token)
-        for i in range(comments.totalCount):
+        total_count = comments.totalCount
+        for i in range(total_count):
             comment = Utility.get_save_api_data(comments, i, self.github_token)
             issue_comment_data = Utility.save_api_call(self.extract_issue_comment_data, self.github_token, comment)
             self.issue_comment_list.append(issue_comment_data)
@@ -281,7 +284,8 @@ class Issues():
 
     def extract_issue_events(self, extract_function, issue_id:int=None):
         events = Utility.save_api_call(extract_function, self.github_token)
-        for i in range(events.totalCount):
+        total_count = events.totalCount
+        for i in range(total_count):
             event = Utility.get_save_api_data(events, i, self.github_token)
             issue_event_data = Utility.save_api_call(self.extract_issue_event_data, self.github_token, event, issue_id=issue_id)
             self.issue_event_list.append(issue_event_data)
