@@ -1,3 +1,4 @@
+from github.MainClass import Github
 import pandas as pd
 from pathlib import Path
 from github import GithubObject
@@ -41,12 +42,12 @@ class Issues():
     ISSUES_REACTIONS = "pdIssuesReactions.p"
     ISSUES_EVENTS = "pdIssuesEvents.p"
 
-    def __init__(self, repo:GitHubRepository, data_root_dir:Path, github_token:str, request_maximum:int = 40000) -> None:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000) -> None:
         self.repo = repo
         self.data_root_dir = data_root_dir
-        self.github_token = github_token
         self.issues_dir = Path(data_root_dir, Issues.ISSUES_DIR)
         self.users_ids = Utility.get_users_ids(data_root_dir)
+        self.github_connection = github_connection
 
         self.request_maximum = request_maximum
         self.issue_list = []
@@ -76,28 +77,31 @@ class Issues():
             PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
         
         """
-        issues = Utility.save_api_call(self.repo.get_issues, self.github_token, state='all')
+        issues = Utility.save_api_call(self.repo.get_issues, self.github_connection, state='all')
         if check_for_updates:
             old_issues = Issues.get_issues(self.data_root_dir)
             if not Utility.check_for_updates_paginated(issues, old_issues):
                 return
 
-        comments = Utility.save_api_call(self.repo.get_issues_comments, self.github_token)
+        comments = Utility.save_api_call(self.repo.get_issues_comments, self.github_connection)
         comments_overflow = False
-        if Utility.get_save_total_count(comments,self.github_token) == self.request_maximum:
+        if Utility.get_save_total_count(comments,self.github_connection) == self.request_maximum:
             comments_overflow = True
-        events = Utility.save_api_call(self.repo.get_issues_events, self.github_token)
+        events = Utility.save_api_call(self.repo.get_issues_events, self.github_connection)
         events_overflow = False
-        if Utility.get_save_total_count(events,self.github_token) == self.request_maximum:
+        if Utility.get_save_total_count(events,self.github_connection) == self.request_maximum:
             events_overflow = True
 
         self.users_ids = Utility.get_users_ids(self.data_root_dir)
+        issues = Utility.save_api_call(self.repo.get_issues, self.github_connection, state='all')
         #issue data
         while True:
-            total_count = Utility.get_save_total_count(issues, self.github_token)
+            total_count = Utility.get_save_total_count(issues, self.github_connection)
             for i in range(total_count):
-                print(f"Issue: {i}")
-                issue = Utility.get_save_api_data(issues, i, self.github_token)
+                print(f"Issue {i}")
+                print(self.github_connection.get_rate_limit())
+                issue = Utility.get_save_api_data(issues, i, self.github_connection)
+                #saved_issues_objects.append(issue)
                 issue_data = self.extract_issue_data(issue)
                 self.issue_list.append(issue_data)
                 # reaction data
@@ -109,8 +113,9 @@ class Issues():
                 # events data
                 if events_overflow:
                     self.extract_issue_events(issue.get_events, issue_id=issue.id)
+
             if total_count == self.request_maximum:
-                issues = Utility.save_api_call(self.repo.get_issues, self.github_token, state='all', since=issue_data["created_at"])
+                issues = Utility.save_api_call(self.repo.get_issues, self.github_connection, state='all', since=issue_data["created_at"])
             else:
                 break
         
@@ -181,12 +186,14 @@ class Issues():
         return issue_data
 
     def extract_issue_reactions(self, extract_function, parent_id:int, parent_name:str):
-        reactions = Utility.save_api_call(extract_function, self.github_token)
-        total_count = Utility.get_save_total_count(reactions, self.github_token)
-        for i in range(total_count):
-            reaction = Utility.get_save_api_data(reactions, i, self.github_token)
-            reaction_data = Utility.save_api_call(self.extract_reaction_data, self.github_token, reaction, parent_id, parent_name)
-            self.issue_reaction_list.append(reaction_data) 
+        reactions = Utility.save_api_call(extract_function, self.github_connection)
+        for i in range(self.request_maximum):
+            try:
+                reaction = Utility.get_save_api_data(reactions, i, self.github_connection)
+                reaction_data = Utility.save_api_call(self.extract_reaction_data, self.github_connection, reaction, parent_id, parent_name)
+                self.issue_reaction_list.append(reaction_data)
+            except IndexError:
+                break 
 
     def extract_reaction_data(self, reaction:GitHubReaction, parent_id:int, parent_name:str):
         """
@@ -227,18 +234,20 @@ class Issues():
         return reaction_data
 
     def extract_issue_comments(self, extract_function, extract_reactions:bool):
-        comments = Utility.save_api_call(extract_function, self.github_token)
-        total_count = Utility.get_save_total_count(comments, self.github_token)
-        for i in range(total_count):
-            comment = Utility.get_save_api_data(comments, i, self.github_token)
-            issue_comment_data = Utility.save_api_call(self.extract_issue_comment_data, self.github_token, comment)
-            self.issue_comment_list.append(issue_comment_data)
-            # issue comment reaction data
-            if extract_reactions:
-                Issues.extract_issue_reactions(
-                    comment.get_reactions,
-                    comment.id,
-                    "comment")
+        issue_comments = Utility.save_api_call(extract_function, self.github_connection)
+        for i in range(self.request_maximum):
+            try:
+                issue_comment = Utility.get_save_api_data(issue_comments, i, self.github_connection)
+                issue_comment_data = Utility.save_api_call(self.extract_issue_comment_data, self.github_connection, issue_comment)
+                self.issue_comment_list.append(issue_comment_data)
+                # issue comment reaction data
+                if extract_reactions:
+                    self.extract_issue_reactions(
+                        issue_comment.get_reactions,
+                        issue_comment.id,
+                        "issue_comment")
+            except IndexError:
+                break
 
     def extract_issue_comment_data(self, issue_comment:GitHubIssueComment):
         """
@@ -280,12 +289,14 @@ class Issues():
         return issue_comment_data
 
     def extract_issue_events(self, extract_function, issue_id:int=None):
-        events = Utility.save_api_call(extract_function, self.github_token)
-        total_count = Utility.get_save_total_count(events, self.github_token)
-        for i in range(total_count):
-            event = Utility.get_save_api_data(events, i, self.github_token)
-            issue_event_data = Utility.save_api_call(self.extract_issue_event_data, self.github_token, event, issue_id=issue_id)
-            self.issue_event_list.append(issue_event_data)
+        events = Utility.save_api_call(extract_function, self.github_connection)
+        for i in range(self.request_maximum):
+            try:
+                event = Utility.get_save_api_data(events, i, self.github_connection)
+                issue_event_data = Utility.save_api_call(self.extract_issue_event_data, self.github_connection, event, issue_id=issue_id)
+                self.issue_event_list.append(issue_event_data)
+            except IndexError:
+                break
 
     def extract_issue_event_data(self, issue_event:GitHubIssueEvent, issue_id:int=None):
         """
@@ -343,6 +354,10 @@ class Issues():
         # review_requesters ?
         return issue_event_data
     
+    @staticmethod
+    def generate_issues_pandas_tables(repo:GitHubRepository, data_root_dir:Path, github_connection, extract_reactions:bool = False, check_for_updates:bool = False, request_maximum:int = 40000):
+        return Issues(github_connection, repo, data_root_dir, request_maximum).generate_pandas_tables(extract_reactions,check_for_updates)
+
     @staticmethod
     def get_pandas_table(data_root_dir:Path, filename:str=ISSUES):
         """

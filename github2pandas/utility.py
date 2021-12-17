@@ -271,14 +271,14 @@ class Utility():
             PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
 
         """
-        g = github.Github(token)
+        g = github.Github(token,per_page=100)
         requests_remaning, requests_limit = g.rate_limiting
         print(requests_remaning)
         data_root_dir.mkdir(parents=True, exist_ok=True)
         repo_file = Path(data_root_dir, Utility.REPO)
         with open(repo_file, 'w') as json_file:
             json.dump({"repo_owner": repo_owner,"repo_name":repo_name}, json_file)
-        return g.get_repo(repo_owner + "/" + repo_name)
+        return Utility.save_api_call(g.get_repo, token, repo_owner + "/" + repo_name)
     
     @staticmethod
     def apply_datetime_format(pd_table, source_column, destination_column=None):
@@ -764,13 +764,20 @@ class Utility():
                 remaining_requests_counter = Utility.get_remaining_github_requests(github_connection)
 
     @staticmethod
-    def wait_for_reset(github_token):
+    def get_collaborators(repo, user_ids, data_root_dir):
+        collaborators = repo.get_collaborators()
+        for collaborator in collaborators:
+            Utility.extract_user_data(collaborator,user_ids,data_root_dir)
+
+
+    @staticmethod
+    def wait_for_reset(github_connection):
         print("Waiting for request limit refresh ...")
-        github_connection = Github(github_token)
+        github_connection.get_rate_limit()
         reset_timestamp = github_connection.rate_limiting_resettime
         seconds_until_reset = reset_timestamp - time.time()
         sleep_step_width = 1
-        sleeping_range = range(int(seconds_until_reset / sleep_step_width))
+        sleeping_range = range(int(seconds_until_reset / sleep_step_width)+1)
         for i in Utility.progressbar(sleeping_range, "Sleeping : ", 60):
             time.sleep(sleep_step_width)
 
@@ -789,31 +796,25 @@ class Utility():
         file.flush()
 
     @staticmethod
-    def get_collaborators(repo, user_ids, data_root_dir):
-        collaborators = repo.get_collaborators()
-        for collaborator in collaborators:
-            Utility.extract_user_data(collaborator,user_ids,data_root_dir)
-
-    @staticmethod
-    def save_api_call(function, github_token, *args, **kwargs):
+    def save_api_call(function, github_connection, *args, **kwargs):
         try:
             return function(*args, **kwargs)
         except RateLimitExceededException:
-            Utility.wait_for_reset(github_token)
+            Utility.wait_for_reset(github_connection)
             return function(*args, **kwargs) 
     
     @staticmethod
-    def get_save_api_data(data, index, github_token):
+    def get_save_api_data(data, index, github_connection):
         try:
             return data[index]
         except RateLimitExceededException:
-            Utility.wait_for_reset(github_token)
+            Utility.wait_for_reset(github_connection)
             return data[index]
     
     @staticmethod
-    def get_save_total_count(paginated_list, github_token):
+    def get_save_total_count(paginated_list, github_connection):
         try:
             return paginated_list.totalCount
         except RateLimitExceededException:
-            Utility.wait_for_reset(github_token)
+            Utility.wait_for_reset(github_connection)
             return paginated_list.totalCount

@@ -26,7 +26,7 @@ class TestIssues(unittest.TestCase):
     users_ids = Utility.get_users_ids(default_data_folder)
 
     def test_generate_issue_pandas_tables(self):
-        Issues(self.repo, self.default_data_folder, self.github_token).generate_pandas_tables()
+        Issues(self.github_connection, self.repo, self.default_data_folder).generate_pandas_tables()
 
     def test_get_issues(self):
         issues = Issues.get_pandas_table(self.default_data_folder)
