@@ -14,18 +14,36 @@ class Repository(object):
         repository dir where all files are saved in.
     REPOSITORY : str
         Pandas table file for basic repository data.
-
+    TEMPLATES : str
+        Names of relevant templates in Github repositories
+ 
     Methods
     -------
     extract_repository_data(repo, contributor_companies_included = False):
         Extracting general repository data.
-    
-
     """
 
     REPOSITORY_DIR = "Repository"
     REPOSITORY = "pdRepository.p"
-
+    TEMPLATES_TO_CHECK = {
+        'file_readme': "README.md",
+        'file_code_of_conduct': "CODE_OF_CONDUCT.md", # .... defines standards for how to engage in a community.
+        'file_contributing': "CONTRIBUTING.md", # ... communicates how people should contribute to your project
+        'file_funding': "FUNDING.yml", # ... displays a sponsor button in your repository ... 
+        'file_IssuePR_templates': ".github/ISSUE_TEMPLATE/config.yml", # ... Issue and pull request templates customize and standardize the information you’d like contributors 
+        'file_security': "SECURITY.md", # ... gives instructions for how to report a security vulnerability in your project. 
+        'file_support': "SUPPORT.md", # ... lets people know about ways to get help with your project.
+    }
+            
+    @staticmethod    
+    def getFirstAppearance(repo, templates_to_check):
+        try:
+            commits = repo.get_commits(path=templates_to_check)
+            first_commit = commits[commits.totalCount - 1]
+            return first_commit.commit.author.date
+        except IndexError:
+            return np.nan
+                
     @staticmethod
     def extract_repository_data(repo, contributor_companies_included = False):
         """
@@ -160,7 +178,21 @@ class Repository(object):
             'has_downloads': bool(repo.has_downloads),
             'watchers_count': bool(repo.watchers_count),
             'is_fork': repo.fork,
-            'prog_language': repo.language
+            'prog_language': repo.language, 
+            'file_readme': Repository.getFirstAppearance(repo, 
+                                                         Repository.TEMPLATES_TO_CHECK['file_readme']),
+            'file_code_of_conduct': Repository.getFirstAppearance(repo, 
+                                                         Repository.TEMPLATES_TO_CHECK['file_code_of_conduct']),
+            'file_contributing': Repository.getFirstAppearance(repo, 
+                                                         Repository.TEMPLATES_TO_CHECK['file_contributing']),
+            'file_funding': Repository.getFirstAppearance(repo, 
+                                                         Repository.TEMPLATES_TO_CHECK['file_funding']),
+            'file_IssuePR_templates': Repository.getFirstAppearance(repo, 
+                                                         Repository.TEMPLATES_TO_CHECK['file_IssuePR_templates']),
+            'file_security': Repository.getFirstAppearance(repo, 
+                                                         Repository.TEMPLATES_TO_CHECK['file_security']),
+            'file_support': Repository.getFirstAppearance(repo, 
+                                                         Repository.TEMPLATES_TO_CHECK['file_support']),
         }
         return repository_data
     
