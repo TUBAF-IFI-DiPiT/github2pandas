@@ -64,7 +64,7 @@ class TestUtility(unittest.TestCase):
         update = Utility.check_for_updates(new_list, old_df)
         self.assertTrue(update)
 
-    def test_check_for_updates_paginated(self):
+    def test_check_for_updates_paginated_old(self):
         class TestData:
             def __init__(self, id, updated_at):
                 self.id = id
@@ -80,32 +80,32 @@ class TestUtility(unittest.TestCase):
         # both empty
         new_paginated_list = PaginatedList()
         old_df = pd.DataFrame()
-        update = Utility.check_for_updates_paginated(new_paginated_list, old_df)
+        update = Utility.check_for_updates_paginated_old(new_paginated_list, old_df)
         self.assertFalse(update)
         # new list has item
         new_paginated_list.new_list.append(TestData(0, datetime.datetime.now()))
-        update = Utility.check_for_updates_paginated(new_paginated_list, old_df)
+        update = Utility.check_for_updates_paginated_old(new_paginated_list, old_df)
         self.assertTrue(update)
         # both equal
         old_df = old_df.append({"id": new_paginated_list.new_list[0].id, "updated_at": new_paginated_list.new_list[0].updated_at}, ignore_index=True)
-        update = Utility.check_for_updates_paginated(new_paginated_list, old_df)
+        update = Utility.check_for_updates_paginated_old(new_paginated_list, old_df)
         self.assertFalse(update)
         # new list has 1 more item
         new_paginated_list.new_list.append(TestData(1, datetime.datetime.now()))
-        update = Utility.check_for_updates_paginated(new_paginated_list, old_df)
+        update = Utility.check_for_updates_paginated_old(new_paginated_list, old_df)
         self.assertTrue(update)
         # both have the same items but new_list has a different id
         old_df = old_df.append({"id": new_paginated_list.new_list[1].id, "updated_at": new_paginated_list.new_list[1].updated_at}, ignore_index=True)
         new_paginated_list.new_list[0].id = 7
-        update = Utility.check_for_updates_paginated(new_paginated_list, old_df)
+        update = Utility.check_for_updates_paginated_old(new_paginated_list, old_df)
         self.assertTrue(update)
         # both have the same items but new_list has a different id & updated_at
         new_paginated_list.new_list[0].updated_at = datetime.datetime.now()
-        update = Utility.check_for_updates_paginated(new_paginated_list, old_df)
+        update = Utility.check_for_updates_paginated_old(new_paginated_list, old_df)
         self.assertTrue(update)
         # both have the same items but new_list has a different updated_at
         new_paginated_list.new_list[0].id = 0
-        update = Utility.check_for_updates_paginated(new_paginated_list, old_df)
+        update = Utility.check_for_updates_paginated_old(new_paginated_list, old_df)
         self.assertTrue(update)
 
     def test_save_list_to_pandas_table(self):
@@ -252,6 +252,7 @@ class TestUtility(unittest.TestCase):
             assignee = User()
             _assigner = User()
             assigner = User()
+            last_modified = datetime.datetime.now()
         event_data = Utility.extract_event_data(Event(),0,"test",self.users_ids, self.default_data_folder)
         self.assertIsNotNone(event_data)
         event = Event()

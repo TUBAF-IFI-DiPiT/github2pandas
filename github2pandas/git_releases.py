@@ -95,7 +95,7 @@ class GitReleases():
         git_releases = repo.get_releases()
         if check_for_updates:
             old_git_releases = GitReleases.get_git_releases(data_root_dir)
-            if not Utility.check_for_updates_paginated(git_releases, old_git_releases):
+            if not Utility.check_for_updates_paginated_old(git_releases, old_git_releases):
                 return
 
         git_releases_dir = Path(data_root_dir, GitReleases.GIT_RELEASES_DIR)

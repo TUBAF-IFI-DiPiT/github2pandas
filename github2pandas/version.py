@@ -235,7 +235,7 @@ class Version():
         if check_for_updates:
             commits = repo.get_commits() 
             old_commits = Version.get_version(data_root_dir, filename=Version.VERSION_COMMITS)
-            if not Utility.check_for_updates_paginated(commits, old_commits):
+            if not Utility.check_for_updates_paginated_old(commits, old_commits):
                 return
 
         Version.generate_data_base(data_root_dir)

@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Iterable
 import numpy
 import pandas as pd
 import github
@@ -7,10 +8,14 @@ import pickle
 from human_id import generate_id
 import json
 import uuid
-from github import Github
-from github.GithubException import RateLimitExceededException
 import time
 import sys
+
+from github.MainClass import Github
+from github.PaginatedList import PaginatedList
+from github.GithubException import RateLimitExceededException
+
+from pandas.core.frame import DataFrame
 
 class Utility():
     """
@@ -27,8 +32,8 @@ class Utility():
     -------
         check_for_updates(new_list, old_df)
             Check if id and updated_at are in the old_df.
-        check_for_updates_paginated(new_paginated_list, old_df)
-            Check if id and updated_at are in the old_df.
+        check_for_updates_paginated(new_paginated_list, list_count, old_df)
+            Check if if the new paginiated list has updates.
         save_list_to_pandas_table(dir, file, data_list)
             Save a data list to a pandas table.
         get_repo_informations(data_root_dir)
@@ -61,6 +66,18 @@ class Utility():
             Extracting general comment data from a pull request or issue.
         define_unknown_user(unknown_user_name, uuid, data_root_dir, new_user=False)
             Defines a unknown user. Add unknown user to alias or creates new user
+        get_save_total_count(paginated_list, github_connection)
+            Get the total count of a paginated list savely. Waits until request limit is restored.
+        get_save_api_data(paginated_list, index, github_connection)
+            Get one item of the paginated list by index.
+        save_api_call(function, github_connection, *args, **kwargs)
+            Call a function or method savely.
+        progress_bar(iterable, prefix="", size=60, file=sys.stdout)
+            Prints our a progress bar.
+        wait_for_reset(github_connection)
+             Wait until request limit is refreshed.
+        get_github_connection(github_token)
+            Get the main GitHub connection.
     
     """
     USERS = "Users.p"
@@ -99,9 +116,38 @@ class Utility():
         return False
     
     @staticmethod
-    def check_for_updates_paginated(new_paginated_list, old_df):
+    def check_for_updates_paginated(new_paginated_list, list_count, old_df):
         """
-        check_for_updates_paginated(new_paginated_list, old_df)
+        check_for_updates_paginated(new_paginated_list, list_count, old_df)
+
+        Check if if the new paginiated list has updates.
+
+        Parameters
+        ----------
+        new_paginated_list : PaginatedList
+            new paginated list with updated_at and sorted by updated
+        old_df : DataFrame
+            old Dataframe.
+
+        Returns
+        -------
+        bool
+            True if it need to be updated. False the List is uptodate.
+
+        """
+        if old_df.empty:
+            if list_count == 0:
+                return False
+            return True
+        last_update = old_df["updated_at"].max()
+        if new_paginated_list[0].updated_at != last_update:
+            return True
+        return False
+    
+    @staticmethod
+    def check_for_updates_paginated_old(new_paginated_list, old_df):
+        """
+        check_for_updates_paginated_old(new_paginated_list, old_df)
 
         Check if id and updated_at are in the old_df.
 
@@ -138,7 +184,7 @@ class Utility():
             except:
                 return False
         return False
-    
+
     @staticmethod
     def save_list_to_pandas_table(dir, file, data_list):
         """
@@ -244,7 +290,7 @@ class Utility():
         return relevant_repos
 
     @staticmethod      
-    def get_repo(repo_owner, repo_name, token, data_root_dir):
+    def get_repo(repo_owner, repo_name, token, data_root_dir:Path):
         """
         get_repo(repo_owner, repo_name, token, data_root_dir)
 
@@ -258,7 +304,7 @@ class Utility():
             the name of the desired repository.
         token : str
             A valid Github Token.
-        data_root_dir : str
+        data_root_dir : Path
             Data root directory for the repository.
         
         Returns
@@ -272,8 +318,6 @@ class Utility():
 
         """
         g = github.Github(token,per_page=100)
-        requests_remaning, requests_limit = g.rate_limiting
-        print(requests_remaning)
         data_root_dir.mkdir(parents=True, exist_ok=True)
         repo_file = Path(data_root_dir, Utility.REPO)
         with open(repo_file, 'w') as json_file:
@@ -309,7 +353,7 @@ class Utility():
         return pd_table
     
     @staticmethod
-    def get_users(data_root_dir):
+    def get_users(data_root_dir:Path):
         """
         get_users(data_root_dir)
 
@@ -317,7 +361,7 @@ class Utility():
 
         Parameters
         ----------
-        data_root_dir : str
+        data_root_dir : Path
             Data root directory for the repository.
 
         Returns
@@ -333,7 +377,7 @@ class Utility():
             return pd.DataFrame()
 
     @staticmethod
-    def get_users_ids(data_root_dir):
+    def get_users_ids(data_root_dir:Path):
         """
         get_users_ids(data_root_dir)
 
@@ -341,7 +385,7 @@ class Utility():
 
         Parameters
         ----------
-        data_root_dir : str
+        data_root_dir : Path
             Data root directory for the repository.
 
         Returns
@@ -589,7 +633,7 @@ class Utility():
         return reaction_data
     
     @staticmethod
-    def extract_event_data(event, users_ids, data_root_dir):
+    def extract_event_data(event, parent_id, parent_name,users_ids, data_root_dir):
         """
         extract_event_data(event, parent_id, parent_name, users_ids, data_root_dir)
 
@@ -619,6 +663,7 @@ class Utility():
 
         """
         issue_event_data = {}
+        issue_event_data[parent_name + "_id"] = parent_id
         if not event._actor == github.GithubObject.NotSet:
             issue_event_data["author"] = Utility.extract_user_data(event.actor, users_ids, data_root_dir)
         if not event._assignee == github.GithubObject.NotSet:
@@ -630,7 +675,6 @@ class Utility():
         # dismissed_review ?
         issue_event_data["event"] = event.event
         issue_event_data["id"] = event.id
-        issue_event_data["issue_id"] = event.issue.id
         if not event._label == github.GithubObject.NotSet:
             issue_event_data["label"] = event.label.name
         issue_event_data["last_modified"] = event.last_modified
@@ -643,7 +687,7 @@ class Utility():
         return issue_event_data
     
     @staticmethod
-    def extract_comment_data(comment, users_ids, data_root_dir):
+    def extract_comment_data(comment, parent_id, parent_name, users_ids, data_root_dir):
         """
         extract_comment_data(comment, parent_id, parent_name, users_ids, data_root_dir)
 
@@ -674,10 +718,10 @@ class Utility():
 
         """
         comment_data = {}
+        comment_data[parent_name + "_id"] = parent_id
         comment_data["body"] = comment.body
         comment_data["created_at"] = comment.created_at
         comment_data["id"] = comment.id
-        comment_data["issue_url"] = comment.issue_url
         if not comment._user == github.GithubObject.NotSet:
             comment_data["author"] = Utility.extract_user_data(comment.user, users_ids, data_root_dir)
         return comment_data
@@ -739,64 +783,109 @@ class Utility():
         return Utility.extract_user_data(UserData(),users_ids,data_root_dir, node_id_to_anonym_uuid=True)
 
     @staticmethod
-    def get_github_connection(github_token):
+    def get_github_connection(github_token:str):
+        """
+        get_github_connection(github_token)
+
+        Get the main GitHub connection.
+
+        Parameters
+        ----------
+        github_token : str
+            A valid GitHub token.
+
+        Returns
+        -------
+        Github
+            Github object from pygithub.
+
+        """
         return Github(github_token)
 
     @staticmethod
-    def get_remaining_github_requests(github_connection):
-        requests_remaning, requests_limit = github_connection.rate_limiting
-        return requests_remaning
-
-    @staticmethod
-    def check_estimated_request_limit(github_connection, remaining_requests_counter, min_requests=100):
-        if remaining_requests_counter < min_requests:
-            github_connection.get_rate_limit()
-            real_remaining_requests = Utility.get_remaining_github_requests(github_connection)
-            print(real_remaining_requests)
-            if real_remaining_requests < min_requests:
-                print("Waiting for request limit refresh ...")
-                reset_timestamp = github_connection.rate_limiting_resettime
-                seconds_until_reset = reset_timestamp - time.time()
-                sleep_step_width = 1
-                sleeping_range = range(int(seconds_until_reset / sleep_step_width))
-                for i in Utility.progressbar(sleeping_range, "Sleeping : ", 60):
-                    time.sleep(sleep_step_width)
-                remaining_requests_counter = Utility.get_remaining_github_requests(github_connection)
-
-    @staticmethod
-    def get_collaborators(repo, user_ids, data_root_dir):
-        collaborators = repo.get_collaborators()
-        for collaborator in collaborators:
-            Utility.extract_user_data(collaborator,user_ids,data_root_dir)
-
-
-    @staticmethod
     def wait_for_reset(github_connection):
+        """
+        wait_for_reset(github_connection)
+
+        Wait until request limit is refreshed.
+
+        Parameters
+        ----------
+        github_connection : Github
+            Github object from pygithub.
+
+        """
         print("Waiting for request limit refresh ...")
         github_connection.get_rate_limit()
         reset_timestamp = github_connection.rate_limiting_resettime
         seconds_until_reset = reset_timestamp - time.time()
         sleep_step_width = 1
-        sleeping_range = range(int(seconds_until_reset / sleep_step_width)+1)
-        for i in Utility.progressbar(sleeping_range, "Sleeping : ", 60):
+        sleeping_range = range(int(seconds_until_reset / sleep_step_width))
+        for i in Utility.progress_bar(sleeping_range, "Sleeping : ", 60):
             time.sleep(sleep_step_width)
+        github_connection.get_rate_limit()
+        requests_remaning, requests_limit = github_connection.rate_limiting
+        while requests_remaning == 0:
+            print("No remaining requests sleep 1s ...")
+            time.sleep(1)
+            github_connection.get_rate_limit()
+            requests_remaning, requests_limit = github_connection.rate_limiting
 
     @staticmethod
-    def progressbar(it, prefix="", size=60, file=sys.stdout):
-        count = len(it)
+    def progress_bar(iterable:Iterable, prefix="", size:int=60, file=sys.stdout):
+        """
+        progress_bar(iterable, prefix="", size=60, file=sys.stdout)
+
+        Prints our a progress bar.
+
+        Parameters
+        ----------
+        iterable : Iterable
+            A iterable as input. 
+        prefix : str, default=""
+            String infront of the progress bar.
+        size : int
+            Size of the progress bar.
+        file : Any , default=sys.stdout
+            File to print out the progress bar.
+
+        """
+        count = len(iterable)
         def show(j):
             x = int(size*j/count)
             file.write("%s[%s%s] %i/%i\r" % (prefix, "#"*x, "."*(size-x), j, count))
             file.flush()        
         show(0)
-        for i, item in enumerate(it):
+        for i, item in enumerate(iterable):
             yield item
             show(i+1)
         file.write("\n")
         file.flush()
 
     @staticmethod
-    def save_api_call(function, github_connection, *args, **kwargs):
+    def save_api_call(function, github_connection:Github, *args, **kwargs):
+        """
+        save_api_call(function, github_connection, *args, **kwargs)
+
+        Call a function or method savely.
+
+        Parameters
+        ----------
+        function : Any
+            A function/method to call savely.
+        github_connection : Github
+            Github object from pygithub.
+        *args
+            Input for the function/method.
+        **kwargs
+            Optional input for the function/method.
+
+        Returns
+        -------
+        Any
+            Returns the result of the function/method.
+
+        """
         try:
             return function(*args, **kwargs)
         except RateLimitExceededException:
@@ -804,17 +893,84 @@ class Utility():
             return function(*args, **kwargs) 
     
     @staticmethod
-    def get_save_api_data(data, index, github_connection):
+    def get_save_api_data(paginated_list:PaginatedList, index:int, github_connection:Github):
+        """
+        get_save_api_data(paginated_list, index, github_connection)
+
+        Get one item of the paginated list by index.
+
+        Parameters
+        ----------
+        paginated_list : PaginatedList
+            A paginated list as input. 
+        index : int
+            Index to get from the paginated list.
+        github_connection : Github
+            Github object from pygithub.
+
+        Returns
+        -------
+        int
+            Total count of the paginated list.
+
+        """
         try:
-            return data[index]
+            return paginated_list[index]
         except RateLimitExceededException:
             Utility.wait_for_reset(github_connection)
-            return data[index]
+            return paginated_list[index]
     
     @staticmethod
-    def get_save_total_count(paginated_list, github_connection):
+    def get_save_total_count(paginated_list:PaginatedList, github_connection:Github):
+        """
+        get_save_total_count(paginated_list, github_connection)
+
+        Get the total count of a paginated list savely. Waits until request limit is restored.
+
+        Parameters
+        ----------
+        paginated_list : PaginatedList
+            A paginated list as input. 
+        github_connection : Github
+            Github object from pygithub.
+
+        Returns
+        -------
+        int
+            Total count of the paginated list.
+
+        """
         try:
             return paginated_list.totalCount
         except RateLimitExceededException:
             Utility.wait_for_reset(github_connection)
             return paginated_list.totalCount
+    
+    @staticmethod
+    def save_pandas_data_frame(dir_path:Path, file:str, data_frame:DataFrame):
+        """
+        save_list_to_pandas_table(dir, file, data_list)
+
+        Save a data list to a pandas table.
+
+        Parameters
+        ----------
+        dir : str
+            Path to the desired save dir.
+        file : str
+            Name of the file.
+        data_list : list
+            list of data dictionarys
+
+        """
+        dir_path.mkdir(parents=True, exist_ok=True)
+        pd_file = Path(dir_path, file)
+        with open(pd_file, "wb") as f:
+            pickle.dump(data_frame, f)
+
+    
+    #@staticmethod
+    #def get_collaborators(repo, user_ids, data_root_dir):
+    #    collaborators = repo.get_collaborators()
+    #    for collaborator in collaborators:
+    #        Utility.extract_user_data(collaborator,user_ids,data_root_dir)

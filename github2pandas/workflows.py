@@ -132,9 +132,9 @@ class Workflows(object):
 
         if check_for_updates:
             old_workflows = Workflows.get_workflows(data_root_dir)
-            check_workflows = Utility.check_for_updates_paginated(workflows, old_workflows)
+            check_workflows = Utility.check_for_updates_paginated_old(workflows, old_workflows)
             old_workflow_runs = Workflows.get_workflows(data_root_dir,Workflows.WORKFLOWS_RUNS)
-            check_workflow_runs = Utility.check_for_updates_paginated(workflow_runs, old_workflow_runs)
+            check_workflow_runs = Utility.check_for_updates_paginated_old(workflow_runs, old_workflow_runs)
             if not check_workflows and not check_workflow_runs:
                 return
         
