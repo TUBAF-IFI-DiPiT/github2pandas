@@ -10,6 +10,7 @@ import json
 import uuid
 import time
 import sys
+import math
 
 from github.MainClass import Github
 from github.PaginatedList import PaginatedList
@@ -820,7 +821,7 @@ class Utility():
         reset_timestamp = github_connection.rate_limiting_resettime
         seconds_until_reset = reset_timestamp - time.time()
         sleep_step_width = 1
-        sleeping_range = range(int(seconds_until_reset / sleep_step_width))
+        sleeping_range = range(math.ceil(seconds_until_reset / sleep_step_width))
         for i in Utility.progress_bar(sleeping_range, "Sleeping : ", 60):
             time.sleep(sleep_step_width)
         github_connection.get_rate_limit()
