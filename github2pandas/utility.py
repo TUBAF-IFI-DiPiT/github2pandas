@@ -117,18 +117,22 @@ class Utility():
         return False
     
     @staticmethod
-    def check_for_updates_paginated(new_paginated_list, list_count, old_df):
+    def check_for_updates_paginated(new_paginated_list, list_count, old_df, github_connection):
         """
-        check_for_updates_paginated(new_paginated_list, list_count, old_df)
+        check_for_updates_paginated(new_paginated_list, list_count, old_df, github_connection)
 
         Check if if the new paginiated list has updates.
 
         Parameters
         ----------
         new_paginated_list : PaginatedList
-            new paginated list with updated_at and sorted by updated
+            new paginated list with updated_at and sorted by updated.
+        list_count: int
+            Length of the paginated List.
         old_df : DataFrame
             old Dataframe.
+        github_connection : Github
+            Github object from pygithub.
 
         Returns
         -------
@@ -140,8 +144,14 @@ class Utility():
             if list_count == 0:
                 return False
             return True
+        data = Utility.get_save_api_data(new_paginated_list,0,github_connection)
+        if "id" in old_df:
+            old_item = old_df.loc[old_df["id"] == data.id].iloc[0]
+            if old_item["updated_at"] == data.updated_at:
+                return False
+            return True
         last_update = old_df["updated_at"].max()
-        if new_paginated_list[0].updated_at != last_update:
+        if data.updated_at != last_update:
             return True
         return False
     

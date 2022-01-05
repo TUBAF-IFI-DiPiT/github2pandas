@@ -137,7 +137,7 @@ class Issues():
                 print("Check for update does not work when extract_reactions is True")
             else:
                 old_issues = Issues.get_pandas_table(self.__data_root_dir)
-                if not Utility.check_for_updates_paginated(issues, total_count, old_issues):
+                if not Utility.check_for_updates_paginated(issues, total_count, old_issues, self.__github_connection):
                     print("No new Issue information!")
                     return
 
