@@ -47,8 +47,6 @@ class Issues():
         Extracting issue reactions.
     extract_reaction_data(self, reaction, issue_id)
         Extracting issue reaction data.
-    __extract_issue_comments(self, issue_comments, index, extract_reactions)
-        Extracting issue comments.
     __extract_issue_comment_data(self, issue_comment)
         Extracting issue comment data.
     __extract_issue_events(self, issue_events, index, issue_id=None)
@@ -141,12 +139,6 @@ class Issues():
                     print("No new Issue information!")
                     return
 
-        comments = Utility.save_api_call(self.__repo.get_issues_comments, self.__github_connection)
-        comments_overflow = False
-        comments_total_count = Utility.get_save_total_count(comments,self.__github_connection)
-        if comments_total_count >= self.__request_maximum:
-            comments_overflow = True
-            print("Issues Comments will be processed in Issues")
         events = Utility.save_api_call(self.__repo.get_issues_events, self.__github_connection)
         events_overflow = False
         events_total_count = Utility.get_save_total_count(events,self.__github_connection)
@@ -158,8 +150,8 @@ class Issues():
         # issue data
         last_issue_id = 0
         extract_data = True
+        issues = issues.reversed
         while True:
-            issues = issues.reversed
             if total_count >= self.__request_maximum:
                 print("Issues >= request_maximum ==> mutiple Issue progress bars")
                 total_count = self.__request_maximum
@@ -172,14 +164,6 @@ class Issues():
                     # reaction data
                     if extract_reactions:
                         self.__extract_issue_reactions(issue.get_reactions, issue.id, "issue")
-                    # comment data >= request maximum
-                    if comments_overflow:
-                        issue_comments = Utility.save_api_call(issue.get_comments, self.__github_connection)
-                        for i in range(self.__request_maximum):
-                            try:
-                                self.__extract_issue_comments(issue_comments, i, extract_reactions)
-                            except IndexError:
-                                break
                     # events data >= request maximum
                     if events_overflow:
                         issue_events = Utility.save_api_call(issue.get_events, self.__github_connection)
@@ -191,23 +175,51 @@ class Issues():
                 elif issue.id == last_issue_id:
                     extract_data = True
                 else:
-                    print("Issue error!")
+                    print(f"Skip Issue with ID: {issue.id}")
 
             if total_count == self.__request_maximum:
                 last_issue_id = issue_data["id"]
                 extract_data = False
-                issues = Utility.save_api_call(self.__repo.get_issues, self.__github_connection, state='all', since=issue_data["updated_at"], sort="updated")
+                issues = Utility.save_api_call(self.__repo.get_issues, self.__github_connection, state='all', since=issue_data["updated_at"], sort="updated", direction="asc")
                 total_count = Utility.get_save_total_count(issues, self.__github_connection)
             else:
                 break
-        # issue comment data < request maximum
-        if not comments_overflow:
-            for i in Utility.progress_bar(range(comments_total_count), "Issues Comments: "):
-                self.__extract_issue_comments(comments, i, extract_reactions)
         # issue event data < request maximum
         if not events_overflow:
             for i in Utility.progress_bar(range(events_total_count), "Issues Events:   "):
                 self.__extract_issue_events(events, i, issue_id=issue.id)
+        # extract comments
+        comments = Utility.save_api_call(self.__repo.get_issues_comments, self.__github_connection, sort="updated", direction="asc")
+        comments_total_count = Utility.get_save_total_count(comments,self.__github_connection)
+        last_issue_comment_id = 0
+        extract_data = True
+        while True:
+            if comments_total_count >= self.__request_maximum:
+                print("Issues Comments >= request_maximum ==> mutiple Issue Comments progress bars")
+                comments_total_count = self.__request_maximum
+            for i in Utility.progress_bar(range(comments_total_count), "Issues Comments: "):
+                issue_comment = Utility.get_save_api_data(comments, i, self.__github_connection)
+                if extract_data:
+                    issue_comment_data = Utility.save_api_call(self.__extract_issue_comment_data, self.__github_connection, issue_comment)
+                    self.__issue_comment_list.append(issue_comment_data)
+                    # issue comment reaction data
+                    if extract_reactions:
+                        self.__extract_issue_reactions(
+                            issue_comment.get_reactions,
+                            issue_comment.id,
+                            "issue_comment")
+                elif issue_comment.id == last_issue_comment_id:
+                    extract_data = True
+                else:
+                    print(f"Skip Issue Comment with ID: {issue_comment.id}")
+            if comments_total_count == self.__request_maximum:
+                last_issue_comment_id = issue_comment_data["id"]
+                extract_data = False
+                comments = Utility.save_api_call(self.__repo.get_issues_comments, self.__github_connection, since=issue_comment_data["updated_at"], sort="updated", direction="asc")
+                comments_total_count = Utility.get_save_total_count(comments,self.__github_connection)
+            else:
+                break
+        
         # Save lists
         self.__issues_df = pd.DataFrame(self.__issue_list)
         self.__issues_comments_df = pd.DataFrame(self.__issue_comment_list)
@@ -326,32 +338,6 @@ class Issues():
         if not reaction._user == GithubObject.NotSet:
             reaction_data["author"] = Utility.extract_user_data(reaction.user, self.__users_ids, self.__data_root_dir)
         return reaction_data
-
-    def __extract_issue_comments(self, issue_comments:PaginatedList, index:int, extract_reactions:bool):
-        """
-        __extract_issue_comments(self, issue_comments, index, extract_reactions)
-
-        Extracting issue comments.
-
-        Parameters
-        ----------
-        issue_comments : PaginatedList[GitHubIssueComment]
-            A PaginatedList of GitHubIssueComment.
-        index : int
-            Current index of PaginatedList.
-        extract_reactions : bool
-            If reactions should also be exracted. The extraction of all reactions increases significantly the aggregation speed.
-
-        """
-        issue_comment = Utility.get_save_api_data(issue_comments, index, self.__github_connection)
-        issue_comment_data = Utility.save_api_call(self.__extract_issue_comment_data, self.__github_connection, issue_comment)
-        self.__issue_comment_list.append(issue_comment_data)
-        # issue comment reaction data
-        if extract_reactions:
-            self.__extract_issue_reactions(
-                issue_comment.get_reactions,
-                issue_comment.id,
-                "issue_comment")
 
     def __extract_issue_comment_data(self, issue_comment:GitHubIssueComment):
         """
