@@ -26,10 +26,14 @@ class TestIssues(unittest.TestCase):
     users_ids = Utility.get_users_ids(default_data_folder)
 
     def test_generate_issue_pandas_tables(self):
-        Issues(self.github_connection, self.repo, self.default_data_folder).generate_pandas_tables(False, False)
-        Issues(self.github_connection, self.repo, self.default_data_folder).generate_pandas_tables(True, False)
-        Issues(self.github_connection, self.repo, self.default_data_folder).generate_pandas_tables(False, True)
-        Issues(self.github_connection, self.repo, self.default_data_folder).generate_pandas_tables(True, True)
+        issues = Issues(self.github_connection, self.repo, self.default_data_folder)
+        issues.generate_pandas_tables(False, False)
+        issues.generate_pandas_tables(True, False)
+        issues.generate_pandas_tables(False, True)
+        issues.generate_pandas_tables(True, True)
+        # check max request limit
+        issues = Issues(self.github_connection, self.repo, self.default_data_folder, 20)
+        issues.generate_pandas_tables()
 
     def test_get_issues(self):
         issues = Issues.get_pandas_table(self.default_data_folder)
