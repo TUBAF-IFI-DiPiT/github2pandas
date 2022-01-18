@@ -1,11 +1,21 @@
+from argon2 import extract_parameters
 import pandas as pd
+from pandas import DataFrame
 from pathlib import Path
 import os
 import github
 
-from .utility import Utility
+from github import GithubObject
+from github.MainClass import Github
+from github.Repository import Repository as GitHubRepository
+from github.PullRequest import PullRequest as GitHubPullRequest
+from github.PullRequestComment import PullRequestComment as GitHubPullRequestComment
+from github2pandas.issues import Issues
 
-class PullRequests():
+from github2pandas.core import Core
+from github2pandas.utility import progress_bar, copy_valid_params
+
+class PullRequests(Core):
     """
     Class to aggregate Pull Requests
 
@@ -28,14 +38,16 @@ class PullRequests():
 
     Methods
     -------
+    __init__(self, github_connection, repo, data_root_dir, request_maximum)
+        Initial pull request object with general information.
+    generate_pandas_tables(self, extract_reactions=False, check_for_updates=True)
+        Extracting the complete pull request data from a repository.
     extract_pull_request_data(pull_request, users_ids, data_root_dir)
         Extracting general pull request data.
     extract_pull_request_review_data(review, pull_request_id, users_ids, data_root_dir)
         Extracting general review data from a pull request.
     extract_pull_request_commit_data(review, users_ids, pull_request_id)
         Extracting commit data from a pull request.
-    generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False, check_for_updates=True)
-        Extracting the complete pull request data from a repository.
     get_pull_requests(data_root_dir, filename=PULL_REQUESTS))
         Get a genearted pandas table.
     
@@ -45,24 +57,206 @@ class PullRequests():
     PULL_REQUESTS_COMMENTS = "pdPullRequestsComments.p"
     PULL_REQUESTS_REACTIONS = "pdPullRequestsReactions.p"
     PULL_REQUESTS_REVIEWS = "pdPullRequestsReviews.p"
-    PULL_REQUESTS_EVENTS = "pdPullRequestsEvents.p"
-    PULL_REQUESTS_COMMITS = "pdPullRequestsCommits.p"
-    
-    @staticmethod
-    def extract_pull_request_data(pull_request, users_ids, data_root_dir):
+    EXTRACTION_PARAMS = {
+        "deep_pull_requests": False,
+        "reactions": False,
+        "reviews": False,
+        "review_comment": False,
+        "review_requested": False,
+        "commits": False,
+    }
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000) -> None:
         """
-        extract_pull_request_data(pull_request, users_ids, data_root_dir)
+        __init__(self, github_connection, repo, data_root_dir, request_maximum)
+
+        Initial pull request object with general information.
+
+        Parameters
+        ----------
+        github_connection : Github
+            Github object from pygithub.
+        repo : GitHubRepository
+            Repository object from pygithub.
+        data_root_dir : Path
+            Data root directory for the repository.
+        request_maximum : int, default=40000
+            Maxmimum amount of returned informations for a general api call
+
+        Notes
+        -----
+            PyGithub Github object structure: https://pygithub.readthedocs.io/en/latest/github.html
+            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
+
+        """
+        Core.__init__(
+            self,
+            github_connection,
+            repo,
+            data_root_dir,
+            Path(data_root_dir, PullRequests.PULL_REQUESTS_DIR),
+            request_maximum
+        )
+    
+    @property
+    def pull_request_df(self):
+        return PullRequests.get_pull_requests(self.data_root_dir)
+    @property
+    def pull_request_review_comment_df(self):
+        return PullRequests.get_pull_requests(self.data_root_dir, PullRequests.PULL_REQUESTS_COMMENTS)
+    @property
+    def pull_request_reviews_df(self):
+        return PullRequests.get_pull_requests(self.data_root_dir, PullRequests.PULL_REQUESTS_REVIEWS)
+    @property
+    def pull_request_reactions_df(self):
+        return PullRequests.get_pull_requests(self.data_root_dir, PullRequests.PULL_REQUESTS_REACTIONS)
+  
+    def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}):
+        """
+        generate_pandas_tables(self, extract_reactions=False, check_for_updates=True)
+
+        Extracting the complete pull request data from a repository.
+
+        Parameters
+        ----------
+        issues_df : DataFrame
+            issue dataframe which holds the base information of pull requests
+        extract_reactions : bool, default=False
+            If reactions should also be exracted. The extraction of all reactions increases significantly the aggregation speed.
+        check_for_updates : bool, default=True
+            Check first if there are any new issues information. Does not work when extract_reaction is True.
+        additional_information : bool, default=False
+            extracts more information, but it takes 1 additionally api call and more time
+
+        Notes
+        -----
+            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
+
+        """
+        params = copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
+        pull_requests = self.save_api_call(self.repo.get_pulls, state='all', sort="updated")
+        total_count = self.get_save_total_count(pull_requests)
+        if total_count == 0:
+            return
+        if check_for_updates:
+            if params["reactions"]:
+                print("Check for update does not work when extract_reactions is True")
+            else:
+                old_pull_requests = PullRequests.get_pull_requests(self.data_root_dir)
+                if not self.check_for_updates_paginated(pull_requests, total_count, old_pull_requests):
+                    print("No new Pull Request information!")
+                    return
+        pull_request_list = []
+        pull_request_review_comment_list = []
+        pull_request_reviews_list = []
+        reactions_list = []
+
+        if total_count < self.request_maximum:
+            for i in progress_bar(range(total_count), "Pull Requests:   "):
+                pull_request = self.get_save_api_data(pull_requests, i)
+                pull_request_data = self.extract_pull_request_data(pull_request, params["deep_pull_requests"])
+                
+                if params["reviews"]:
+                    reviews = self.save_api_call(pull_request.get_reviews)
+                    for i in range(self.request_maximum):
+                        try:
+                            review = self.get_save_api_data(reviews, i)
+                            review_data = self.save_api_call(self.extract_pull_request_review_data, review, pull_request.id)
+                            pull_request_reviews_list.append(review_data)
+                        except IndexError:
+                            break
+                if params["review_requested"]:
+                    pull_request_data["review_requested_users"] = []
+                    review_requests_users, review_requests_teams = self.save_api_call(pull_request.get_review_requests)
+                    for i in range(self.request_maximum):
+                        try:
+                            review_request_user = self.get_save_api_data(review_requests_users, i)
+                            pull_request_data["review_requested_users"].append(self.extract_user_data(review_request_user))
+                        except IndexError:
+                            break
+                
+                if params["commits"]:
+                    # Maximum of 250 Commits
+                    pull_request_data["commits"] = []
+                    commits = self.save_api_call(pull_request.get_commits)
+                    for i in range(self.request_maximum):
+                        try:
+                            commit = self.get_save_api_data(commits, i)
+                            pull_request_data["commits"].append(commit)
+                        except IndexError:
+                            break
+                pull_request_list.append(pull_request_data)
+        else:
+            issues_df = Issues.get_pandas_table(self.data_root_dir)
+            if issues_df.empty or issues_df[issues_df["is_pull_request"] == True]["is_pull_request"].count() < total_count:
+                print("There must be Issues. Start extracting them")
+                issues = Issues(
+                    self.github_connection,
+                    self.repo,
+                    self.data_root_dir,
+                    self.request_maximum
+                    )
+                issues.generate_pandas_tables(
+                        extract_reactions=params["reactions"],
+                        check_for_updates=check_for_updates)
+                issues_df = issues.issues_df
+            # add get pr for each issue
+
+        if params["review_comment"]:
+            # extract comments
+            comments = self.save_api_call(self.repo.get_pulls_comments, sort="updated", direction="asc")
+            comments_total_count = self.get_save_total_count(comments)
+            last_pull_request_comment_id = 0
+            extract_data = True
+            while True:
+                if comments_total_count >= self.request_maximum:
+                    print("Pull Request Comments >= request_maximum ==> mutiple Pull Request Comments progress bars")
+                    comments_total_count = self.request_maximum
+                for i in progress_bar(range(comments_total_count), "Pull Request Comments: "):
+                    pull_request_comment = self.get_save_api_data(comments, i)
+                    if extract_data:
+                        pull_request_comment_data = self.save_api_call(self.extract_pull_request_comment_data, pull_request_comment)
+                        pull_request_review_comment_list.append(pull_request_comment_data)
+                        if params["reactions"]:
+                            reactions_list += self.extract_reactions(
+                                pull_request_comment.get_reactions,
+                                pull_request_comment.id,
+                                "pull_request_comment")
+                    elif pull_request_comment.id == last_pull_request_comment_id:
+                        extract_data = True
+                    else:
+                        print(f"Skip Pull Request Comment with ID: {pull_request_comment.id}")
+                if comments_total_count == self.request_maximum:
+                    last_pull_request_comment_id = pull_request_comment_data["id"]
+                    extract_data = False
+                    comments = self.save_api_call(self.repo.get_pulls_comments, since=pull_request_comment_data["updated_at"], sort="updated", direction="asc")
+                    comments_total_count = self.get_save_total_count(comments)
+                else:
+                    break
+
+        pull_request_df = pd.DataFrame(pull_request_list)
+        self.save_pandas_data_frame(PullRequests.PULL_REQUESTS, pull_request_df)
+        if params["review_comment"]:
+            pull_request_review_comment_df = pd.DataFrame(pull_request_review_comment_list)
+            self.save_pandas_data_frame(PullRequests.PULL_REQUESTS_COMMENTS, pull_request_review_comment_df)
+        if params["reviews"]:
+            pull_request_reviews_df = pd.DataFrame(pull_request_reviews_list)
+            self.save_pandas_data_frame(PullRequests.PULL_REQUESTS_REVIEWS, pull_request_reviews_df)
+        if params["reactions"]:
+            reactions_df = pd.DataFrame(reactions_list)
+            self.save_pandas_data_frame(PullRequests.PULL_REQUESTS_REACTIONS, reactions_df)
+    
+    def extract_pull_request_data(self, pull_request:GitHubPullRequest, additional_information:bool = False):
+        """
+        extract_pull_request_data(self, pull_request, additional_information=False)
 
         Extracting general pull request data.
 
         Parameters
         ----------
-        pull_request : PullRequest
+        pull_request : GitHubPullRequest
             PullRequest object from pygithub.
-        users_ids : dict
-            Dict of User Ids as Keys and anonym Ids as Value.
-        data_root_dir : str
-            Data root directory for the repository.
+        additional_information : bool, default=False
+            extracts more information, but it takes 1 additionally api call and more time
 
         Returns
         -------
@@ -75,29 +269,59 @@ class PullRequests():
 
         """
         
-        pull_request_data = {}
-        pull_request_data["id"] = pull_request.id
-        pull_request_data["body"] = pull_request.body
-        pull_request_data["title"] = pull_request.title
-        pull_request_data["closed_at"] = pull_request.closed_at
-        pull_request_data["created_at"] = pull_request.created_at
-        pull_request_data["merged_at"] = pull_request.merged_at
-        pull_request_data["state"] = pull_request.state
-        pull_request_data["updated_at"] = pull_request.updated_at
-        pull_request_data["assignees"] = Utility.extract_assignees(pull_request.assignees, users_ids, data_root_dir)
-        pull_request_data["labels"] = Utility.extract_labels(pull_request.labels)
-        if not pull_request._merged_by == github.GithubObject.NotSet:
-            pull_request_data["merged_by"] = Utility.extract_user_data(pull_request.merged_by, users_ids, data_root_dir)
-        if not pull_request._user == github.GithubObject.NotSet:
-            pull_request_data["author"] = Utility.extract_user_data(pull_request.user, users_ids, data_root_dir)
-        # slow calls
-        #pull_request_data["deletions"] = pull_request.deletions
-        #pull_request_data["additions"] = pull_request.additions
-        #pull_request_data["merged"] = pull_request.merged
+        pull_request_data = {
+            "id": pull_request.id,
+            "number": pull_request.number,
+            "merged_at": pull_request.merged_at,
+            "merge_commit_sha": pull_request.merge_commit_sha,
+            "draft": pull_request.draft,
+            "updated_at": pull_request.updated_at,
+            "url": pull_request.url
+        }
+        if additional_information:
+            pull_request_data["additions"] = pull_request.additions
+            pull_request_data["changed_files"] = pull_request.changed_files
+            pull_request_data["comments"] = pull_request.comments
+            pull_request_data["commits"] = pull_request.commits
+            pull_request_data["deletions"] = pull_request.deletions
+            pull_request_data["mergeable"] = pull_request.mergeable
+            pull_request_data["mergeable_state"] = pull_request.mergeable_state
+            pull_request_data["merged"] = pull_request.merged
+            pull_request_data["rebaseable"] = pull_request.rebaseable
+            pull_request_data["review_comments"] = pull_request.review_comments
+            pull_request_data["maintainer_can_modify"] = pull_request.maintainer_can_modify
+            pull_request_data["merged_by"] = self.extract_user_data(pull_request.merged_by)
+            
+            #pull_request.head
+            #pull_request.base
+
+        # in Issue extracted:
+        # assignees, body, closed_at, closed_by, comments, created_at, labels, last_modified, locked
+        # state, title, author, assignee, (milestone)
+
         return pull_request_data
-    
-    @staticmethod
-    def extract_pull_request_review_data(review, pull_request_id, users_ids, data_root_dir):
+
+    def extract_pull_request_comment_data(self, pull_request_comment:GitHubPullRequestComment):
+        issue_comment_data = {}
+        issue_comment_data["body"]= pull_request_comment.body
+        issue_comment_data["commit_sha"]= pull_request_comment.commit_id
+        issue_comment_data["created_at"]= pull_request_comment.created_at
+        issue_comment_data["diff_hunk"]= pull_request_comment.diff_hunk
+        issue_comment_data["id"]= pull_request_comment.id
+        # will cause api call! exclude for now
+        #issue_comment_data["in_reply_to_id"]= pull_request_comment.in_reply_to_id
+        issue_comment_data["original_commit_id"]= pull_request_comment.original_commit_id
+        issue_comment_data["original_position"]= pull_request_comment.original_position
+        issue_comment_data["path"]= pull_request_comment.path
+        issue_comment_data["pull_request_url"]= pull_request_comment.pull_request_url
+        issue_comment_data["updated_at"]= pull_request_comment.updated_at
+        issue_comment_data["position"]= pull_request_comment.position
+        if not pull_request_comment._user == GithubObject.NotSet:
+            issue_comment_data["author"] = self.extract_user_data(pull_request_comment.user)
+        
+        return pull_request_comment
+
+    def extract_pull_request_review_data(self, review, pull_request_id):
         """
         extract_pull_request_review_data(review, users_ids, pull_request_id)
 
@@ -124,129 +348,15 @@ class PullRequests():
             PyGithub PullRequestReview object structure: https://pygithub.readthedocs.io/en/latest/github_objects/PullRequestReview.html
 
         """
-
         review_data = {}
         review_data["pull_request_id"] = pull_request_id
         review_data["id"] = review.id
         if not review._user == github.GithubObject.NotSet:
-            review_data["author"] = Utility.extract_user_data(review.user, users_ids, data_root_dir)
+            review_data["author"] = self.extract_user_data(review.user)
         review_data["body"] = review.body
         review_data["state"] = review.state
         review_data["submitted_at"] = review.submitted_at
         return review_data
-    
-    @staticmethod
-    def extract_pull_request_commit_data(commit, pull_request_id):
-        """
-        extract_pull_request_commit_data(review, users_ids, pull_request_id)
-
-        Extracting commit data from a pull request.
-
-        Parameters
-        ----------
-        commit : Commit
-            Commit object from pygithub.
-        pull_request_id : int
-            Pull request id as foreign key.
-
-        Returns
-        -------
-        dict
-            Dictionary with the extracted commit data.
-
-        Notes
-        -----
-            PyGithub Commit object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Commit.html
-
-        """
-
-        commit_data = {}
-        commit_data["pull_request_id"] = pull_request_id
-        commit_data["commit_sha"] = commit.sha
-        return commit_data
-    
-    @staticmethod
-    def generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False, check_for_updates=True):
-        """
-        generate_pull_request_pandas_tables(repo, data_root_dir, reactions=False, check_for_updates=True)
-
-        Extracting the complete pull request data from a repository.
-
-        Parameters
-        ----------
-        repo : Repository
-            Repository object from pygithub.
-        data_root_dir : str
-            Data root directory for the repository.
-        reactions : bool, default=False
-            If reactions should also be exracted. The extraction of all reactions increases significantly the aggregation speed.
-        check_for_updates : bool, default=True
-            Check first if there are any new pull requests information.
-        
-        Notes
-        -----
-            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
-
-        """
-        
-        if check_for_updates:
-            pull_requests = repo.get_pulls(state='all') 
-            old_pull_requests = PullRequests.get_pull_requests(data_root_dir)
-            if not Utility.check_for_updates_paginated_old(pull_requests, old_pull_requests):
-                return
-        pull_request_dir = Path(data_root_dir, PullRequests.PULL_REQUESTS_DIR)
-        pull_requests = repo.get_pulls(state='all') 
-        users_ids = Utility.get_users_ids(data_root_dir)
-        pull_request_list = []
-        pull_request_comment_list = []
-        pull_request_reaction_list = []
-        pull_request_review_list = []
-        pull_request_event_list = []
-        pull_request_commit_list = []
-
-        # pull request data
-        for pull_request in pull_requests:
-            pull_request_data = PullRequests.extract_pull_request_data(pull_request, users_ids, data_root_dir)
-            pull_request_list.append(pull_request_data)
-            # pull request comment data
-            for comment in pull_request.get_comments():
-                pull_request_comment_data = Utility.extract_comment_data(comment, pull_request.id, "pull_request", users_ids, data_root_dir)
-                pull_request_comment_list.append(pull_request_comment_data)
-                # pull request reaction data
-                if reactions:
-                    for reaction in comment.get_reactions():
-                        reaction_data = Utility.extract_reaction_data(reaction,comment.id, "comment", users_ids, data_root_dir)
-                        pull_request_reaction_list.append(reaction_data)
-            # pull request review data
-            for review in pull_request.get_reviews():
-                pull_request_review_data = PullRequests.extract_pull_request_review_data(review, pull_request.id, users_ids, data_root_dir)
-                pull_request_review_list.append(pull_request_review_data)
-            # pull request issue comments data
-            for comment in pull_request.get_issue_comments():
-                pull_request_comment_data = Utility.extract_comment_data(comment, pull_request.id, "pull_request", users_ids, data_root_dir)
-                pull_request_comment_list.append(pull_request_comment_data)
-                # pull request reaction data
-                if reactions:
-                    for reaction in comment.get_reactions():
-                        reaction_data = Utility.extract_reaction_data(reaction,comment.id, "comment", users_ids, data_root_dir)
-                        pull_request_reaction_list.append(reaction_data)
-            # pull request issue events
-            for event in pull_request.get_issue_events():
-                pull_request_event_data = Utility.extract_event_data(event, pull_request.id, "pull_request", users_ids, data_root_dir)
-                pull_request_event_list.append(pull_request_event_data)
-            # pull request commits
-            for commit in pull_request.get_commits():
-                pull_request_commit_data = PullRequests.extract_pull_request_commit_data(commit, pull_request.id)
-                pull_request_commit_list.append(pull_request_commit_data)
-
-        # Save lists
-        Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS, pull_request_list)
-        Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS_COMMENTS, pull_request_comment_list)
-        if reactions:
-            Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS_REACTIONS, pull_request_reaction_list)
-        Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS_REVIEWS, pull_request_review_list)
-        Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS_EVENTS, pull_request_event_list)
-        Utility.save_list_to_pandas_table(pull_request_dir, PullRequests.PULL_REQUESTS_COMMITS, pull_request_commit_list)
     
     @staticmethod
     def get_pull_requests(data_root_dir, filename=PULL_REQUESTS):

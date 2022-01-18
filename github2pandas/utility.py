@@ -13,6 +13,8 @@ import sys
 import math
 
 from github.MainClass import Github
+from github.Reaction import Reaction as GitHubReaction
+from github.Repository import Repository as GitHubRepository
 from github.PaginatedList import PaginatedList
 from github.GithubException import RateLimitExceededException
 
@@ -84,6 +86,117 @@ class Utility():
     USERS = "Users.p"
     REPO = "Repo.json"
     
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, current_dir:Path, request_maximum:int = 40000) -> None:
+        self.github_connection = github_connection
+        self.repo = repo
+        self.data_root_dir = data_root_dir
+        self.current_dir = current_dir
+        self.users_ids = self.get_users_ids(data_root_dir)
+        self.request_maximum = request_maximum
+    
+    def save_api_call(self, function, *args, **kwargs):
+        """
+        save_api_call(function, *args, **kwargs)
+
+        Call a function or method savely.
+
+        Parameters
+        ----------
+        function : Any
+            A function/method to call savely.
+        *args
+            Input for the function/method.
+        **kwargs
+            Optional input for the function/method.
+
+        Returns
+        -------
+        Any
+            Returns the result of the function/method.
+
+        """
+        try:
+            return function(*args, **kwargs)
+        except RateLimitExceededException:
+            Utility.wait_for_reset()
+            return function(*args, **kwargs) 
+    
+    def wait_for_reset(self):
+        """
+        wait_for_reset(self)
+
+        Wait until request limit is refreshed.
+
+        """
+        print("Waiting for request limit refresh ...")
+        self.github_connection.get_rate_limit()
+        reset_timestamp = self.github_connection.rate_limiting_resettime
+        seconds_until_reset = reset_timestamp - time.time()
+        sleep_step_width = 1
+        sleeping_range = range(math.ceil(seconds_until_reset / sleep_step_width))
+        for i in Utility.progress_bar(sleeping_range, "Sleeping : ", 60):
+            time.sleep(sleep_step_width)
+        self.github_connection.get_rate_limit()
+        requests_remaning, requests_limit = self.github_connection.rate_limiting
+        while requests_remaning == 0:
+            print("No remaining requests sleep 1s ...")
+            time.sleep(1)
+            self.github_connection.get_rate_limit()
+            requests_remaning, requests_limit = self.github_connection.rate_limiting
+
+    def progress_bar(self, iterable:Iterable, prefix="", size:int=60, file=sys.stdout):
+        """
+        progress_bar(iterable, prefix="", size=60, file=sys.stdout)
+
+        Prints our a progress bar.
+
+        Parameters
+        ----------
+        iterable : Iterable
+            A iterable as input. 
+        prefix : str, default=""
+            String infront of the progress bar.
+        size : int
+            Size of the progress bar.
+        file : Any , default=sys.stdout
+            File to print out the progress bar.
+
+        """
+        count = len(iterable)
+        def show(j):
+            x = int(size*j/count)
+            file.write("%s[%s%s] %i/%i\r" % (prefix, "#"*x, "."*(size-x), j, count))
+            file.flush()        
+        show(0)
+        for i, item in enumerate(iterable):
+            yield item
+            show(i+1)
+        file.write("\n")
+        file.flush()
+
+    def get_users_ids(data_root_dir:Path):
+        """
+        get_users_ids(data_root_dir)
+
+        Get the generated useres as dict whith github ids as keys and anonym uuids as values.
+
+        Parameters
+        ----------
+        data_root_dir : Path
+            Data root directory for the repository.
+
+        Returns
+        -------
+        dict
+            Dict whith github ids as keys and anonym uuids as values.
+
+        """
+        df_users = Utility.get_users(data_root_dir)
+        users_ids = {}
+        for index, row in df_users.iterrows():
+            users_ids[row["id"]] = row["anonym_uuid"]
+        return users_ids
+
     @staticmethod
     def check_for_updates(new_list, old_df):
         """
@@ -605,7 +718,33 @@ class Utility():
         return Utility.extract_user_data(commit.committer, users_ids, data_root_dir)
 
     @staticmethod
-    def extract_reaction_data(reaction, parent_id, parent_name, users_ids, data_root_dir):
+    def extract_issue_reactions(extract_function, parent_id:int, parent_name:str, users_ids, data_root_dir, github_connection, request_maximum):
+        """
+        extract_issue_reactions(extract_function, parent_id)
+
+        Extracting issue reactions.
+
+        Parameters
+        ----------
+        extract_function : function
+            A function to call issue reactions.
+        issue_id : int
+            Id from issue as foreign key.
+
+        """
+        reactions = Utility.save_api_call(extract_function, github_connection)
+        reaction_list = []
+        for i in range(request_maximum):
+            try:
+                reaction = Utility.get_save_api_data(reactions, i, github_connection)
+                reaction_data = Utility.save_api_call(Utility.extract_reaction_data, github_connection, reaction, parent_id, parent_name, users_ids, data_root_dir)
+                reaction_list.append(reaction_data)
+            except IndexError:
+                break 
+        return reaction_list
+
+    @staticmethod
+    def extract_reaction_data(reaction:GitHubReaction, parent_id:int, parent_name:str, users_ids, data_root_dir):
         """
         extract_reaction_data(reaction, parent_id, parent_name, users_ids, data_root_dir)
 
@@ -635,7 +774,8 @@ class Utility():
 
         """
         reaction_data = {} 
-        reaction_data[parent_name + "_id"] = parent_id
+        reaction_data["parent_id"] = parent_id
+        reaction_data["parent_name"] = parent_name
         reaction_data["content"] = reaction.content
         reaction_data["created_at"] = reaction.created_at
         reaction_data["id"] = reaction.id
@@ -985,3 +1125,40 @@ class Utility():
     #    collaborators = repo.get_collaborators()
     #    for collaborator in collaborators:
     #        Utility.extract_user_data(collaborator,user_ids,data_root_dir)
+
+def progress_bar(iterable:Iterable, prefix="", size:int=60, file=sys.stdout):
+    """
+    progress_bar(iterable, prefix="", size=60, file=sys.stdout)
+
+    Prints our a progress bar.
+
+    Parameters
+    ----------
+    iterable : Iterable
+        A iterable as input. 
+    prefix : str, default=""
+        String infront of the progress bar.
+    size : int
+        Size of the progress bar.
+    file : Any , default=sys.stdout
+        File to print out the progress bar.
+
+    """
+    count = len(iterable)
+    def show(j):
+        x = int(size*j/count)
+        file.write("%s[%s%s] %i/%i\r" % (prefix, "#"*x, "."*(size-x), j, count))
+        file.flush()        
+    show(0)
+    for i, item in enumerate(iterable):
+        yield item
+        show(i+1)
+    file.write("\n")
+    file.flush()
+
+def copy_valid_params(base_dict,input_params):
+    params = base_dict
+    for param in input_params:
+        if param in params:
+            params[param] = input_params[param]
+    return params
