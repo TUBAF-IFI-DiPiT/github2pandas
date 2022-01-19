@@ -38,14 +38,6 @@ class TestPullRequests(unittest.TestCase):
         pull_requests.print_calls("End pr")
         pull_requests = PullRequests(self.github_connection, self.repo, self.default_data_folder,10)
         pull_requests.print_calls("Start pr")
-        params = {
-            "deep_pull_requests": False,
-            "reactions": False,
-            "reviews": False,
-            "review_comment": True,
-            "review_requested": False,
-            "commits": False,
-        }
         pull_requests.generate_pandas_tables(extraction_params=params)
         pull_requests.print_calls("End pr")
 
