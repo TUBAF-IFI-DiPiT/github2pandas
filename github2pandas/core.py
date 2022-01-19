@@ -365,6 +365,39 @@ class Core():
             label_list.append(label.name)
         return label_list
 
+    def extract_with_updated_and_since(self, github_method, label, data_extraction_function, *args, initial_data_list=None,initial_total_count=None, state=None,**kwargs):
+        if initial_data_list is None:
+            data_list = self.save_api_call(github_method, sort="updated", direction="asc")
+        else:
+            data_list = initial_data_list
+        if initial_total_count is None:
+            total_count = self.get_save_total_count(data_list)
+        else:
+            total_count = initial_total_count
+        last_id = 0
+        extract_data = True
+        while True:
+            if total_count >= self.request_maximum:
+                print(f"{label} >= request_maximum ==> mutiple {label} progress bars")
+                total_count = self.request_maximum
+            for i in progress_bar(range(total_count), f"{label}: "):
+                data = self.get_save_api_data(data_list, i)
+                if extract_data:
+                    data_extraction_function(data, *args, **kwargs)
+                elif data.id == last_id:
+                    extract_data = True
+                else:
+                    print(f"Skip {label} with ID: {data.id}")
+            if total_count == self.request_maximum:
+                last_id = data.id
+                extract_data = False
+                if state is None:
+                    data_list = self.save_api_call(github_method, since=data.updated_at, sort="updated", direction="asc")
+                else:
+                    data_list = self.save_api_call(github_method, state=state, since=data.updated_at, sort="updated", direction="asc")
+                total_count = self.get_save_total_count(data_list)
+            else:
+                break
     # Debug only:
 
     def print_calls(self, string:str):

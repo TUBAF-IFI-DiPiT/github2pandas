@@ -138,115 +138,86 @@ class Issues(Core):
                 if not self.check_for_updates_paginated(issues, total_count, old_issues):
                     print("No new Issue information!")
                     return
+        events_overflow = False
         if params["events"]:
             events = self.save_api_call(self.repo.get_issues_events)
-            events_overflow = False
             events_total_count = self.get_save_total_count(events)
             if events_total_count >= self.request_maximum:
                 events_overflow = True
                 print("Issues Events will be processed in Issues")
 
-        issue_list = []
-        issue_comment_list = []
-        issue_event_list = []
-        issue_reaction_list = []
+        self.__issue_list = []
+        self.__issue_comment_list = []
+        self.__issue_event_list = []
+        self.__issue_reaction_list = []
 
         # issue data
-        last_issue_id = 0
-        extract_data = True
         issues = issues.reversed
-        while True:
-            if total_count >= self.request_maximum:
-                print("Issues >= request_maximum ==> mutiple Issues progress bars")
-                total_count = self.request_maximum
-            for i in progress_bar(range(total_count), "Issues:          "):
-                issue = self.get_save_api_data(issues, i)
-
-                if extract_data:
-                    issue_data = self.extract_issue_data(issue)
-                    issue_list.append(issue_data)
-                    # reaction data
-                    if params["reactions"]:
-                        issue_reaction_list += self.extract_reactions(
-                            issue.get_reactions, 
-                            issue.id, 
-                            "issue")
-                    if params["events"]:
-                        # events data >= request maximum
-                        if events_overflow:
-                            issue_events = self.save_api_call(issue.get_events)
-                            for i in range(self.request_maximum):
-                                try:
-                                    event = self.get_save_api_data(issue_events, i)
-                                    issue_event_data = self.save_api_call(self.extract_issue_event_data, event, issue_id=issue.id)
-                                    issue_event_list.append(issue_event_data)
-                                except IndexError:
-                                    break
-                elif issue.id == last_issue_id:
-                    extract_data = True
-                else:
-                    print(f"Skip Issue with ID: {issue.id}")
-
-            if total_count == self.request_maximum:
-                last_issue_id = issue_data["id"]
-                extract_data = False
-                issues = self.save_api_call(self.repo.get_issues, state='all', since=issue_data["updated_at"], sort="updated", direction="asc")
-                total_count = self.get_save_total_count(issues)
-            else:
-                break
+        self.extract_with_updated_and_since(
+            self.repo.get_issues,
+            "Issues",
+            self.extract_issues,
+            params,
+            events_overflow,
+            initial_data_list=issues,
+            initial_total_count=total_count,
+            state="all")
         if params["events"]:
             # issue event data < request maximum
             if not events_overflow:
                 for i in progress_bar(range(events_total_count), "Issues Events:   "):
                     event = self.get_save_api_data(events, i)
-                    issue_event_data = self.save_api_call(self.extract_issue_event_data, event, issue_id=issue.id)
-                    issue_event_list.append(issue_event_data)
+                    issue_event_data = self.save_api_call(self.extract_issue_event_data, event)
+                    self.__issue_event_list.append(issue_event_data)
         if params["comments"]:
-            # extract comments
-            comments = self.save_api_call(self.repo.get_issues_comments, sort="updated", direction="asc")
-            comments_total_count = self.get_save_total_count(comments)
-            last_issue_comment_id = 0
-            extract_data = True
-            while True:
-                if comments_total_count >= self.request_maximum:
-                    print("Issues Comments >= request_maximum ==> mutiple Issue Comments progress bars")
-                    comments_total_count = self.request_maximum
-                for i in progress_bar(range(comments_total_count), "Issues Comments: "):
-                    issue_comment = self.get_save_api_data(comments, i)
-                    if extract_data:
-                        issue_comment_data = self.save_api_call(self.extract_issue_comment_data, issue_comment)
-                        issue_comment_list.append(issue_comment_data)
-                        # issue comment reaction data
-                        if params["reactions"]:
-                            issue_reaction_list += self.extract_reactions(
-                                issue.get_reactions, 
-                                issue.id, 
-                                "issue_comment")
-                    elif issue_comment.id == last_issue_comment_id:
-                        extract_data = True
-                    else:
-                        print(f"Skip Issue Comment with ID: {issue_comment.id}")
-                if comments_total_count == self.request_maximum:
-                    last_issue_comment_id = issue_comment_data["id"]
-                    extract_data = False
-                    comments = self.save_api_call(self.repo.get_issues_comments, since=issue_comment_data["updated_at"], sort="updated", direction="asc")
-                    comments_total_count = self.get_save_total_count(comments)
-                else:
-                    break
-        
+            self.extract_with_updated_and_since(
+                self.repo.get_issues_comments,
+                "Issues Comments",
+                self.extract_comments,
+                params)
         # Save lists
-        issues_df = pd.DataFrame(issue_list)
+        issues_df = pd.DataFrame(self.__issue_list)
         self.save_pandas_data_frame(Issues.ISSUES, issues_df)
         if params["comments"]:
-            issues_comments_df = pd.DataFrame(issue_comment_list)
+            issues_comments_df = pd.DataFrame(self.__issue_comment_list)
             self.save_pandas_data_frame(Issues.ISSUES_COMMENTS, issues_comments_df)
         if params["events"]:
-            issues_events_df = pd.DataFrame(issue_event_list)
+            issues_events_df = pd.DataFrame(self.__issue_event_list)
             self.save_pandas_data_frame(Issues.ISSUES_EVENTS, issues_events_df)
         if params["reactions"]:
-            issues_reactions_df = pd.DataFrame(issue_reaction_list)
+            issues_reactions_df = pd.DataFrame(self.__issue_reaction_list)
             self.save_pandas_data_frame(Issues.ISSUES_REACTIONS, issues_reactions_df)
     
+    def extract_issues(self, data, params, events_overflow):
+        issue_data = self.extract_issue_data(data)
+        self.__issue_list.append(issue_data)
+        # reaction data
+        if params["reactions"]:
+            self.__issue_reaction_list += self.extract_reactions(
+                data.get_reactions, 
+                data.id, 
+                "issue")
+        if params["events"]:
+            # events data >= request maximum
+            if events_overflow:
+                issue_events = self.save_api_call(data.get_events)
+                for i in range(self.request_maximum):
+                    try:
+                        event = self.get_save_api_data(issue_events, i)
+                        issue_event_data = self.save_api_call(self.extract_issue_event_data, event, issue_id=data.id)
+                        self.__issue_event_list.append(issue_event_data)
+                    except IndexError:
+                        break
+
+    def extract_comments(self, data, params):
+        issue_comment_data = self.save_api_call(self.extract_issue_comment_data, data)
+        self.__issue_comment_list.append(issue_comment_data)
+        # issue comment reaction data
+        if params["reactions"]:
+            self.__issue_reaction_list += self.extract_reactions(
+                data.get_reactions, 
+                data.id, 
+                "issue_comment")
     def extract_issue_data(self, issue:GitHubIssue):
         """
         extract_issue_data(self, issue)

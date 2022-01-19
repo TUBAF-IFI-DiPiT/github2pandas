@@ -39,8 +39,8 @@ class TestIssues(unittest.TestCase):
         #issues.generate_pandas_tables(False, True)
         #issues.generate_pandas_tables(True, True)
         # check max request limit
-        #issues = Issues(self.github_connection, self.repo, self.default_data_folder, 20)
-        #issues.generate_pandas_tables()
+        issues = Issues(self.github_connection, self.repo, self.default_data_folder, 20)
+        issues.generate_pandas_tables(extraction_params=params)
 
     def test_get_issues(self):
         issues = Issues.get_pandas_table(self.default_data_folder)

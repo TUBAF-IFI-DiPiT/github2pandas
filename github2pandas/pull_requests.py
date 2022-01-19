@@ -64,6 +64,8 @@ class PullRequests(Core):
         "review_comment": False,
         "review_requested": False,
         "commits": False,
+        "events": False, # for large repos --> if issues not extracted
+        "comments": False # for large repos --> if issues not extracted
     }
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000) -> None:
         """
@@ -145,106 +147,101 @@ class PullRequests(Core):
                 if not self.check_for_updates_paginated(pull_requests, total_count, old_pull_requests):
                     print("No new Pull Request information!")
                     return
-        pull_request_list = []
-        pull_request_review_comment_list = []
-        pull_request_reviews_list = []
-        reactions_list = []
+        self.__pull_request_list = []
+        self.__pull_request_review_comment_list = []
+        self.__pull_request_reviews_list = []
+        self.__reactions_list = []
+        
+        # check if issues(with pull request data) are extracted
+        issues_df = Issues.get_pandas_table(self.data_root_dir)
+        if issues_df.empty or issues_df[issues_df["is_pull_request"] == True]["is_pull_request"].count() < total_count:
+            print("Issues are missing. Extracting Issues now!")
+            issues = Issues(
+                self.github_connection,
+                self.repo,
+                self.data_root_dir,
+                self.request_maximum
+                )
+            issues.generate_pandas_tables(
+                    extraction_params=params,
+                    check_for_updates=check_for_updates)
+            issues_df = issues.issues_df
 
         if total_count < self.request_maximum:
             for i in progress_bar(range(total_count), "Pull Requests:   "):
                 pull_request = self.get_save_api_data(pull_requests, i)
-                pull_request_data = self.extract_pull_request_data(pull_request, params["deep_pull_requests"])
-                
-                if params["reviews"]:
-                    reviews = self.save_api_call(pull_request.get_reviews)
-                    for i in range(self.request_maximum):
-                        try:
-                            review = self.get_save_api_data(reviews, i)
-                            review_data = self.save_api_call(self.extract_pull_request_review_data, review, pull_request.id)
-                            pull_request_reviews_list.append(review_data)
-                        except IndexError:
-                            break
-                if params["review_requested"]:
-                    pull_request_data["review_requested_users"] = []
-                    review_requests_users, review_requests_teams = self.save_api_call(pull_request.get_review_requests)
-                    for i in range(self.request_maximum):
-                        try:
-                            review_request_user = self.get_save_api_data(review_requests_users, i)
-                            pull_request_data["review_requested_users"].append(self.extract_user_data(review_request_user))
-                        except IndexError:
-                            break
-                
-                if params["commits"]:
-                    # Maximum of 250 Commits
-                    pull_request_data["commits"] = []
-                    commits = self.save_api_call(pull_request.get_commits)
-                    for i in range(self.request_maximum):
-                        try:
-                            commit = self.get_save_api_data(commits, i)
-                            pull_request_data["commits"].append(commit)
-                        except IndexError:
-                            break
-                pull_request_list.append(pull_request_data)
+                self.extract_pull_request(pull_request, params)
         else:
-            issues_df = Issues.get_pandas_table(self.data_root_dir)
-            if issues_df.empty or issues_df[issues_df["is_pull_request"] == True]["is_pull_request"].count() < total_count:
-                print("There must be Issues. Start extracting them")
-                issues = Issues(
-                    self.github_connection,
-                    self.repo,
-                    self.data_root_dir,
-                    self.request_maximum
-                    )
-                issues.generate_pandas_tables(
-                        extract_reactions=params["reactions"],
-                        check_for_updates=check_for_updates)
-                issues_df = issues.issues_df
             # add get pr for each issue
-
+            pull_requests_df = issues_df[issues_df["is_pull_request"] == True]
+            count = 0
+            for index in progress_bar(range(int(pull_requests_df["number"].count())), "Pull Requests :"):
+                while issues_df.loc[count,"is_pull_request"] == False:
+                    count += 1
+                number = int(issues_df.loc[count,"number"])
+                pull_request = self.save_api_call(self.repo.get_pull, number)
+                self.extract_pull_request(pull_request, params)
         if params["review_comment"]:
             # extract comments
-            comments = self.save_api_call(self.repo.get_pulls_comments, sort="updated", direction="asc")
-            comments_total_count = self.get_save_total_count(comments)
-            last_pull_request_comment_id = 0
-            extract_data = True
-            while True:
-                if comments_total_count >= self.request_maximum:
-                    print("Pull Request Comments >= request_maximum ==> mutiple Pull Request Comments progress bars")
-                    comments_total_count = self.request_maximum
-                for i in progress_bar(range(comments_total_count), "Pull Request Comments: "):
-                    pull_request_comment = self.get_save_api_data(comments, i)
-                    if extract_data:
-                        pull_request_comment_data = self.save_api_call(self.extract_pull_request_comment_data, pull_request_comment)
-                        pull_request_review_comment_list.append(pull_request_comment_data)
-                        if params["reactions"]:
-                            reactions_list += self.extract_reactions(
-                                pull_request_comment.get_reactions,
-                                pull_request_comment.id,
-                                "pull_request_comment")
-                    elif pull_request_comment.id == last_pull_request_comment_id:
-                        extract_data = True
-                    else:
-                        print(f"Skip Pull Request Comment with ID: {pull_request_comment.id}")
-                if comments_total_count == self.request_maximum:
-                    last_pull_request_comment_id = pull_request_comment_data["id"]
-                    extract_data = False
-                    comments = self.save_api_call(self.repo.get_pulls_comments, since=pull_request_comment_data["updated_at"], sort="updated", direction="asc")
-                    comments_total_count = self.get_save_total_count(comments)
-                else:
-                    break
-
-        pull_request_df = pd.DataFrame(pull_request_list)
+            self.extract_with_updated_and_since(
+                self.repo.get_pulls_comments,
+                "Pull Request Comments",
+                self.extract_comments,
+                params)
+        pull_request_df = pd.DataFrame(self.__pull_request_list)
         self.save_pandas_data_frame(PullRequests.PULL_REQUESTS, pull_request_df)
         if params["review_comment"]:
-            pull_request_review_comment_df = pd.DataFrame(pull_request_review_comment_list)
+            pull_request_review_comment_df = pd.DataFrame(self.__pull_request_review_comment_list)
             self.save_pandas_data_frame(PullRequests.PULL_REQUESTS_COMMENTS, pull_request_review_comment_df)
         if params["reviews"]:
-            pull_request_reviews_df = pd.DataFrame(pull_request_reviews_list)
+            pull_request_reviews_df = pd.DataFrame(self.__pull_request_reviews_list)
             self.save_pandas_data_frame(PullRequests.PULL_REQUESTS_REVIEWS, pull_request_reviews_df)
         if params["reactions"]:
-            reactions_df = pd.DataFrame(reactions_list)
+            reactions_df = pd.DataFrame(self.__reactions_list)
             self.save_pandas_data_frame(PullRequests.PULL_REQUESTS_REACTIONS, reactions_df)
     
+    def extract_pull_request(self, pull_request:GitHubPullRequest, params:dict):
+        pull_request_data = self.extract_pull_request_data(pull_request, params["deep_pull_requests"])
+        if params["reviews"]:
+            reviews = self.save_api_call(pull_request.get_reviews)
+            for i in range(self.request_maximum):
+                try:
+                    review = self.get_save_api_data(reviews, i)
+                    review_data = self.save_api_call(self.extract_pull_request_review_data, review, pull_request.id)
+                    self.__pull_request_reviews_list.append(review_data)
+                except IndexError:
+                    break
+        if params["review_requested"]:
+            pull_request_data["review_requested_users"] = []
+            review_requests_users, review_requests_teams = self.save_api_call(pull_request.get_review_requests)
+            for i in range(self.request_maximum):
+                try:
+                    review_request_user = self.get_save_api_data(review_requests_users, i)
+                    pull_request_data["review_requested_users"].append(self.extract_user_data(review_request_user))
+                except IndexError:
+                    break
+        
+        if params["commits"]:
+            # Maximum of 250 Commits
+            pull_request_data["commits"] = []
+            commits = self.save_api_call(pull_request.get_commits)
+            for i in range(self.request_maximum):
+                try:
+                    commit = self.get_save_api_data(commits, i)
+                    pull_request_data["commits"].append(commit)
+                except IndexError:
+                    break
+        self.__pull_request_list.append(pull_request_data)
+
+    def extract_comments(self, data, params):
+        pull_request_comment_data = self.save_api_call(self.extract_pull_request_comment_data, data)
+        self.__pull_request_review_comment_list.append(pull_request_comment_data)
+        if params["reactions"]:
+            self.__reactions_list += self.extract_reactions(
+                data.get_reactions,
+                data.id,
+                "pull_request_comment")
+
     def extract_pull_request_data(self, pull_request:GitHubPullRequest, additional_information:bool = False):
         """
         extract_pull_request_data(self, pull_request, additional_information=False)
