@@ -1,11 +1,9 @@
-import requests
-import zipfile
-import io
-import pandas as pd
+from requests import get as requests_get
+from zipfile import ZipFile
+from io import BytesIO
 from pathlib import Path
 from pandas import DataFrame, read_pickle
 # github imports
-from github import GithubObject
 from github.MainClass import Github
 from github.Repository import Repository as GitHubRepository
 from github.Workflow import Workflow as GitHubWorkflow
@@ -236,10 +234,10 @@ class Workflows(Core):
             'Accept': 'application/vnd.github.v3+json',
         }
         query_url = f"https://api.github.com/repos/{repo.owner.login}/{repo.name}/actions/runs/{workflow_run_id}/logs"
-        response = requests.get(query_url, headers=headers,
+        response = requests_get(query_url, headers=headers,
                                 auth=('username', github_token))
         if 'zip' in response.headers['Content-Type']:
-            zip_obj = zipfile.ZipFile(io.BytesIO(response.content))
+            zip_obj = ZipFile(BytesIO(response.content))
             data_dir = Path(data_root_dir, Workflows.WORKFLOWS_DIR, str(workflow_run_id))
             zip_obj.extractall(data_dir)
             return len(zip_obj.namelist())
@@ -269,6 +267,6 @@ class Workflows(Core):
         workflow_dir = Path(data_root_dir, Workflows.WORKFLOWS_DIR)
         pd_workflows_file = Path(workflow_dir, filename)
         if pd_workflows_file.is_file():
-            return pd.read_pickle(pd_workflows_file)
+            return read_pickle(pd_workflows_file)
         else:
-            return pd.DataFrame()
+            return DataFrame()
