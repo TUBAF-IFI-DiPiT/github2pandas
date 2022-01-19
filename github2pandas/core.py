@@ -1,26 +1,19 @@
-import os
 from pathlib import Path
-from typing import Iterable, Union
-import numpy
-import pandas as pd
-import github
-import pickle
+from typing import Union
+from pickle import dump
 from human_id import generate_id
-import json
-import uuid
-import time
-import sys
-import math
-
+from time import time, sleep
+from math import ceil
+from pandas import DataFrame, read_pickle
+# github imports
+from github import GithubObject
 from github.MainClass import Github
 from github.Reaction import Reaction as GitHubReaction
 from github.Repository import Repository as GitHubRepository
 from github.NamedUser import NamedUser as GitHubNamedUser
 from github.PaginatedList import PaginatedList
 from github.GithubException import RateLimitExceededException
-
-from pandas import DataFrame
-
+# github2pandas imports
 from github2pandas.utility import progress_bar
 
 class Core():
@@ -134,16 +127,16 @@ class Core():
         print("Waiting for request limit refresh ...")
         self.github_connection.get_rate_limit()
         reset_timestamp = self.github_connection.rate_limiting_resettime
-        seconds_until_reset = reset_timestamp - time.time()
+        seconds_until_reset = reset_timestamp - time()
         sleep_step_width = 1
-        sleeping_range = range(math.ceil(seconds_until_reset / sleep_step_width))
+        sleeping_range = range(ceil(seconds_until_reset / sleep_step_width))
         for i in progress_bar(sleeping_range, "Sleeping : ", 60):
-            time.sleep(sleep_step_width)
+            sleep(sleep_step_width)
         self.github_connection.get_rate_limit()
         requests_remaning, requests_limit = self.github_connection.rate_limiting
         while requests_remaning == 0:
             print("No remaining requests sleep 1s ...")
-            time.sleep(1)
+            sleep(1)
             self.github_connection.get_rate_limit()
             requests_remaning, requests_limit = self.github_connection.rate_limiting
     
@@ -239,7 +232,7 @@ class Core():
         reaction_data["content"] = reaction.content
         reaction_data["created_at"] = reaction.created_at
         reaction_data["id"] = reaction.id
-        if not reaction._user == github.GithubObject.NotSet:
+        if not reaction._user == GithubObject.NotSet:
             reaction_data["author"] = self.extract_user_data(reaction.user)
         return reaction_data
     
@@ -271,9 +264,9 @@ class Core():
         if user.node_id in self.users_ids:
             return self.users_ids[user.node_id]
         users_file = Path(self.data_root_dir, self.USERS)
-        users_df = pd.DataFrame()
+        users_df = DataFrame()
         if users_file.is_file():
-            users_df = pd.read_pickle(users_file)
+            users_df = read_pickle(users_file)
         user_data = {}
         if node_id_to_anonym_uuid:
             user_data["anonym_uuid"] = user.node_id
@@ -292,7 +285,7 @@ class Core():
         self.users_ids[user.node_id] = user_data["anonym_uuid"]
         users_df = users_df.append(user_data, ignore_index=True)
         with open(users_file, "wb") as f:
-            pickle.dump(users_df, f)
+            dump(users_df, f)
         return user_data["anonym_uuid"]
 
     def save_pandas_data_frame(self, file:str, data_frame:DataFrame):
@@ -312,7 +305,7 @@ class Core():
         self.current_dir.mkdir(parents=True, exist_ok=True)
         pd_file = Path(self.current_dir, file)
         with open(pd_file, "wb") as f:
-            pickle.dump(data_frame, f)
+            dump(data_frame, f)
     
     def extract_users(self, users:PaginatedList):
         """
@@ -426,8 +419,8 @@ class Core():
         """
         users_file = Path(data_root_dir, Core.USERS)
         if users_file.is_file():
-            return pd.read_pickle(users_file)
+            return read_pickle(users_file)
         else:
-            return pd.DataFrame()
+            return DataFrame()
 
  
