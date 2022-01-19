@@ -19,15 +19,21 @@ class TestWorkflows(unittest.TestCase):
     git_repo_owner = "TUBAF-IFI-DiPiT"
 
     default_data_folder = Path("test_data", git_repo_name)
+    github_connection = Utility.get_github_connection(github_token)
     repo = Utility.get_repo(git_repo_owner, git_repo_name, github_token, default_data_folder)
 
     def test_generate_workflow_pandas_tables(self):
-        Workflows.generate_workflow_pandas_tables(self.repo, self.default_data_folder, check_for_updates=False)
-        Workflows.generate_workflow_pandas_tables(self.repo, self.default_data_folder)
+        workflows = Workflows(self.github_connection, self.repo, self.default_data_folder)
+        workflows.print_calls("Start workflows")
+        workflows.generate_pandas_tables()
+        workflows.print_calls("End workflows")
+        workflows.print_calls("Start workflows")
+        workflows.generate_pandas_tables(check_for_updates=True)
+        workflows.print_calls("End workflows")
         
     def test_get_workflows(self):
         pd_workflows_file = Workflows.get_workflows(self.default_data_folder)
-        pd_workflows_runs = Workflows.get_workflows(self.default_data_folder, Workflows.WORKFLOWS_RUNS)
+        pd_workflows_runs = Workflows.get_workflows(self.default_data_folder, Workflows.RUNS)
 
     def test_download_workflow_log_files(self):
         self.skipTest("Skip Test Fr Workflow")
@@ -45,7 +51,8 @@ class TestWorkflows(unittest.TestCase):
             created_at = datetime.datetime.now()
             updated_at = datetime.datetime.now()
             state = "test_extract_workflow_data"
-        worflow_data = Workflows.extract_workflow_data(Workflow())
+        workflows = Workflows(self.github_connection, self.repo, self.default_data_folder)
+        worflow_data = workflows.extract_workflow_data(Workflow())
         self.assertIsNotNone(worflow_data)
 
     def test_extract_workflow_run_data(self):
@@ -59,7 +66,8 @@ class TestWorkflows(unittest.TestCase):
             status = "test_extract_workflow_data"
             event = "test_extract_workflow_data"
             conclusion = "test_extract_workflow_data"
-        worflow_run_data = Workflows.extract_workflow_run_data(WorkflowRun())
+        workflows = Workflows(self.github_connection, self.repo, self.default_data_folder)
+        worflow_run_data = workflows.extract_run_data(WorkflowRun())
         self.assertIsNotNone(worflow_run_data)
 
     def setUp(self):
