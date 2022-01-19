@@ -1,15 +1,16 @@
-import pandas as pd
+from pandas import DataFrame, read_pickle
 from pathlib import Path
+# github imports
 from github import GithubObject
 from github.MainClass import Github
-from github.PaginatedList import PaginatedList
 from github.Repository import Repository as GitHubRepository
 from github.Issue import Issue as GitHubIssue
 from github.IssueComment import IssueComment as GitHubIssueComment
 from github.IssueEvent import IssueEvent as GitHubIssueEvent
-from github.Reaction import Reaction as GitHubReaction
+# github2pandas imports
 from github2pandas.core import Core
 from github2pandas.utility import progress_bar, copy_valid_params
+
 class Issues(Core):
     """
     Class to aggregate Issues
@@ -20,48 +21,48 @@ class Issues(Core):
         Issues dir where all files are saved in.
     ISSUES : str
         Pandas table file for issues data.
-    ISSUES_COMMENTS : str
+    COMMENTS : str
         Pandas table file for comments data in issues.
-    ISSUES_REACTIONS : str
+    REACTIONS : str
         Pandas table file for reactions data in issues.
-    ISSUES_EVENTS : str
+    EVENTS : str
         Pandas table file for reviews data in issues.
+    EXTRACTION_PARAMS : dict
+        Holds all extraction parameters with a default setting.
     issues_df : DataFrame
         Pandas DataFrame object with general issues data.
-    issues_comments_df : DataFrame
-        Pandas DataFrame object with issues comments data.
-    issues_events_df : DataFrame
-        Pandas DataFrame object with issues events data.
-    issues_reactions_df : DataFrame
-        Pandas DataFrame object with issues reactions data.
+    comments_df : DataFrame
+        Pandas DataFrame object with comments data.
+    events_df : DataFrame
+        Pandas DataFrame object with events data.
+    reactions_df : DataFrame
+        Pandas DataFrame object with reactions data.
 
     Methods
     -------
     __init__(self, github_connection, repo, data_root_dir, request_maximum)
         Initial Issues object with general information.
-    generate_pandas_tables(self, extract_reactions=False, check_for_updates=True)
+    generate_pandas_tables(self, check_for_updates=False, extraction_params={})
         Extracting the complete issues from a repository.
+    extract_issue(self, data, params, events_overflow)
+        Extracting the issue.
+    extract_comment(self, data, params)
+        Extracting the comments from issues.
     extract_issue_data(self, issue)
         Extracting general issue data.
-    __extract_issue_reactions(self, extract_function, issue_id)
-        Extracting issue reactions.
-    extract_reaction_data(self, reaction, issue_id)
-        Extracting issue reaction data.
-    extract_issue_comment_data(self, issue_comment)
+    extract_comment_data(self, comment)
         Extracting issue comment data.
-    __extract_issue_events(self, issue_events, index, issue_id=None)
-        Extracting issue events.
-    extract_issue_event_data(self, issue_event, issue_id=None)
+    extract_event_data(self, event, issue_id=None)
         Extracting issue event data.
     get_pandas_table(data_root_dir, filename=ISSUES)
         Get a genearted pandas table.
     
     """
     ISSUES_DIR = "Issues"
-    ISSUES = "pdIssues.p"
-    ISSUES_COMMENTS = "pdIssuesComments.p"
-    ISSUES_REACTIONS = "pdIssuesReactions.p"
-    ISSUES_EVENTS = "pdIssuesEvents.p"
+    ISSUES = "Issues.p"
+    COMMENTS = "Comments.p"
+    REACTIONS = "Reactions.p"
+    EVENTS = "Events.p"
     EXTRACTION_PARAMS = {
         "reactions": False,
         "events": False,
@@ -104,27 +105,27 @@ class Issues(Core):
     def issues_df(self):
         return Issues.get_pandas_table(self.data_root_dir)
     @property
-    def issues_comments_df(self):
-        return Issues.get_pandas_table(self.data_root_dir, Issues.ISSUES_COMMENTS)
+    def comments_df(self):
+        return Issues.get_pandas_table(self.data_root_dir, Issues.COMMENTS)
     @property
-    def issues_events_df(self):
-        return Issues.get_pandas_table(self.data_root_dir, Issues.ISSUES_EVENTS)
+    def events_df(self):
+        return Issues.get_pandas_table(self.data_root_dir, Issues.EVENTS)
     @property
-    def issues_reactions_df(self):
-        return Issues.get_pandas_table(self.data_root_dir, Issues.ISSUES_REACTIONS)
+    def reactions_df(self):
+        return Issues.get_pandas_table(self.data_root_dir, Issues.REACTIONS)
 
     def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}):
         """
-        generate_pandas_tables(self, extract_reactions=False, check_for_updates=True)
+        generate_pandas_tables(self, check_for_updates=False, extraction_params={})
 
         Extracting the complete issues from a repository.
 
         Parameters
         ----------
-        extract_reactions : bool, default=False
-            If reactions should also be exracted. The extraction of all reactions increases significantly the aggregation speed.
         check_for_updates : bool, default=True
             Check first if there are any new issues information. Does not work when extract_reaction is True.
+        extraction_params : dict, default={}
+            Can hold extraction parameters. This defines what will be extracted.
         
         """
         params = copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
@@ -145,18 +146,16 @@ class Issues(Core):
             if events_total_count >= self.request_maximum:
                 events_overflow = True
                 print("Issues Events will be processed in Issues")
-
         self.__issue_list = []
-        self.__issue_comment_list = []
-        self.__issue_event_list = []
-        self.__issue_reaction_list = []
-
+        self.__comment_list = []
+        self.__event_list = []
+        self.__reaction_list = []
         # issue data
         issues = issues.reversed
         self.extract_with_updated_and_since(
             self.repo.get_issues,
             "Issues",
-            self.extract_issues,
+            self.extract_issue,
             params,
             events_overflow,
             initial_data_list=issues,
@@ -167,57 +166,94 @@ class Issues(Core):
             if not events_overflow:
                 for i in progress_bar(range(events_total_count), "Issues Events:   "):
                     event = self.get_save_api_data(events, i)
-                    issue_event_data = self.save_api_call(self.extract_issue_event_data, event)
-                    self.__issue_event_list.append(issue_event_data)
+                    event_data = self.save_api_call(self.extract_event_data, event)
+                    self.__event_list.append(event_data)
         if params["comments"]:
             self.extract_with_updated_and_since(
                 self.repo.get_issues_comments,
                 "Issues Comments",
-                self.extract_comments,
+                self.extract_comment,
                 params)
         # Save lists
-        issues_df = pd.DataFrame(self.__issue_list)
+        issues_df = DataFrame(self.__issue_list)
         self.save_pandas_data_frame(Issues.ISSUES, issues_df)
         if params["comments"]:
-            issues_comments_df = pd.DataFrame(self.__issue_comment_list)
-            self.save_pandas_data_frame(Issues.ISSUES_COMMENTS, issues_comments_df)
+            comments_df = DataFrame(self.__comment_list)
+            self.save_pandas_data_frame(Issues.COMMENTS, comments_df)
         if params["events"]:
-            issues_events_df = pd.DataFrame(self.__issue_event_list)
-            self.save_pandas_data_frame(Issues.ISSUES_EVENTS, issues_events_df)
+            events_df = DataFrame(self.__event_list)
+            self.save_pandas_data_frame(Issues.EVENTS, events_df)
         if params["reactions"]:
-            issues_reactions_df = pd.DataFrame(self.__issue_reaction_list)
-            self.save_pandas_data_frame(Issues.ISSUES_REACTIONS, issues_reactions_df)
+            reactions_df = DataFrame(self.__reaction_list)
+            self.save_pandas_data_frame(Issues.REACTIONS, reactions_df)
     
-    def extract_issues(self, data, params, events_overflow):
+    def extract_issue(self, data:GitHubIssue, params:dict, events_overflow:bool):
+        """
+        extract_issue(self, data, params, events_overflow)
+
+        Extracting the issue.
+
+        Parameters
+        ----------
+        data : GitHubIssue
+            Issue object from pygithub.
+        params : dict
+            Holds extraction parameters. This defines what will be extracted.
+        events_overflow : bool
+            Download Events in Issues, if events > request_maximum
+        
+        Notes
+        -----
+            PyGithub Issue object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Issue.html
+
+        """
         issue_data = self.extract_issue_data(data)
         self.__issue_list.append(issue_data)
         # reaction data
         if params["reactions"]:
-            self.__issue_reaction_list += self.extract_reactions(
+            self.__reaction_list += self.extract_reactions(
                 data.get_reactions, 
                 data.id, 
                 "issue")
         if params["events"]:
             # events data >= request maximum
             if events_overflow:
-                issue_events = self.save_api_call(data.get_events)
+                events = self.save_api_call(data.get_events)
                 for i in range(self.request_maximum):
                     try:
-                        event = self.get_save_api_data(issue_events, i)
-                        issue_event_data = self.save_api_call(self.extract_issue_event_data, event, issue_id=data.id)
-                        self.__issue_event_list.append(issue_event_data)
+                        event = self.get_save_api_data(events, i)
+                        event_data = self.save_api_call(self.extract_event_data, event, issue_id=data.id)
+                        self.__event_list.append(event_data)
                     except IndexError:
                         break
 
-    def extract_comments(self, data, params):
-        issue_comment_data = self.save_api_call(self.extract_issue_comment_data, data)
-        self.__issue_comment_list.append(issue_comment_data)
+    def extract_comment(self, data:GitHubIssueComment, params:dict):
+        """
+        extract_comment(self, data, params)
+
+        Extracting the comments from issues.
+
+        Parameters
+        ----------
+        data : GitHubIssueComment 
+            IssueComment object from pygithub.
+        params : dict
+            Holds extraction parameters. This defines what will be extracted.
+        
+        Notes
+        -----
+            IssueComment object structure: https://pygithub.readthedocs.io/en/latest/github_objects/IssueComment.html
+
+        """
+        comment_data = self.save_api_call(self.extract_comment_data, data)
+        self.__comment_list.append(comment_data)
         # issue comment reaction data
         if params["reactions"]:
-            self.__issue_reaction_list += self.extract_reactions(
+            self.__reaction_list += self.extract_reactions(
                 data.get_reactions, 
                 data.id, 
-                "issue_comment")
+                "comment")
+                
     def extract_issue_data(self, issue:GitHubIssue):
         """
         extract_issue_data(self, issue)
@@ -267,15 +303,15 @@ class Issues(Core):
             issue_data["is_pull_request"] = True
         return issue_data
 
-    def extract_issue_comment_data(self, issue_comment:GitHubIssueComment):
+    def extract_comment_data(self, comment:GitHubIssueComment):
         """
-        extract_issue_comment_data(self, issue_comment)
+        extract_comment_data(self, comment)
 
         Extracting issue comment data.
 
         Parameters
         ----------
-        issue_comment : GitHubIssueComment 
+        comment : GitHubIssueComment 
             IssueComment object from pygithub.
 
         Returns
@@ -288,25 +324,25 @@ class Issues(Core):
             IssueComment object structure: https://pygithub.readthedocs.io/en/latest/github_objects/IssueComment.html
 
         """
-        issue_comment_data = {}
-        issue_comment_data["body"] = issue_comment.body
-        issue_comment_data["created_at"] = issue_comment.created_at
-        issue_comment_data["id"] = issue_comment.id
-        issue_comment_data["issue_url"] = issue_comment.issue_url
-        issue_comment_data["updated_at"] = issue_comment.updated_at
-        if not issue_comment._user == GithubObject.NotSet:
-            issue_comment_data["author"] = self.extract_user_data(issue_comment.user)
-        return issue_comment_data  
+        comment_data = {}
+        comment_data["body"] = comment.body
+        comment_data["created_at"] = comment.created_at
+        comment_data["id"] = comment.id
+        comment_data["issue_url"] = comment.issue_url
+        comment_data["updated_at"] = comment.updated_at
+        if not comment._user == GithubObject.NotSet:
+            comment_data["author"] = self.extract_user_data(comment.user)
+        return comment_data  
 
-    def extract_issue_event_data(self, issue_event:GitHubIssueEvent, issue_id:int=None):
+    def extract_event_data(self, event:GitHubIssueEvent, issue_id:int=None):
         """
-        extract_issue_event_data(self, issue_event, issue_id=None)
+        extract_event_data(self, event, issue_id=None)
 
         Extracting issue event data.
 
         Parameters
         ----------
-        issue_event: GitHubIssueEvent
+        event: GitHubIssueEvent
             IssueEvent object from pygithub.
         issue_id : int, default=None
             Id from issue as foreign key.
@@ -321,35 +357,35 @@ class Issues(Core):
             IssueEvent object structure: https://pygithub.readthedocs.io/en/latest/github_objects/IssueEvent.html
 
         """
-        issue_event_data = {}
-        if not issue_event._actor == GithubObject.NotSet:
-            issue_event_data["author"] = self.extract_user_data(issue_event.actor)
-        if not issue_event._assignee == GithubObject.NotSet:
-            issue_event_data["assignee"] = self.extract_user_data(issue_event.assignee)
-        if not issue_event._assigner == GithubObject.NotSet:
-            issue_event_data["assigner"] = self.extract_user_data(issue_event.assigner)
-        issue_event_data["commit_sha"] = issue_event.commit_id
-        issue_event_data["created_at"] = issue_event.created_at
+        event_data = {}
+        if not event._actor == GithubObject.NotSet:
+            event_data["author"] = self.extract_user_data(event.actor)
+        if not event._assignee == GithubObject.NotSet:
+            event_data["assignee"] = self.extract_user_data(event.assignee)
+        if not event._assigner == GithubObject.NotSet:
+            event_data["assigner"] = self.extract_user_data(event.assigner)
+        event_data["commit_sha"] = event.commit_id
+        event_data["created_at"] = event.created_at
         # dismissed_review ?
-        issue_event_data["event"] = issue_event.event
-        issue_event_data["id"] = issue_event.id
+        event_data["event"] = event.event
+        event_data["id"] = event.id
         if issue_id is None:
-            issue_event_data["issue_id"] = issue_event.issue.id
+            event_data["issue_id"] = event.issue.id
         else:
-            issue_event_data["issue_id"] = issue_id
-        if not issue_event._label == GithubObject.NotSet:
-            issue_event_data["label"] = issue_event.label.name
-        issue_event_data["last_modified"] = issue_event.last_modified
+            event_data["issue_id"] = issue_id
+        if not event._label == GithubObject.NotSet:
+            event_data["label"] = event.label.name
+        event_data["last_modified"] = event.last_modified
         # lock_reason ?
         # milestone ?
         # node_id ?
         # rename ?
         # requested_reviewer ?
         # review_requesters ?
-        return issue_event_data
+        return event_data
     
     @staticmethod
-    def get_pandas_table(data_root_dir:Path, filename:str=ISSUES):
+    def get_pandas_table(data_root_dir:Path, filename:str=ISSUES) -> DataFrame:
         """
         get_pandas_table(data_root_dir, filename=ISSUES)
 
@@ -371,6 +407,6 @@ class Issues(Core):
         
         pd_issues_file = Path(data_root_dir, Issues.ISSUES_DIR, filename)
         if pd_issues_file.is_file():
-            return pd.read_pickle(pd_issues_file)
+            return read_pickle(pd_issues_file)
         else:
-            return pd.DataFrame()
+            return DataFrame()

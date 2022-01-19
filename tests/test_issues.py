@@ -27,26 +27,25 @@ class TestIssues(unittest.TestCase):
 
     def test_generate_issue_pandas_tables(self):
         issues = Issues(self.github_connection, self.repo, self.default_data_folder)
-        issues.print_calls("Start pr")
+        issues.print_calls("Start issues")
         params = {
             "reactions": False,
             "events": True,
             "comments": True
         }
         issues.generate_pandas_tables(extraction_params=params)
-        issues.print_calls("End pr")
-        #issues.generate_pandas_tables(True, False)
-        #issues.generate_pandas_tables(False, True)
-        #issues.generate_pandas_tables(True, True)
+        issues.print_calls("End issues")
         # check max request limit
         issues = Issues(self.github_connection, self.repo, self.default_data_folder, 20)
+        issues.print_calls("Start issues")
         issues.generate_pandas_tables(extraction_params=params)
+        issues.print_calls("End issues")
 
     def test_get_issues(self):
         issues = Issues.get_pandas_table(self.default_data_folder)
-        issues_comments = Issues.get_pandas_table(self.default_data_folder, filename=Issues.ISSUES_COMMENTS)
-        issues_reactions = Issues.get_pandas_table(self.default_data_folder, filename=Issues.ISSUES_REACTIONS)
-        issues_events = Issues.get_pandas_table(self.default_data_folder, filename=Issues.ISSUES_EVENTS)
+        issues_comments = Issues.get_pandas_table(self.default_data_folder, filename=Issues.COMMENTS)
+        issues_reactions = Issues.get_pandas_table(self.default_data_folder, filename=Issues.REACTIONS)
+        issues_events = Issues.get_pandas_table(self.default_data_folder, filename=Issues.EVENTS)
 
     def setUp(self):
         self.default_data_folder.mkdir(parents=True, exist_ok=True)
