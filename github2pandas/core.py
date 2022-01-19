@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Union
 import numpy
 import pandas as pd
 import github
@@ -15,10 +15,11 @@ import math
 from github.MainClass import Github
 from github.Reaction import Reaction as GitHubReaction
 from github.Repository import Repository as GitHubRepository
+from github.NamedUser import NamedUser as GitHubNamedUser
 from github.PaginatedList import PaginatedList
 from github.GithubException import RateLimitExceededException
 
-from pandas.core.frame import DataFrame
+from pandas import DataFrame
 
 from github2pandas.utility import progress_bar
 
@@ -75,7 +76,7 @@ class Core():
             self.wait_for_reset()
             return self.save_api_call(function,*args, **kwargs) 
     
-    def get_save_total_count(self, paginated_list:PaginatedList):
+    def get_save_total_count(self, paginated_list:PaginatedList) -> int:
         """
         get_save_total_count(paginated_list)
 
@@ -146,7 +147,7 @@ class Core():
             self.github_connection.get_rate_limit()
             requests_remaning, requests_limit = self.github_connection.rate_limiting
     
-    def check_for_updates_paginated(self, new_paginated_list, list_count, old_df):
+    def check_for_updates_paginated(self, new_paginated_list:PaginatedList, list_count:int, old_df:DataFrame):
         """
         check_for_updates_paginated(new_paginated_list, list_count, old_df)
 
@@ -242,7 +243,7 @@ class Core():
             reaction_data["author"] = self.extract_user_data(reaction.user)
         return reaction_data
     
-    def extract_user_data(self, user, node_id_to_anonym_uuid=False):
+    def extract_user_data(self, user:GitHubNamedUser, node_id_to_anonym_uuid=False) -> Union[str,None]:
         """
         extract_user_data(user, users_ids, data_root_dir, node_id_to_anonym_uuid=False)
 
@@ -250,7 +251,7 @@ class Core():
 
         Parameters
         ----------
-        user : NamedUser
+        user : GitHubNamedUser
             NamedUser object from pygithub.
         node_id_to_anonym_uuid : bool, default=False
             Node_id will be the anonym_uuid
@@ -365,7 +366,7 @@ class Core():
             label_list.append(label.name)
         return label_list
 
-    def extract_with_updated_and_since(self, github_method, label, data_extraction_function, *args, initial_data_list=None,initial_total_count=None, state=None,**kwargs):
+    def extract_with_updated_and_since(self, github_method, label:str, data_extraction_function, *args, initial_data_list:PaginatedList=None,initial_total_count:int=None, state:str=None,**kwargs):
         if initial_data_list is None:
             data_list = self.save_api_call(github_method, sort="updated", direction="asc")
         else:
@@ -398,8 +399,8 @@ class Core():
                 total_count = self.get_save_total_count(data_list)
             else:
                 break
-    # Debug only:
-
+    
+    # Debug only
     def print_calls(self, string:str):
         self.github_connection.get_rate_limit()
         requests_remaning, requests_limit = self.github_connection.rate_limiting
