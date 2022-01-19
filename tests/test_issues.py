@@ -23,7 +23,6 @@ class TestIssues(unittest.TestCase):
     default_data_folder = Path("test_data", git_repo_name)
     github_connection = Utility.get_github_connection(github_token)
     repo = Utility.get_repo(git_repo_owner, git_repo_name, github_token, default_data_folder)
-    users_ids = Utility.get_users_ids(default_data_folder)
 
     def test_generate_issue_pandas_tables(self):
         issues = Issues(self.github_connection, self.repo, self.default_data_folder)
@@ -52,7 +51,6 @@ class TestIssues(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree("test_data")
-        self.users_ids = {}
 
 if __name__ == "__main__":
     unittest.main()
