@@ -18,11 +18,17 @@ class TestRepositories(unittest.TestCase):
     git_repo_owner = "TUBAF-IFI-DiPiT"
 
     default_data_folder = Path("test_data", git_repo_name)
+    github_connection = Utility.get_github_connection(github_token)
     repo = Utility.get_repo(git_repo_owner, git_repo_name, github_token, default_data_folder)
 
     def test_generate_workflow_pandas_tables(self):
-        Repository.generate_repository_pandas_table(self.repo, self.default_data_folder, contributor_companies_included = True)
-        Repository.generate_repository_pandas_table(self.repo, self.default_data_folder, contributor_companies_included = False)
+        repository = Repository(self.github_connection, self.repo, self.default_data_folder)
+        repository.print_calls("Start repository")
+        repository.generate_pandas_tables()
+        repository.print_calls("End repository")
+        repository.print_calls("Start repository")
+        repository.generate_pandas_tables(contributor_companies_included=True)
+        repository.print_calls("End repository")
         
     def test_get_workflows(self):
         pd_repository = Repository.get_repository_keyparameter(self.default_data_folder)
