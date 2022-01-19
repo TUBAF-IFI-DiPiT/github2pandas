@@ -397,7 +397,7 @@ class PullRequests(Core):
         return review_data
     
     @staticmethod
-    def get_pull_requests(data_root_dir, filename=PULL_REQUESTS) -> DataFrame:
+    def get_pull_requests(data_root_dir:Path, filename:str=PULL_REQUESTS) -> DataFrame:
         """
         get_pull_requests(data_root_dir, filename=PULL_REQUESTS)
 
@@ -405,7 +405,7 @@ class PullRequests(Core):
 
         Parameters
         ----------
-        data_root_dir : str
+        data_root_dir : Path
             Data root directory for the repository.
         filename : str, default=PULL_REQUESTS
             Pandas table file for pull requests or comments or reactions or reviews or events data.
