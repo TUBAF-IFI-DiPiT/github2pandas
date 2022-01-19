@@ -27,17 +27,12 @@ class TestIssues(unittest.TestCase):
     def test_generate_issue_pandas_tables(self):
         issues = Issues(self.github_connection, self.repo, self.default_data_folder)
         issues.print_calls("Start issues")
-        params = {
-            "reactions": False,
-            "events": True,
-            "comments": True
-        }
-        issues.generate_pandas_tables(extraction_params=params)
+        issues.generate_pandas_tables()
         issues.print_calls("End issues")
         # check max request limit
         issues = Issues(self.github_connection, self.repo, self.default_data_folder, 20)
         issues.print_calls("Start issues")
-        issues.generate_pandas_tables(extraction_params=params)
+        issues.generate_pandas_tables()
         issues.print_calls("End issues")
 
     def test_get_issues(self):

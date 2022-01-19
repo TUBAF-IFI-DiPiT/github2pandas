@@ -1,3 +1,4 @@
+from numpy import extract
 from pandas import DataFrame, read_pickle
 from pathlib import Path
 # github imports
@@ -65,14 +66,14 @@ class PullRequests(Core):
     PULL_REQUESTS_REACTIONS = "pdPullRequestsReactions.p"
     PULL_REQUESTS_REVIEWS = "pdPullRequestsReviews.p"
     EXTRACTION_PARAMS = {
-        "deep_pull_requests": False,
+        "pull_requests": True,
+        "deep_pull_requests": False, # requires pull_requests
+        "commits": False, # requires pull_requests
+        "review_requested": False, # requires pull_requests
+        "review_comment": True,
         "reactions": False,
         "reviews": False,
-        "review_comment": False,
-        "review_requested": False,
-        "commits": False,
-        "events": False, # for large repos --> if issues not extracted
-        "comments": False # for large repos --> if issues not extracted
+        "issues": Issues.EXTRACTION_PARAMS # if issues are not extracted
     }
 
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000) -> None:
@@ -135,48 +136,60 @@ class PullRequests(Core):
 
         """
         params = copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
-        pull_requests = self.save_api_call(self.repo.get_pulls, state='all', sort="updated")
-        total_count = self.get_save_total_count(pull_requests)
-        if total_count == 0:
-            return
-        if check_for_updates:
-            if params["reactions"]:
-                print("Check for update does not work when extract_reactions is True")
-            else:
-                old_pull_requests = PullRequests.get_pull_requests(self.data_root_dir)
-                if not self.check_for_updates_paginated(pull_requests, total_count, old_pull_requests):
-                    print("No new Pull Request information!")
-                    return
+        extract_pull_requests = False
+        if params["deep_pull_requests"]:
+            params["pull_requests"] = True
+        if params["review_requested"]:
+            params["pull_requests"] = True
+        if params["commits"]:
+            params["pull_requests"] = True
+        if params["pull_requests"] or params["reactions"] or params["reviews"]:
+            extract_pull_requests = True
+            pull_requests = self.save_api_call(self.repo.get_pulls, state='all', sort="updated")
+            total_count = self.get_save_total_count(pull_requests)
+            if total_count == 0:
+                return
+            if check_for_updates:
+                if params["reactions"]:
+                    print("Check for update does not work when param reactions is True")
+                elif params["reviews"]:
+                    print("Check for update does not work when param reviews is True")
+                else:
+                    old_pull_requests = PullRequests.get_pull_requests(self.data_root_dir)
+                    if not self.check_for_updates_paginated(pull_requests, total_count, old_pull_requests):
+                        print("No new Pull Request information!")
+                        return
         self.__pull_request_list = []
         self.__review_comment_list = []
         self.__reviews_list = []
         self.__reactions_list = []
-        # check if issues(with pull request data) are extracted
-        issues_df = Issues.get_pandas_table(self.data_root_dir)
-        if issues_df.empty or issues_df[issues_df["is_pull_request"] == True]["is_pull_request"].count() < total_count:
-            print("Issues are missing. Extracting Issues now!")
-            issues = Issues(
-                self.github_connection,
-                self.repo,
-                self.data_root_dir,
-                self.request_maximum
-                )
-            issues.generate_pandas_tables(extraction_params=params)
-            issues_df = issues.issues_df
-        if total_count < self.request_maximum:
-            for i in progress_bar(range(total_count), "Pull Requests:   "):
-                pull_request = self.get_save_api_data(pull_requests, i)
-                self.extract_pull_request(pull_request, params)
-        else:
-            # get a pull request for each issue labeled as pull request
-            pull_requests_df = issues_df[issues_df["is_pull_request"] == True]
-            count = 0
-            for index in progress_bar(range(int(pull_requests_df["number"].count())), "Pull Requests :"):
-                while issues_df.loc[count,"is_pull_request"] == False:
-                    count += 1
-                number = int(issues_df.loc[count,"number"])
-                pull_request = self.save_api_call(self.repo.get_pull, number)
-                self.extract_pull_request(pull_request, params)
+        if extract_pull_requests:
+            # check if issues(with pull request data) are extracted
+            issues_df = Issues.get_pandas_table(self.data_root_dir)
+            if issues_df.empty or issues_df[issues_df["is_pull_request"] == True]["is_pull_request"].count() < total_count:
+                print("Issues are missing. Extracting Issues now!")
+                issues = Issues(
+                    self.github_connection,
+                    self.repo,
+                    self.data_root_dir,
+                    self.request_maximum
+                    )
+                issues.generate_pandas_tables(extraction_params=params["issues"])
+                issues_df = issues.issues_df
+            if total_count < self.request_maximum:
+                for i in progress_bar(range(total_count), "Pull Requests:   "):
+                    pull_request = self.get_save_api_data(pull_requests, i)
+                    self.extract_pull_request(pull_request, params)
+            else:
+                # get a pull request for each issue labeled as pull request
+                pull_requests_df = issues_df[issues_df["is_pull_request"] == True]
+                count = 0
+                for index in progress_bar(range(int(pull_requests_df["number"].count())), "Pull Requests :"):
+                    while issues_df.loc[count,"is_pull_request"] == False:
+                        count += 1
+                    number = int(issues_df.loc[count,"number"])
+                    pull_request = self.save_api_call(self.repo.get_pull, number)
+                    self.extract_pull_request(pull_request, params)
         if params["review_comment"]:
             # extract comments
             self.extract_with_updated_and_since(
@@ -184,8 +197,9 @@ class PullRequests(Core):
                 "Pull Request Comments",
                 self.extract_review_comment,
                 params)
-        pull_request_df = DataFrame(self.__pull_request_list)
-        self.save_pandas_data_frame(PullRequests.PULL_REQUESTS, pull_request_df)
+        if extract_pull_requests:
+            pull_request_df = DataFrame(self.__pull_request_list)
+            self.save_pandas_data_frame(PullRequests.PULL_REQUESTS, pull_request_df)
         if params["review_comment"]:
             review_comment_df = DataFrame(self.__review_comment_list)
             self.save_pandas_data_frame(PullRequests.PULL_REQUESTS_COMMENTS, review_comment_df)

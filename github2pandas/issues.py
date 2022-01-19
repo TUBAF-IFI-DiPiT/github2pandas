@@ -64,9 +64,10 @@ class Issues(Core):
     REACTIONS = "Reactions.p"
     EVENTS = "Events.p"
     EXTRACTION_PARAMS = {
+        "issues": True, # check for updates
         "reactions": False,
-        "events": False,
-        "comments": False
+        "events": True,
+        "comments": True
     }
 
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000) -> None:
@@ -129,38 +130,43 @@ class Issues(Core):
         
         """
         params = copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
-        issues = self.save_api_call(self.repo.get_issues, state='all', sort="updated")
-        total_count = self.get_save_total_count(issues)
-        if check_for_updates:
-            if params["reactions"]:
-                print("Check for update does not work when extract_reactions is True")
-            else:
-                old_issues = Issues.get_pandas_table(self.data_root_dir)
-                if not self.check_for_updates_paginated(issues, total_count, old_issues):
-                    print("No new Issue information!")
-                    return
+        extract_issues = False
+        if params["issues"] or params["reactions"]:
+            extract_issues = True
+            issues = self.save_api_call(self.repo.get_issues, state='all', sort="updated")
+            total_count = self.get_save_total_count(issues)
+            if check_for_updates:
+                if params["reactions"]:
+                    print("Check for update does not work when extract_reactions is True")
+                else:
+                    old_issues = Issues.get_pandas_table(self.data_root_dir)
+                    if not self.check_for_updates_paginated(issues, total_count, old_issues):
+                        print("No new Issue information!")
+                        return
         events_overflow = False
         if params["events"]:
             events = self.save_api_call(self.repo.get_issues_events)
             events_total_count = self.get_save_total_count(events)
             if events_total_count >= self.request_maximum:
                 events_overflow = True
+                extract_issues = True
                 print("Issues Events will be processed in Issues")
         self.__issue_list = []
         self.__comment_list = []
         self.__event_list = []
         self.__reaction_list = []
         # issue data
-        issues = issues.reversed
-        self.extract_with_updated_and_since(
-            self.repo.get_issues,
-            "Issues",
-            self.extract_issue,
-            params,
-            events_overflow,
-            initial_data_list=issues,
-            initial_total_count=total_count,
-            state="all")
+        if extract_issues:
+            issues = issues.reversed
+            self.extract_with_updated_and_since(
+                self.repo.get_issues,
+                "Issues",
+                self.extract_issue,
+                params,
+                events_overflow,
+                initial_data_list=issues,
+                initial_total_count=total_count,
+                state="all")
         if params["events"]:
             # issue event data < request maximum
             if not events_overflow:
@@ -175,8 +181,9 @@ class Issues(Core):
                 self.extract_comment,
                 params)
         # Save lists
-        issues_df = DataFrame(self.__issue_list)
-        self.save_pandas_data_frame(Issues.ISSUES, issues_df)
+        if extract_issues:
+            issues_df = DataFrame(self.__issue_list)
+            self.save_pandas_data_frame(Issues.ISSUES, issues_df)
         if params["comments"]:
             comments_df = DataFrame(self.__comment_list)
             self.save_pandas_data_frame(Issues.COMMENTS, comments_df)
