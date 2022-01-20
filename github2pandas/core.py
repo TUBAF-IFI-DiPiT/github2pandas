@@ -29,7 +29,6 @@ class Core():
 
     """
     USERS = "Users.p"
-    REPO = "Repo.json"
     
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, current_dir:Path, request_maximum:int = 40000) -> None:
         self.github_connection = github_connection
@@ -332,6 +331,78 @@ class Core():
         for user in users:
             user_list.append(self.extract_user_data(user))
         return user_list
+
+    def extract_author_data_from_commit(self, commit_sha:str):
+        """
+        extract_author_data_from_commit(repo, sha, users_ids, data_root_dir)
+
+        Extracting general author data from a commit.
+
+        Parameters
+        ----------
+        repo : Repository
+            Repository object from pygithub.
+        sha : str
+            sha from the commit.
+        users_ids : dict
+            Dict of User Ids as Keys and anonym Ids as Value.
+        data_root_dir : str
+            Data root directory for the repository.
+
+        Returns
+        -------
+        str
+            Anonym uuid of user.
+
+        Notes
+        -----
+            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
+
+        """
+        if not commit_sha:
+            return None
+        commit = self.save_api_call(self.repo.get_commit,commit_sha)
+        if not commit:
+            return None
+        if commit._author == GithubObject.NotSet:
+            return None
+        return self.extract_user_data(commit.author)
+
+    def extract_committer_data_from_commit(self, commit_sha:str):
+        """
+        extract_committer_data_from_commit(repo, sha, users_ids, data_root_dir)
+
+        Extracting general committer data from a commit.
+
+        Parameters
+        ----------
+        repo : Repository
+            Repository object from pygithub.
+        sha : str
+            sha from the commit.
+        users_ids : dict
+            Dict of User Ids as Keys and anonym Ids as Value.
+        data_root_dir : str
+            Data root directory for the repository.
+
+        Returns
+        -------
+        str
+            Anonym uuid of user.
+
+        Notes
+        -----
+            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
+
+        """
+        if not commit_sha:
+            return None
+        commit = self.save_api_call(self.repo.get_commit,commit_sha)
+        if not commit:
+            return None
+        if commit._committer == GithubObject.NotSet:
+            return None
+        return self.extract_user_data(commit.committer)
 
     def extract_labels(self, github_labels:PaginatedList):
         """
