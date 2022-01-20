@@ -1,5 +1,5 @@
 from pathlib import Path
-from pandas import DataFrame, read_pickle
+import pandas as pd
 # github imports
 from github import GithubObject
 from github.MainClass import Github
@@ -7,7 +7,6 @@ from github.Repository import Repository as GitHubRepository
 from github.GitRelease import GitRelease as GitHubGitRelease
 # github2pandas imports
 from github2pandas.core import Core
-from github2pandas.utility import progress_bar
 
 class GitReleases(Core):
     """
@@ -19,8 +18,8 @@ class GitReleases(Core):
         Git releases dir where all files are saved in.
     GIT_RELEASES : str
         Pandas table file for git releases data.
-    git_releases_df : DataFrame
-        Pandas DataFrame object with git releases data.
+    git_releases_df : pd.DataFrame
+        Pandas pd.DataFrame object with git releases data.
     
     Methods
     -------
@@ -86,7 +85,7 @@ class GitReleases(Core):
             Check first if there are any new git releases information.
         
         """
-        git_releases = self.repo.get_releases()
+        git_releases = self.save_api_call(self.repo.get_releases)
         total_count = self.get_save_total_count(git_releases)
         if total_count == 0:
             return
@@ -96,12 +95,12 @@ class GitReleases(Core):
                 print("No new Git Releases information!")
                 return
         git_releases_list = []
-        for i in progress_bar(range(total_count), "Git Releases: "):
+        for i in self.progress_bar(range(total_count), "Git Releases: "):
             # git release data
             git_release = self.get_save_api_data(git_releases, i)
             git_release_data = self.extract_git_releases_data(git_release)
             git_releases_list.append(git_release_data)
-        git_releases_df = DataFrame(git_releases_list)
+        git_releases_df = pd.DataFrame(git_releases_list)
         self.save_pandas_data_frame(GitReleases.GIT_RELEASES, git_releases_df)
     
     def extract_git_releases_data(self, git_release:GitHubGitRelease):
@@ -153,13 +152,13 @@ class GitReleases(Core):
 
         Returns
         -------
-        DataFrame
-            Pandas DataFrame which can includes the desired data
+        pd.DataFrame
+            Pandas pd.DataFrame which can includes the desired data
 
         """
         git_releases_dir = Path(data_root_dir, GitReleases.GIT_RELEASES_DIR)
         pd_git_releases_file = Path(git_releases_dir, GitReleases.GIT_RELEASES)
         if pd_git_releases_file.is_file():
-            return read_pickle(pd_git_releases_file)
+            return pd.read_pickle(pd_git_releases_file)
         else:
-            return DataFrame()
+            return pd.DataFrame()

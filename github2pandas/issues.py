@@ -1,4 +1,5 @@
-from pandas import DataFrame, read_pickle
+from pandas import DataFrame
+import pandas as pd
 from pathlib import Path
 # github imports
 from github import GithubObject
@@ -9,7 +10,6 @@ from github.IssueComment import IssueComment as GitHubIssueComment
 from github.IssueEvent import IssueEvent as GitHubIssueEvent
 # github2pandas imports
 from github2pandas.core import Core
-from github2pandas.utility import progress_bar, copy_valid_params
 
 class Issues(Core):
     """
@@ -129,7 +129,7 @@ class Issues(Core):
             Can hold extraction parameters. This defines what will be extracted.
         
         """
-        params = copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
+        params = self.copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
         extract_issues = False
         if params["issues"] or params["reactions"]:
             extract_issues = True
@@ -170,7 +170,7 @@ class Issues(Core):
         if params["events"]:
             # issue event data < request maximum
             if not events_overflow:
-                for i in progress_bar(range(events_total_count), "Issues Events:   "):
+                for i in self.progress_bar(range(events_total_count), "Issues Events:   "):
                     event = self.get_save_api_data(events, i)
                     event_data = self.save_api_call(self.extract_event_data, event)
                     self.__event_list.append(event_data)
@@ -414,6 +414,6 @@ class Issues(Core):
         
         pd_issues_file = Path(data_root_dir, Issues.ISSUES_DIR, filename)
         if pd_issues_file.is_file():
-            return read_pickle(pd_issues_file)
+            return pd.read_pickle(pd_issues_file)
         else:
             return DataFrame()

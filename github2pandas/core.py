@@ -1,10 +1,14 @@
+import os
+import stat
+import typing
+import sys
 from pathlib import Path
 from typing import Union
-from pickle import dump
-from human_id import generate_id
-from time import time, sleep
-from math import ceil
-from pandas import DataFrame, read_pickle
+import pickle
+import human_id
+import time
+import math
+import pandas as pd
 # github imports
 from github import GithubObject
 from github.MainClass import Github
@@ -13,8 +17,6 @@ from github.Repository import Repository as GitHubRepository
 from github.NamedUser import NamedUser as GitHubNamedUser
 from github.PaginatedList import PaginatedList
 from github.GithubException import RateLimitExceededException
-# github2pandas imports
-from github2pandas.utility import progress_bar
 
 class Core():
     """
@@ -128,18 +130,18 @@ class Core():
         reset_timestamp = self.github_connection.rate_limiting_resettime
         seconds_until_reset = reset_timestamp - time()
         sleep_step_width = 1
-        sleeping_range = range(ceil(seconds_until_reset / sleep_step_width))
-        for i in progress_bar(sleeping_range, "Sleeping : ", 60):
-            sleep(sleep_step_width)
+        sleeping_range = range(math.ceil(seconds_until_reset / sleep_step_width))
+        for i in self.progress_bar(sleeping_range, "Sleeping : ", 60):
+            time.sleep(sleep_step_width)
         self.github_connection.get_rate_limit()
         requests_remaning, requests_limit = self.github_connection.rate_limiting
         while requests_remaning == 0:
             print("No remaining requests sleep 1s ...")
-            sleep(1)
+            time.sleep(1)
             self.github_connection.get_rate_limit()
             requests_remaning, requests_limit = self.github_connection.rate_limiting
     
-    def check_for_updates_paginated(self, new_paginated_list:PaginatedList, list_count:int, old_df:DataFrame):
+    def check_for_updates_paginated(self, new_paginated_list:PaginatedList, list_count:int, old_df:pd.DataFrame):
         """
         check_for_updates_paginated(new_paginated_list, list_count, old_df)
 
@@ -151,7 +153,7 @@ class Core():
             new paginated list with updated_at and sorted by updated.
         list_count: int
             Length of the paginated List.
-        old_df : DataFrame
+        old_df : pd.DataFrame
             old Dataframe.
 
         Returns
@@ -263,14 +265,14 @@ class Core():
         if user.node_id in self.users_ids:
             return self.users_ids[user.node_id]
         users_file = Path(self.data_root_dir, self.USERS)
-        users_df = DataFrame()
+        users_df = pd.DataFrame()
         if users_file.is_file():
-            users_df = read_pickle(users_file)
+            users_df = pd.read_pickle(users_file)
         user_data = {}
         if node_id_to_anonym_uuid:
             user_data["anonym_uuid"] = user.node_id
         else:
-            user_data["anonym_uuid"] = generate_id(seed=user.node_id)
+            user_data["anonym_uuid"] = human_id.generate_id(seed=user.node_id)
         user_data["id"] = user.node_id
         if "name" in user_data:
             user_data["name"] = user.name
@@ -284,10 +286,10 @@ class Core():
         self.users_ids[user.node_id] = user_data["anonym_uuid"]
         users_df = users_df.append(user_data, ignore_index=True)
         with open(users_file, "wb") as f:
-            dump(users_df, f)
+            pickle.pickle.dump(users_df, f)
         return user_data["anonym_uuid"]
 
-    def save_pandas_data_frame(self, file:str, data_frame:DataFrame):
+    def save_pandas_data_frame(self, file:str, data_frame:pd.DataFrame):
         """
         save_list_to_pandas_table(dir, file, data_list)
 
@@ -304,7 +306,7 @@ class Core():
         self.current_dir.mkdir(parents=True, exist_ok=True)
         pd_file = Path(self.current_dir, file)
         with open(pd_file, "wb") as f:
-            dump(data_frame, f)
+            pickle.dump(data_frame, f)
     
     def extract_users(self, users:PaginatedList):
         """
@@ -445,7 +447,7 @@ class Core():
             if total_count >= self.request_maximum:
                 print(f"{label} >= request_maximum ==> mutiple {label} progress bars")
                 total_count = self.request_maximum
-            for i in progress_bar(range(total_count), f"{label}: "):
+            for i in self.progress_bar(range(total_count), f"{label}: "):
                 data = self.get_save_api_data(data_list, i)
                 if extract_data:
                     data_extraction_function(data, *args, **kwargs)
@@ -463,7 +465,97 @@ class Core():
                 total_count = self.get_save_total_count(data_list)
             else:
                 break
-    
+         
+    def progress_bar(self, iterable:typing.Iterable, prefix:str = "", size:int = 60, file=sys.stdout):
+        """
+        progress_bar(iterable, prefix="", size=60, file=sys.stdout)
+
+        Prints our a progress bar.
+
+        Parameters
+        ----------
+        iterable : typing.Iterable
+            A iterable as input. 
+        prefix : str, default=""
+            String infront of the progress bar.
+        size : int
+            Size of the progress bar.
+        file : Any , default=sys.stdout
+            File to print out the progress bar.
+
+        """
+        count = len(iterable)
+        def show(j):
+            x = int(size*j/count)
+            file.write("%s[%s%s] %i/%i\r" % (prefix, "#"*x, "."*(size-x), j, count))
+            file.flush()        
+        show(0)
+        for i, item in enumerate(iterable):
+            yield item
+            show(i+1)
+        file.write("\n")
+        file.flush()
+
+    def copy_valid_params(self, base_dict:dict ,input_params:dict):
+        params = base_dict
+        for param in input_params:
+            if param in params:
+                params[param] = input_params[param]
+        return params
+
+    def file_error_handling(self, func, path:str, exc_info:str):
+        """
+        handleError(func, path, exc_info)
+
+        Error handler function which will try to change file permission and call the calling function again.
+
+        Parameters
+        ----------
+        func : Function
+            Calling function.
+        path : str
+            Path of the file which causes the Error.
+        exc_info : str
+            Execution information.
+        
+        """
+        
+        print('Handling Error for file ' , path)
+        print(exc_info)
+        # Check if file access issue
+        if not os.access(path, os.W_OK):
+            # Try to change the permision of file
+            os.chmod(path, stat.S_IWUSR)
+            # call the calling function again
+            func(path)
+
+    def apply_datetime_format(self, pd_table:pd.DataFrame, source_column:str, destination_column:str = None):
+        """
+        apply_datetime_format(pd_table, source_column, destination_column=None)
+
+        Provide equal date formate for all timestamps
+
+        Parameters
+        ----------
+        pd_table : pandas Dataframe
+            List of NamedUser
+        source_column : str
+            Source column name.
+        destination_column : str, default=None
+            Destination column name. Saves to Source if None.
+
+        Returns
+        -------
+        str
+            String which contains all assignees.
+        
+        """
+        if not destination_column:
+            destination_column = source_column
+        pd_table[destination_column] = pd.to_datetime(pd_table[source_column], format="%Y-%m-%d %H:%M:%S")
+
+        return pd_table
+
     # Debug only
     def print_calls(self, string:str):
         self.github_connection.get_rate_limit()
@@ -484,14 +576,14 @@ class Core():
 
         Returns
         -------
-        DataFrame
-            Pandas DataFrame which includes the users data
+        pd.DataFrame
+            Pandas pd.DataFrame which includes the users data
 
         """
         users_file = Path(data_root_dir, Core.USERS)
         if users_file.is_file():
-            return read_pickle(users_file)
+            return pd.read_pickle(users_file)
         else:
-            return DataFrame()
+            return pd.DataFrame()
 
  

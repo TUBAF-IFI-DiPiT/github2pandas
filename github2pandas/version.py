@@ -7,14 +7,11 @@ import git2net
 import shutil
 import numpy
 from pathlib import Path
-from pandas import DataFrame, read_pickle
 # github imports
 from github.MainClass import Github
 from github.Repository import Repository as GitHubRepository
 # github2pandas imports
 from github2pandas.core import Core
-from github2pandas.utility import progress_bar, file_error_handling, apply_datetime_format
-
 class Version(Core):
     """
     Class to aggregate Version
@@ -154,7 +151,7 @@ class Version(Core):
 
         pd_commits.rename(columns=self.COMMIT_RENAMING_COLUMNS, inplace = True)
         pd_commits.drop(columns=self.COMMIT_DELETEABLE_COLUMNS, axis = 1, inplace = True)
-        pd_commits = apply_datetime_format(pd_commits, 'commited_at')
+        pd_commits = self.apply_datetime_format(pd_commits, 'commited_at')
         pd_edits.rename(columns=self.EDIT_RENAMING_COLUMNS, inplace = True)
         pd_edits = pd_edits.fillna(value=0).astype({'total_added_lines' : 'int', 'total_removed_lines' : 'int'})
 
@@ -229,7 +226,7 @@ class Version(Core):
         pd_commits['tag'] = ""
         tags = self.save_api_call(self.repo.get_tags)
         tags_total_count = self.get_save_total_count(tags)
-        for i in progress_bar(range(tags_total_count), "Tags:   "):
+        for i in self.progress_bar(range(tags_total_count), "Tags:   "):
             tag = self.get_save_api_data(tags, i)
             pd_commits.loc[pd_commits.commit_sha == tag.commit.sha, 'tag'] = tag.name   
             
@@ -321,7 +318,7 @@ class Version(Core):
         #    os.chdir(old_path)
         #    return
         if self.repo_dir.exists ():
-            shutil.rmtree(self.repo_dir.resolve(), onerror=file_error_handling)
+            shutil.rmtree(self.repo_dir.resolve(), onerror=self.file_error_handling)
         callbacks = None
         if github_token:
             callbacks = git2.RemoteCallbacks(

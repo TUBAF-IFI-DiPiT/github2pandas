@@ -1,5 +1,5 @@
-from numpy import extract
-from pandas import DataFrame, read_pickle
+from pandas import DataFrame
+import pandas as pd
 from pathlib import Path
 # github imports
 from github import GithubObject
@@ -11,7 +11,6 @@ from github.PullRequestReview import PullRequestReview as GitHubPullRequestRevie
 # github2pandas imports
 from github2pandas.issues import Issues
 from github2pandas.core import Core
-from github2pandas.utility import progress_bar, copy_valid_params
 
 class PullRequests(Core):
     """
@@ -135,7 +134,7 @@ class PullRequests(Core):
             Can hold extraction parameters. This defines what will be extracted.
 
         """
-        params = copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
+        params = self.copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
         extract_pull_requests = False
         if params["deep_pull_requests"]:
             params["pull_requests"] = True
@@ -177,14 +176,14 @@ class PullRequests(Core):
                 issues.generate_pandas_tables(extraction_params=params["issues"])
                 issues_df = issues.issues_df
             if total_count < self.request_maximum:
-                for i in progress_bar(range(total_count), "Pull Requests:   "):
+                for i in self.progress_bar(range(total_count), "Pull Requests:   "):
                     pull_request = self.get_save_api_data(pull_requests, i)
                     self.extract_pull_request(pull_request, params)
             else:
                 # get a pull request for each issue labeled as pull request
                 pull_requests_df = issues_df[issues_df["is_pull_request"] == True]
                 count = 0
-                for index in progress_bar(range(int(pull_requests_df["number"].count())), "Pull Requests :"):
+                for index in self.progress_bar(range(int(pull_requests_df["number"].count())), "Pull Requests :"):
                     while issues_df.loc[count,"is_pull_request"] == False:
                         count += 1
                     number = int(issues_df.loc[count,"number"])
@@ -433,6 +432,6 @@ class PullRequests(Core):
         pull_request_dir = Path(data_root_dir, PullRequests.PULL_REQUESTS_DIR)
         pd_pull_requests_file = Path(pull_request_dir, filename)
         if pd_pull_requests_file.is_file():
-            return read_pickle(pd_pull_requests_file)
+            return pd.read_pickle(pd_pull_requests_file)
         else:
             return DataFrame()

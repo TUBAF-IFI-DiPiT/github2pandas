@@ -1,13 +1,13 @@
 from pathlib import Path
-from github import GithubException
-from numpy import nan as np_nan
-from pandas import DataFrame, read_pickle, to_datetime
+import numpy
+from pandas import DataFrame
+import pandas as pd
 # github imports
+from github import GithubException
 from github.MainClass import Github
 from github.Repository import Repository as GitHubRepository
 # github2pandas imports
 from github2pandas.core import Core
-from github2pandas.utility import progress_bar
 
 class Repository(Core):
     """
@@ -113,11 +113,11 @@ class Repository(Core):
         commits = self.repo.get_commits()
         try:
             # problem: No commits in repo
-            last_commit_date = to_datetime(commits[0].commit.committer.date , format="%Y-%m-%d M:%S")
+            last_commit_date = pd.to_datetime(commits[0].commit.committer.date , format="%Y-%m-%d M:%S")
             commit_count = commits.totalCount
         except GithubException:
             commit_count = 0
-            last_commit_date = np_nan
+            last_commit_date = numpy.nan
             print("No commits found!")   
 
         contributor = self.repo.get_contributors( 'all')
@@ -126,7 +126,7 @@ class Repository(Core):
             contributors_count = len (list (contributor))
         except GithubException:
             print("Too many contributors, not covered by API!")   
-            contributors_count = np_nan
+            contributors_count = numpy.nan
 
         companies = []
         if contributor_companies_included:
@@ -186,7 +186,7 @@ class Repository(Core):
             'organization_name' : organization_name,
             'repo_type' : repo_type,
             'user_name': user_name,
-            'creation_date': to_datetime(self.repo.created_at, format="%Y-%m-%d %H:%M:%S"),
+            'creation_date': pd.to_datetime(self.repo.created_at, format="%Y-%m-%d %H:%M:%S"),
             'stars': self.repo.stargazers_count,
             'size': self.repo.size,
             'contributor_count': contributors_count,
@@ -239,6 +239,6 @@ class Repository(Core):
         repository_dir = Path(data_root_dir, Repository.REPOSITORY_DIR)
         pd_repository_file = Path(repository_dir, Repository.REPOSITORY)
         if pd_repository_file.is_file():
-            return read_pickle(pd_repository_file)
+            return pd.read_pickle(pd_repository_file)
         else:
             return DataFrame()

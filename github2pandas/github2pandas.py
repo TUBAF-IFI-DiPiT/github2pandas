@@ -3,7 +3,6 @@ from pathlib import Path
 import numpy
 import pandas as pd
 # github imports
-from github import GithubObject
 from github.MainClass import Github
 from github.Repository import Repository as GitHubRepository
 from github2pandas.core import Core
@@ -12,8 +11,8 @@ from github2pandas.issues import Issues
 from github2pandas.pull_requests import PullRequests
 from github2pandas.repository import Repository
 from github2pandas.version import Version
-from github2pandas.utility import progress_bar, copy_valid_params
 from github2pandas.workflows import Workflows
+
 class GitHub2Pandas():
 
     REPO = "Repo.json"
@@ -63,7 +62,7 @@ class GitHub2Pandas():
     def generate_pandas_tables(self, repo:GitHubRepository, extraction_params:dict = {}):
         data_folder = Path(self.data_root_dir,repo.owner.login,repo.name)
         data_folder.mkdir(parents=True, exist_ok=True)
-        params = copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
+        params = self.copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
         if params["git_releases"]:
             git_releases = GitReleases(self.github_connection,repo,data_folder,self.request_maximum)
             git_releases.generate_pandas_tables()
@@ -187,7 +186,7 @@ class GitHub2Pandas():
         user = self.__core.save_api_call(self.github_connection.get_user)
         repos = self.__core.save_api_call(user.get_repos)
         repo_total_count = self.__core.get_save_total_count(repos)
-        for i in progress_bar(range(repo_total_count), "Repositories:   "):
+        for i in self.progress_bar(range(repo_total_count), "Repositories:   "):
             repo = self.__core.get_save_api_data(repos, i)
             whitelist_pass = False
             if whitelist_patterns == [] or whitelist_patterns == None:

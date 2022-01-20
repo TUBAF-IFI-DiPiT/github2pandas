@@ -1,8 +1,9 @@
-from requests import get as requests_get
+import requests
 from zipfile import ZipFile
 from io import BytesIO
 from pathlib import Path
-from pandas import DataFrame, read_pickle
+from pandas import DataFrame
+import pandas as pd
 # github imports
 from github.MainClass import Github
 from github.Repository import Repository as GitHubRepository
@@ -10,7 +11,6 @@ from github.Workflow import Workflow as GitHubWorkflow
 from github.WorkflowRun import WorkflowRun as GitHubWorkflowRun
 # github2pandas imports
 from github2pandas.core import Core
-from github2pandas.utility import progress_bar, copy_valid_params
 
 class Workflows(Core):
     """
@@ -103,7 +103,7 @@ class Workflows(Core):
             Can hold extraction parameters. This defines what will be extracted.
             
         """
-        params = copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
+        params = self.copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
         if params["workflows"]:
             workflows = self.save_api_call(self.repo.get_workflows)
             total_count = self.get_save_total_count(workflows)
@@ -114,7 +114,7 @@ class Workflows(Core):
                     extract = False
             if extract:
                 workflow_list = []
-                for i in progress_bar(range(total_count), "Workflows: "):
+                for i in self.progress_bar(range(total_count), "Workflows: "):
                     workflow = self.get_save_api_data(workflows, i)
                     workflow_data = self.extract_workflow_data(workflow)
                     workflow_list.append(workflow_data)
@@ -130,7 +130,7 @@ class Workflows(Core):
                     extract = False
             if extract:
                 run_list = []
-                for i in progress_bar(range(total_count), "Workflow Runs: "):
+                for i in self.progress_bar(range(total_count), "Workflow Runs: "):
                     run = self.get_save_api_data(runs, i)
                     run_data = self.extract_run_data(run)
                     run_list.append(run_data)
@@ -234,7 +234,7 @@ class Workflows(Core):
             'Accept': 'application/vnd.github.v3+json',
         }
         query_url = f"https://api.github.com/repos/{repo.owner.login}/{repo.name}/actions/runs/{workflow_run_id}/logs"
-        response = requests_get(query_url, headers=headers,
+        response = requests.get(query_url, headers=headers,
                                 auth=('username', github_token))
         if 'zip' in response.headers['Content-Type']:
             zip_obj = ZipFile(BytesIO(response.content))
@@ -267,6 +267,6 @@ class Workflows(Core):
         workflow_dir = Path(data_root_dir, Workflows.WORKFLOWS_DIR)
         pd_workflows_file = Path(workflow_dir, filename)
         if pd_workflows_file.is_file():
-            return read_pickle(pd_workflows_file)
+            return pd.read_pickle(pd_workflows_file)
         else:
             return DataFrame()
