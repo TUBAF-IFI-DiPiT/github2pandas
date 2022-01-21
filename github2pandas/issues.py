@@ -1,3 +1,4 @@
+import logging
 from pandas import DataFrame
 import pandas as pd
 from pathlib import Path
@@ -70,7 +71,7 @@ class Issues(Core):
         "comments": True
     }
 
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000) -> None:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
         __init__(self, github_connection, repo, data_root_dir, request_maximum)
 
@@ -98,22 +99,23 @@ class Issues(Core):
             github_connection,
             repo,
             data_root_dir,
-            Path(data_root_dir, Issues.ISSUES_DIR),
-            request_maximum
+            Issues.ISSUES_DIR,
+            request_maximum=request_maximum,
+            log_level=log_level
         )
     
     @property
     def issues_df(self):
-        return Issues.get_pandas_table(self.data_root_dir)
+        return Issues.get_pandas_table(self.repo_data_dir)
     @property
     def comments_df(self):
-        return Issues.get_pandas_table(self.data_root_dir, Issues.COMMENTS)
+        return Issues.get_pandas_table(self.repo_data_dir, Issues.COMMENTS)
     @property
     def events_df(self):
-        return Issues.get_pandas_table(self.data_root_dir, Issues.EVENTS)
+        return Issues.get_pandas_table(self.repo_data_dir, Issues.EVENTS)
     @property
     def reactions_df(self):
-        return Issues.get_pandas_table(self.data_root_dir, Issues.REACTIONS)
+        return Issues.get_pandas_table(self.repo_data_dir, Issues.REACTIONS)
 
     def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}):
         """
@@ -137,11 +139,11 @@ class Issues(Core):
             total_count = self.get_save_total_count(issues)
             if check_for_updates:
                 if params["reactions"]:
-                    print("Check for update does not work when extract_reactions is True")
+                    self.logger.warning("Check for update does not work when extract_reactions is True")
                 else:
-                    old_issues = Issues.get_pandas_table(self.data_root_dir)
+                    old_issues = self.issues_df
                     if not self.check_for_updates_paginated(issues, total_count, old_issues):
-                        print("No new Issue information!")
+                        self.logger.info("No new Issue information!")
                         return
         events_overflow = False
         if params["events"]:
@@ -150,7 +152,7 @@ class Issues(Core):
             if events_total_count >= self.request_maximum:
                 events_overflow = True
                 extract_issues = True
-                print("Issues Events will be processed in Issues")
+                self.logger.info("Issues Events will be processed in Issues")
         self.__issue_list = []
         self.__comment_list = []
         self.__event_list = []

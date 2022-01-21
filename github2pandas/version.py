@@ -1,3 +1,4 @@
+import logging
 import os
 import sqlite3
 import pandas as pd
@@ -72,7 +73,7 @@ class Version(Core):
     EDIT_RENAMING_COLUMNS = {'commit_hash':'commit_sha'}
 
 
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, number_of_proceses:int = 1) -> None:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO, number_of_proceses:int = 1) -> None:
         """
         __init__(self, github_connection, repo, data_root_dir, request_maximum)
 
@@ -100,8 +101,9 @@ class Version(Core):
             github_connection,
             repo,
             data_root_dir,
-            Path(data_root_dir, Version.VERSION_DIR),
-            request_maximum
+            Version.VERSION_DIR,
+            request_maximum=request_maximum,
+            log_level=log_level
         )
         self.number_of_proceses = number_of_proceses
         self.repo_dir = self.current_dir.joinpath(self.VERSION_REPOSITORY_DIR)
@@ -110,13 +112,13 @@ class Version(Core):
     
     @property
     def commits_df(self):
-        return Version.get_version(self.data_root_dir)
+        return Version.get_version(self.repo_data_dir)
     @property
     def edits_df(self):
-        return Version.get_version(self.data_root_dir, self.VERSION_EDITS)
+        return Version.get_version(self.repo_data_dir, self.VERSION_EDITS)
     @property
     def branches_df(self):
-        return Version.get_version(self.data_root_dir, self.VERSION_BRANCHES)
+        return Version.get_version(self.repo_data_dir, self.VERSION_BRANCHES)
 
     def generate_pandas_tables(self, check_for_updates=True):
         """
@@ -140,7 +142,7 @@ class Version(Core):
             total_count = self.get_save_total_count(commits)
             old_commits = self.commits_df
             if not self.check_for_updates_paginated(commits, total_count, old_commits):
-                print("No new Commit information!")
+                self.logger.info("No new Commit information!")
                 return
 
         self.generate_data_base()
@@ -168,7 +170,7 @@ class Version(Core):
                     pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'author'] = author_id   
                     pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'committer'] = committer_id 
                     if (author_id is None) and (committer_id is None):
-                        users = self.get_users(self.data_root_dir)
+                        users = self.get_users(self.repo_data_dir)
                         found = False
                         if "alias" in users:
                             users = users[users["alias"].notna()]
@@ -192,7 +194,7 @@ class Version(Core):
                 pd_commits.loc[pd_commits.committer_name == commiter_name, 'author'] = author_id   
                 pd_commits.loc[pd_commits.committer_name == commiter_name, 'committer'] = committer_id 
                 if (author_id is None) and (committer_id is None):
-                    users = self.get_users(self.data_root_dir)
+                    users = self.get_users(self.repo_data_dir)
                     found = False
                     if "alias" in users:
                         users = users[users["alias"].notna()]
@@ -211,7 +213,7 @@ class Version(Core):
                         pd_commits.loc[pd_commits.committer_name == commiter_name, 'unknown_user'] = commiter_name 
         pd_commits.drop(['committer_name'], axis=1, inplace=True)  
 
-        users = self.get_users(self.data_root_dir)
+        users = self.get_users(self.repo_data_dir)
         if "unknown_user" in pd_commits:
             unknown_user_commits = pd_commits.loc[pd_commits.unknown_user.notna()]
             unknown_users = unknown_user_commits.unknown_user.unique()
@@ -336,7 +338,7 @@ class Version(Core):
                     r.git.branch('--track', branch_name,
                                 'remotes/origin/'+branch_name)
                 except Exception:
-                    print(" -> An exception occurred")
+                    self.logger.warning(" -> An exception occurred")
 
     @staticmethod
     def get_version(data_root_dir, filename=VERSION_COMMITS):

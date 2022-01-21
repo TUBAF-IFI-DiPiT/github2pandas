@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 import numpy
 import pandas as pd
@@ -29,7 +30,7 @@ class GitHub2Pandas():
         "workflows_params": Workflows.EXTRACTION_PARAMS
     }
 
-    def __init__(self, github_token:str, data_root_dir:Path, request_maximum:int = 40000) -> None:
+    def __init__(self, github_token:str, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
         __init__(self, github_connection, repo, data_root_dir, request_maximum)
 
@@ -57,31 +58,48 @@ class GitHub2Pandas():
         data_root_dir.mkdir(parents=True, exist_ok=True)
         self.data_root_dir = data_root_dir
         self.request_maximum = request_maximum
-        self.__core = Core(self.github_connection,None,self.data_root_dir,self.data_root_dir)
+        self.log_level = log_level
+        self.__core = Core(self.github_connection,None,self.data_root_dir,None,log_level=log_level)
 
     def generate_pandas_tables(self, repo:GitHubRepository, extraction_params:dict = {}):
-        data_folder = Path(self.data_root_dir,repo.full_name)
-        data_folder.mkdir(parents=True, exist_ok=True)
         params = self.__core.copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
         if params["git_releases"]:
-            git_releases = GitReleases(self.github_connection,repo,data_folder,self.request_maximum)
-            git_releases.generate_pandas_tables()
+            try:
+                git_releases = GitReleases(self.github_connection,repo,self.data_root_dir,self.request_maximum,self.log_level)
+                git_releases.generate_pandas_tables()
+            except Exception as e:
+                self.__core.logger.error("Error in releases. Releases are not extracted!", exc_info=e)
         if params["issues"]:
-            issues = Issues(self.github_connection,repo,data_folder,self.request_maximum)
-            issues.generate_pandas_tables(extraction_params=params["issues_params"])
+            try:
+                issues = Issues(self.github_connection,repo,self.data_root_dir,self.request_maximum,self.log_level)
+                issues.generate_pandas_tables(extraction_params=params["issues_params"])
+            except Exception as e:
+                self.__core.logger.error("Error in issues. Issues are not extracted!", exc_info=e)
         if params["pull_requests"]:
-            pull_requests = PullRequests(self.github_connection,repo,data_folder,self.request_maximum)
-            pull_requests.generate_pandas_tables(extraction_params=params["pull_requests_params"])
+            try:
+                pull_requests = PullRequests(self.github_connection,repo,self.data_root_dir,self.request_maximum,self.log_level)
+                pull_requests.generate_pandas_tables(extraction_params=params["pull_requests_params"])
+            except Exception as e:
+                self.__core.logger.error("Error in pull requests. Pull requests are not extracted!", exc_info=e)
         if params["repository"]:
-            repository = Repository(self.github_connection,repo,data_folder,self.request_maximum)
-            repository.generate_pandas_tables()
+            try:
+                repository = Repository(self.github_connection,repo,self.data_root_dir,self.request_maximum,self.log_level)
+                repository.generate_pandas_tables()
+            except Exception as e:
+                self.__core.logger.error("Error in repository. Repository is not extracted!", exc_info=e)
         if params["version"]:
-            version = Version(self.github_connection,repo,data_folder,self.request_maximum)
-            version.clone_repository(self.__github_token)
-            version.generate_pandas_tables()
+            try:
+                version = Version(self.github_connection,repo,self.data_root_dir,self.request_maximum,self.log_level)
+                version.clone_repository(self.__github_token)
+                version.generate_pandas_tables()
+            except Exception as e:
+                self.__core.logger.error("Error in version. Version are not extracted!", exc_info=e)
         if params["workflows"]:
-            workflows = Workflows(self.github_connection,repo,data_folder,self.request_maximum)
-            workflows.generate_pandas_tables(extraction_params=params["workflows_params"])
+            try:
+                workflows = Workflows(self.github_connection,repo,self.data_root_dir,self.request_maximum,self.log_level)
+                workflows.generate_pandas_tables(extraction_params=params["workflows_params"])
+            except Exception as e:
+                self.__core.logger.error("Error in workflows. Workflows are not extracted!", exc_info=e)
 
     def define_unknown_user(self, unknown_user_name:str, uuid:str, new_user:bool = False):
         """
