@@ -120,7 +120,7 @@ class Version(Core):
     def branches_df(self):
         return Version.get_version(self.repo_data_dir, self.VERSION_BRANCHES)
 
-    def generate_pandas_tables(self, check_for_updates=True):
+    def generate_pandas_tables(self, check_for_updates=False):
         """
         generate_version_pandas_tables(repo, data_root_dir)
 
@@ -137,13 +137,13 @@ class Version(Core):
 
         """
 
-        if check_for_updates:
-            commits = self.save_api_call(self.repo.get_commits)
-            total_count = self.get_save_total_count(commits)
-            old_commits = self.commits_df
-            if not self.check_for_updates_paginated(commits, total_count, old_commits):
-                self.logger.info("No new Commit information!")
-                return
+        # if check_for_updates:
+        #     commits = self.save_api_call(self.repo.get_commits)
+        #     total_count = self.get_save_total_count(commits)
+        #     old_commits = self.commits_df
+        #     if not self.check_for_updates_paginated(commits, total_count, old_commits):
+        #         self.logger.info("No new Commit information!")
+        #         return
 
         self.generate_data_base()
 
