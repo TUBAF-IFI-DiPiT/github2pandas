@@ -4,6 +4,7 @@ from pandas import DataFrame
 import pandas as pd
 # github imports
 from github import GithubException
+from github import GithubObject
 from github.MainClass import Github
 from github.Repository import Repository as GitHubRepository
 # github2pandas imports
@@ -83,7 +84,7 @@ class Repository(Core):
             
         """
         repository_data_list = []
-        repository_data = self.save_api_call(self.extract_repository_data,contributor_companies_included)
+        repository_data = self.extract_repository_data(contributor_companies_included)
         repository_data_list.append(repository_data)
         repository_df = DataFrame(repository_data_list)
         self.save_pandas_data_frame(Repository.REPOSITORY, repository_df)
@@ -107,79 +108,137 @@ class Repository(Core):
         """
         repository_data = {}
 
-        repo_name = self.repo.full_name.split('/')[-1]
-        user_name = self.repo.url.split('/')[-2]
+        repo_name = self.repo.name
+        user_name = self.repo.full_name.split("/")[0]
 
-        commits = self.repo.get_commits()
-        try:
-            # problem: No commits in repo
-            last_commit_date = pd.to_datetime(commits[0].commit.committer.date , format="%Y-%m-%d M:%S")
-            commit_count = commits.totalCount
-        except GithubException:
-            commit_count = 0
-            last_commit_date = numpy.nan
-            print("No commits found!")   
+        commits = self.save_api_call(self.repo.get_commits)
+        commit_count = self.get_save_total_count(commits)
+        if commit_count == 0:
+            print("No commits found!")  
+        else:
+            last_commit = self.get_save_api_data(commits,0)
+            last_commit_date = pd.to_datetime(last_commit.commit.committer.date , format="%Y-%m-%d M:%S")
+        # last_commit_date on main Branch
 
-        contributor = self.repo.get_contributors( 'all')
-        try:
-            # problem: history or contributor is too large to list them via the API.
-            contributors_count = len (list (contributor))
-        except GithubException:
-            print("Too many contributors, not covered by API!")   
-            contributors_count = numpy.nan
+        # commits = self.repo.get_commits()
+        # try:
+        #     # problem: No commits in repo
+        #     last_commit_date = pd.to_datetime(commits[0].commit.committer.date , format="%Y-%m-%d M:%S")
+        #     commit_count = commits.totalCount
+        # except GithubException:
+        #     commit_count = 0
+        #     last_commit_date = numpy.nan
+        #     print("No commits found!")  
+         
+        contributors = self.save_api_call(self.repo.get_contributors,"all")
+        contributors_count = self.get_save_total_count(contributors)
+        # contributor = self.repo.get_contributors( 'all')
+        # try:
+        #     # problem: history or contributor is too large to list them via the API.
+        #     contributors_count = len (list (contributor))
+        # except GithubException:
+        #     print("Too many contributors, not covered by API!")   
+        #     contributors_count = numpy.nan
 
         companies = []
+        contributors_count2 = contributors_count
+        if contributors_count > 500:
+            print("Only first 500 Contributor can hold information!")
+            contributors_count2 = 500
         if contributor_companies_included:
-            for contributor in contributor:
-                try:
+            for i in self.progress_bar(range(contributors_count2), "Contributor Companies: "):
+                contributor = self.get_save_api_data(contributors,i)
+                if not contributor._organizations_url == GithubObject.NotSet:
                     companies.append(contributor.company)
-                except GithubException:
-                    print('Contributor does not exist anymore')
-                    continue
         filtered_companies = list(filter(None.__ne__, companies))
-
-        try:
-            # problem: readme.md does not exist
-            readme_content = self.repo.get_readme().content
-        except GithubException:
+        # companies = []
+        # if contributor_companies_included:
+        #     for contributor in contributor:
+        #         try:
+        #             companies.append(contributor.company)
+        #         except GithubException:
+        #             print('Contributor does not exist anymore')
+        #             continue
+        # filtered_companies = list(filter(None.__ne__, companies))
+        
+        read_me = self.save_api_call(self.repo.get_readme)
+        if read_me._content == GithubObject.NotSet:
             readme_content = ""
             print("Readme does not exist")
+        else:
+            readme_content = read_me.content
+        # try:
+        #     # problem: readme.md does not exist
+        #     readme_content = self.repo.get_readme().content
+        # except GithubException:
+        #     readme_content = ""
+        #     print("Readme does not exist")
         # problem: sometimes get_readme outputs a NoneType result
         if readme_content is None:
             readme_length = 0
             print("Readme does not exist")
         else:
             readme_length = len(readme_content)
+        
+        tags = self.save_api_call(self.repo.get_tags)
+        tag_count = self.get_save_total_count(tags)
+        # try:
+        #     # problem: empty list of tags
+        #     tag_count = self.repo.get_tags().totalCount
+        # except GithubException:
+        #     tag_count = 0
+        #     print("No tags assigned to repository")
 
-        try:
-            # problem: empty list of tags
-            tag_count = self.repo.get_tags().totalCount
-        except GithubException:
-            tag_count = 0
-            print("No tags assigned to repository")
-
-        try:
-            # problem: organization entry empty
-            organization_name = self.repo.organization.name
-            repo_type = self.repo.organization.type
-        except:
+        if self.repo._organization == GithubObject.NotSet:
             organization_name = "not known"
             repo_type = "not known"
             print("Organization not valid")
+        else:
+            organization_name = self.repo.organization.name
+            repo_type = self.repo.organization.type
+        # try:
+        #     # problem: organization entry empty
+        #     organization_name = self.repo.organization.name
+        #     repo_type = self.repo.organization.type
+        # except:
+        #     organization_name = "not known"
+        #     repo_type = "not known"
+        #     print("Organization not valid")
+        
+        pulls_review_comments_obj = self.save_api_call(self.repo.get_pulls_review_comments)
+        pulls_review_comments = self.get_save_total_count(pulls_review_comments_obj)
+        # try:
+        #     # problem: no pull request comments
+        #     pulls_review_comments = self.repo.get_pulls_review_comments().totalCount
+        # except GithubException:
+        #     pulls_review_comments = "not known"
+        #     print("No pull request comments")
 
-        try:
-            # problem: no pull request comments
-            pulls_review_comments = self.repo.get_pulls_review_comments().totalCount
-        except GithubException:
-            pulls_review_comments = "not known"
-            print("No pull request comments")
+        releases = self.save_api_call(self.repo.get_releases)
+        release_count = self.get_save_total_count(releases)
+        # try:
+        #     # problem: ???
+        #     release_count = self.repo.get_releases().totalCount,
+        # except GithubException:
+        #     release_count = 0
+        #     print("Wrong release count output")
 
-        try:
-            # problem: ???
-            release_count = self.repo.get_releases().totalCount,
-        except GithubException:
-            release_count = 0
-            print("Wrong release count output")
+        branches = self.save_api_call(self.repo.get_branches)
+        branches_count = self.get_save_total_count(branches)
+        commit_comments = self.save_api_call(self.repo.get_comments)
+        commit_comments_count = self.get_save_total_count(commit_comments)
+        labels = self.save_api_call(self.repo.get_labels)
+        labels_count = self.get_save_total_count(labels)
+        milestones = self.save_api_call(self.repo.get_milestones,state="all")
+        milestones_count = self.get_save_total_count(milestones)
+        pull_requests = self.save_api_call(self.repo.get_pulls,state="all")
+        pull_requests_count = self.get_save_total_count(pull_requests)
+        workflows = self.save_api_call(self.repo.get_workflows)
+        workflows_count = self.get_save_total_count(workflows)
+        issues = self.save_api_call(self.repo.get_issues,state="all")
+        issues_count = self.get_save_total_count(issues)
+        issues_comments = self.save_api_call(self.repo.get_issues_comments)
+        issues_comments_count = self.get_save_total_count(issues_comments)
 
         repository_data = {
             'repo_name': repo_name,
@@ -194,20 +253,20 @@ class Repository(Core):
             'contributor_companies_count': len(filtered_companies),
             'repo_url': self.repo.url,
             'repo_html_url':self.repo.html_url,
-            'branch_count': self.repo.get_branches().totalCount,
+            'branch_count': branches_count,
             'commit_count': commit_count,
-            'commit_comment_count': self.repo.get_comments().totalCount,
+            'commit_comment_count': commit_comments_count,
             'last_commit_date': last_commit_date,
-            'labels_count': self.repo.get_labels().totalCount,
+            'labels_count': labels_count,
             'tag_count': tag_count,
-            'milestone_count': self.repo.get_milestones(state="all").totalCount,
-            'pullrequest_count': self.repo.get_pulls(state="all").totalCount,
+            'milestone_count': milestones_count,
+            'pullrequest_count': pull_requests_count,
             'pullrequest_review_count': pulls_review_comments,
             'release_count':  release_count,
-            'workflow_count': self.repo.get_workflows().totalCount,
+            'workflow_count': workflows_count,
             'readme_length': readme_length,
-            'issues_count': self.repo.get_issues(state="all").totalCount,
-            'issues_comment_count': self.repo.get_issues_comments().totalCount,
+            'issues_count': issues_count,
+            'issues_comment_count': issues_comments_count,
             'has_wiki': bool(self.repo.has_wiki),
             'has_pages': bool(self.repo.has_pages),
             'has_projects': bool(self.repo.has_projects),
