@@ -60,9 +60,9 @@ class GitHub2Pandas():
         self.__core = Core(self.github_connection,None,self.data_root_dir,self.data_root_dir)
 
     def generate_pandas_tables(self, repo:GitHubRepository, extraction_params:dict = {}):
-        data_folder = Path(self.data_root_dir,repo.owner.login,repo.name)
+        data_folder = Path(self.data_root_dir,repo.full_name)
         data_folder.mkdir(parents=True, exist_ok=True)
-        params = self.copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
+        params = self.__core.copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
         if params["git_releases"]:
             git_releases = GitReleases(self.github_connection,repo,data_folder,self.request_maximum)
             git_releases.generate_pandas_tables()
@@ -186,7 +186,7 @@ class GitHub2Pandas():
         user = self.__core.save_api_call(self.github_connection.get_user)
         repos = self.__core.save_api_call(user.get_repos)
         repo_total_count = self.__core.get_save_total_count(repos)
-        for i in self.progress_bar(range(repo_total_count), "Repositories:   "):
+        for i in self.__core.progress_bar(range(repo_total_count), "Repositories:   "):
             repo = self.__core.get_save_api_data(repos, i)
             whitelist_pass = False
             if whitelist_patterns == [] or whitelist_patterns == None:
