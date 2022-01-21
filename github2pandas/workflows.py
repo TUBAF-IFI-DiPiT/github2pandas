@@ -1,3 +1,4 @@
+import logging
 import requests
 from zipfile import ZipFile
 from io import BytesIO
@@ -50,7 +51,7 @@ class Workflows(Core):
         "runs": True
     }
 
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000) -> None:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
         __init__(self, github_connection, repo, data_root_dir, request_maximum)
 
@@ -78,16 +79,17 @@ class Workflows(Core):
             github_connection,
             repo,
             data_root_dir,
-            Path(data_root_dir, Workflows.WORKFLOWS_DIR),
-            request_maximum
+            Workflows.WORKFLOWS_DIR,
+            request_maximum=request_maximum,
+            log_level=log_level
         )
 
     @property
     def workflows_df(self):
-        return Workflows.get_workflows(self.data_root_dir)
+        return Workflows.get_workflows(self.repo_data_dir)
     @property
     def runs_df(self):
-        return Workflows.get_workflows(self.data_root_dir, Workflows.RUNS)
+        return Workflows.get_workflows(self.repo_data_dir, Workflows.RUNS)
 
     def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}):
         """
@@ -110,7 +112,7 @@ class Workflows(Core):
             extract = True
             if check_for_updates:
                 if not self.check_for_updates_paginated(workflows, total_count, self.workflows_df):
-                    print("No new workflow information!")
+                    self.logger.info("No new workflow information!")
                     extract = False
             if extract:
                 workflow_list = []
@@ -126,7 +128,7 @@ class Workflows(Core):
             extract = True
             if check_for_updates:
                 if not self.check_for_updates_paginated(runs, total_count, self.runs_df):
-                    print("No new workflow run information!")
+                    self.logger.info("No new workflow run information!")
                     extract = False
             if extract:
                 run_list = []

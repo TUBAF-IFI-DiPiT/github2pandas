@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 import numpy
 from pandas import DataFrame
@@ -34,7 +35,7 @@ class Repository(Core):
     REPOSITORY_DIR = "Repository"
     REPOSITORY = "pdRepository.p"
 
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000) -> None:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
         __init__(self, github_connection, repo, data_root_dir, request_maximum)
 
@@ -62,13 +63,14 @@ class Repository(Core):
             github_connection,
             repo,
             data_root_dir,
-            Path(data_root_dir, Repository.REPOSITORY_DIR),
-            request_maximum
+            Repository.REPOSITORY_DIR,
+            request_maximum=request_maximum,
+            log_level=log_level
         )
 
     @property
     def repository_df(self):
-        return Repository.get_repository_keyparameter(self.data_root_dir)
+        return Repository.get_repository_keyparameter(self.repo_data_dir)
 
     def generate_pandas_tables(self, contributor_companies_included:bool = False):
         """

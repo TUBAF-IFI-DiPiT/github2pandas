@@ -1,3 +1,4 @@
+import logging
 from pandas import DataFrame
 import pandas as pd
 from pathlib import Path
@@ -75,7 +76,7 @@ class PullRequests(Core):
         "issues": Issues.EXTRACTION_PARAMS # if issues are not extracted
     }
 
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000) -> None:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
         __init__(self, github_connection, repo, data_root_dir, request_maximum)
 
@@ -103,22 +104,23 @@ class PullRequests(Core):
             github_connection,
             repo,
             data_root_dir,
-            Path(data_root_dir, PullRequests.PULL_REQUESTS_DIR),
-            request_maximum
+            PullRequests.PULL_REQUESTS_DIR,
+            request_maximum=request_maximum,
+            log_level=log_level
         )
     
     @property
     def pull_request_df(self):
-        return PullRequests.get_pull_requests(self.data_root_dir)
+        return PullRequests.get_pull_requests(self.repo_data_dir)
     @property
     def review_comment_df(self):
-        return PullRequests.get_pull_requests(self.data_root_dir, PullRequests.PULL_REQUESTS_COMMENTS)
+        return PullRequests.get_pull_requests(self.repo_data_dir, PullRequests.PULL_REQUESTS_COMMENTS)
     @property
     def reviews_df(self):
-        return PullRequests.get_pull_requests(self.data_root_dir, PullRequests.PULL_REQUESTS_REVIEWS)
+        return PullRequests.get_pull_requests(self.repo_data_dir, PullRequests.PULL_REQUESTS_REVIEWS)
     @property
     def reactions_df(self):
-        return PullRequests.get_pull_requests(self.data_root_dir, PullRequests.PULL_REQUESTS_REACTIONS)
+        return PullRequests.get_pull_requests(self.repo_data_dir, PullRequests.PULL_REQUESTS_REACTIONS)
   
     def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}):
         """
@@ -150,13 +152,13 @@ class PullRequests(Core):
                 return
             if check_for_updates:
                 if params["reactions"]:
-                    print("Check for update does not work when param reactions is True")
+                    self.logger.warning("Check for update does not work when param reactions is True")
                 elif params["reviews"]:
-                    print("Check for update does not work when param reviews is True")
+                    self.logger.warning("Check for update does not work when param reviews is True")
                 else:
-                    old_pull_requests = PullRequests.get_pull_requests(self.data_root_dir)
+                    old_pull_requests = self.pull_request_df
                     if not self.check_for_updates_paginated(pull_requests, total_count, old_pull_requests):
-                        print("No new Pull Request information!")
+                        self.logger.info("No new Pull Request information!")
                         return
         self.__pull_request_list = []
         self.__review_comment_list = []
@@ -164,9 +166,9 @@ class PullRequests(Core):
         self.__reactions_list = []
         if extract_pull_requests:
             # check if issues(with pull request data) are extracted
-            issues_df = Issues.get_pandas_table(self.data_root_dir)
+            issues_df = Issues.get_pandas_table(self.repo_data_dir)
             if issues_df.empty or issues_df[issues_df["is_pull_request"] == True]["is_pull_request"].count() < total_count:
-                print("Issues are missing. Extracting Issues now!")
+                self.logger.warning("Issues are missing. Extracting Issues now!")
                 issues = Issues(
                     self.github_connection,
                     self.repo,

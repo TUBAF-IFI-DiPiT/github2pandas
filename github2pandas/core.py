@@ -1,3 +1,4 @@
+from asyncio.log import logger
 import os
 import stat
 import typing
@@ -9,6 +10,7 @@ import human_id
 import time
 import math
 import pandas as pd
+import logging
 # github imports
 from github import GithubObject
 from github.MainClass import Github
@@ -32,15 +34,30 @@ class Core():
     """
     USERS = "Users.p"
     
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, current_dir:Path, request_maximum:int = 40000) -> None:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, current_dir:str, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
+        self.log_level = log_level
+        self.logger = logging.getLogger("github2pandas")
+        self.logger.setLevel(log_level)
+        if len(self.logger.handlers) == 0:
+            self.logger.addHandler(logging.StreamHandler())
+        logging.basicConfig(format='%(levelname)s;%(asctime)s;%(message)s', filename=Path(data_root_dir,"github2pandas.log"))
         self.github_connection = github_connection
         self.repo = repo
         self.data_root_dir = data_root_dir
-        self.current_dir = current_dir
-        df_users = Core.get_users(self.data_root_dir)
-        self.users_ids = {}
-        for index, row in df_users.iterrows():
-            self.users_ids[row["id"]] = row["anonym_uuid"]
+        if repo is not None:
+            self.repo_data_dir = Path(self.data_root_dir,repo.full_name)
+            self.repo_data_dir.mkdir(parents=True, exist_ok=True)
+            df_users = Core.get_users(self.repo_data_dir)
+            self.users_ids = {}
+            for index, row in df_users.iterrows():
+                self.users_ids[row["id"]] = row["anonym_uuid"]
+        if current_dir is None or current_dir == "":
+            if repo is None:
+                self.current_dir = self.data_root_dir
+            else:
+                self.current_dir = self.repo_data_dir
+        else:
+            self.current_dir = Path(self.repo_data_dir,current_dir)
         self.request_maximum = request_maximum
     
     def save_api_call(self, function, *args, **kwargs):
@@ -125,7 +142,7 @@ class Core():
         Wait until request limit is refreshed.
 
         """
-        print("Waiting for request limit refresh ...")
+        self.logger.warning("Waiting for request limit refresh ...")
         self.github_connection.get_rate_limit()
         reset_timestamp = self.github_connection.rate_limiting_resettime
         seconds_until_reset = reset_timestamp - time()
@@ -136,7 +153,7 @@ class Core():
         self.github_connection.get_rate_limit()
         requests_remaning, requests_limit = self.github_connection.rate_limiting
         while requests_remaning == 0:
-            print("No remaining requests sleep 1s ...")
+            self.logger.warning("No remaining requests sleep 1s ...")
             time.sleep(1)
             self.github_connection.get_rate_limit()
             requests_remaning, requests_limit = self.github_connection.rate_limiting
@@ -264,7 +281,7 @@ class Core():
             return None
         if user.node_id in self.users_ids:
             return self.users_ids[user.node_id]
-        users_file = Path(self.data_root_dir, self.USERS)
+        users_file = Path(self.repo_data_dir, self.USERS)
         users_df = pd.DataFrame()
         if users_file.is_file():
             users_df = pd.read_pickle(users_file)
@@ -286,7 +303,7 @@ class Core():
         self.users_ids[user.node_id] = user_data["anonym_uuid"]
         users_df = users_df.append(user_data, ignore_index=True)
         with open(users_file, "wb") as f:
-            pickle.pickle.dump(users_df, f)
+            pickle.dump(users_df, f)
         return user_data["anonym_uuid"]
 
     def save_pandas_data_frame(self, file:str, data_frame:pd.DataFrame):
@@ -445,7 +462,7 @@ class Core():
         extract_data = True
         while True:
             if total_count >= self.request_maximum:
-                print(f"{label} >= request_maximum ==> mutiple {label} progress bars")
+                self.logger.info(f"{label} >= request_maximum ==> mutiple {label} progress bars")
                 total_count = self.request_maximum
             for i in self.progress_bar(range(total_count), f"{label}: "):
                 data = self.get_save_api_data(data_list, i)
@@ -454,7 +471,7 @@ class Core():
                 elif data.id == last_id:
                     extract_data = True
                 else:
-                    print(f"Skip {label} with ID: {data.id}")
+                    self.logger.error(f"Skip {label} with ID: {data.id}")
             if total_count == self.request_maximum:
                 last_id = data.id
                 extract_data = False
@@ -466,11 +483,11 @@ class Core():
             else:
                 break
          
-    def progress_bar(self, iterable:typing.Iterable, prefix:str = "", size:int = 60, file=sys.stdout):
+    def progress_bar(self, iterable:typing.Iterable, prefix:str = "", size:int = 60):
         """
         progress_bar(iterable, prefix="", size=60, file=sys.stdout)
 
-        Prints our a progress bar.
+        Prints out a progress bar.
 
         Parameters
         ----------
@@ -480,21 +497,22 @@ class Core():
             String infront of the progress bar.
         size : int
             Size of the progress bar.
-        file : Any , default=sys.stdout
-            File to print out the progress bar.
 
         """
         count = len(iterable)
         def show(j):
             x = int(size*j/count)
-            file.write("%s[%s%s] %i/%i\r" % (prefix, "#"*x, "."*(size-x), j, count))
-            file.flush()        
+            if self.log_level == logging.INFO:
+                sys.stdout.write("%s[%s%s] %i/%i\r" % (prefix, "#"*x, "."*(size-x), j, count))
+                sys.stdout.flush()     
+            self.logger.debug("%s[%s%s] %i/%i\r" % (prefix, "#"*x, "."*(size-x), j, count))
         show(0)
         for i, item in enumerate(iterable):
             yield item
             show(i+1)
-        file.write("\n")
-        file.flush()
+        if self.log_level == logging.INFO:
+            sys.stdout.write("\n")
+            sys.stdout.flush()
 
     def copy_valid_params(self, base_dict:dict ,input_params:dict):
         params = base_dict
@@ -520,8 +538,8 @@ class Core():
         
         """
         
-        print('Handling Error for file ' , path)
-        print(exc_info)
+        self.logger.warning('Handling Error for file ' + path)
+        self.logger.warning("Catched Error Message:", exc_info=exc_info)
         # Check if file access issue
         if not os.access(path, os.W_OK):
             # Try to change the permision of file
@@ -560,7 +578,7 @@ class Core():
     def print_calls(self, string:str):
         self.github_connection.get_rate_limit()
         requests_remaning, requests_limit = self.github_connection.rate_limiting
-        print(f"{string}: {requests_remaning}")
+        self.logger.debug(f"{string}: {requests_remaning}")
 
     @staticmethod
     def get_users(data_root_dir:Path):

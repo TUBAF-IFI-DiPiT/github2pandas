@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 import pandas as pd
 # github imports
@@ -37,7 +38,7 @@ class GitReleases(Core):
     GIT_RELEASES_DIR = "Releases"
     GIT_RELEASES = "pdReleases.p"
 
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000) -> None:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
         __init__(self, github_connection, repo, data_root_dir, request_maximum)
 
@@ -65,13 +66,14 @@ class GitReleases(Core):
             github_connection,
             repo,
             data_root_dir,
-            Path(data_root_dir, GitReleases.GIT_RELEASES_DIR),
-            request_maximum
+            GitReleases.GIT_RELEASES_DIR,
+            request_maximum=request_maximum,
+            log_level=log_level
         )
 
     @property
     def git_releases_df(self):
-        return GitReleases.get_git_releases(self.data_root_dir)
+        return GitReleases.get_git_releases(self.repo_data_dir)
 
     def generate_pandas_tables(self, check_for_updates:bool = False):
         """
@@ -92,7 +94,7 @@ class GitReleases(Core):
         if check_for_updates:
             old_git_releases = self.git_releases_df
             if not self.check_for_updates_paginated(git_releases, total_count, old_git_releases):
-                print("No new Git Releases information!")
+                self.logger.info("No new Git Releases information!")
                 return
         git_releases_list = []
         for i in self.progress_bar(range(total_count), "Git Releases: "):
