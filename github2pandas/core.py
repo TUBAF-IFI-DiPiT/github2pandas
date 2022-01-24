@@ -540,12 +540,7 @@ class Core():
         
         self.logger.warning('Handling Error for file ' + path)
         self.logger.warning("Catched Error Message:", exc_info=exc_info)
-        # Check if file access issue
-        if not os.access(path, os.W_OK):
-            # Try to change the permision of file
-            os.chmod(path, stat.S_IWUSR)
-            # call the calling function again
-            func(path)
+        Core._file_error_handling(func, path, exc_info)
 
     def apply_datetime_format(self, pd_table:pd.DataFrame, source_column:str, destination_column:str = None):
         """
@@ -578,7 +573,31 @@ class Core():
     def print_calls(self, string:str):
         self.github_connection.get_rate_limit()
         requests_remaning, requests_limit = self.github_connection.rate_limiting
-        self.logger.debug(f"{string}: {requests_remaning}")
+        self.logger.info(f"{string}: {requests_remaning}")
+
+    @staticmethod
+    def _file_error_handling(func, path:str, exc_info:str):
+        """
+        handleError(func, path, exc_info)
+
+        Error handler function which will try to change file permission and call the calling function again.
+
+        Parameters
+        ----------
+        func : Function
+            Calling function.
+        path : str
+            Path of the file which causes the Error.
+        exc_info : str
+            Execution information.
+        
+        """
+        # Check if file access issue
+        if not os.access(path, os.W_OK):
+            # Try to change the permision of file
+            os.chmod(path, stat.S_IWUSR)
+            # call the calling function again
+            func(path)
 
     @staticmethod
     def get_pandas_data_frame(data_dir:Path, filename:str) -> pd.DataFrame:
