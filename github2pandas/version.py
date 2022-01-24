@@ -19,15 +19,15 @@ class Version(Core):
 
     Attributes
     ----------
-    VERSION_DIR : str
+    DATA_DIR : str
         Version dir where all files are saved in.
-    VERSION_REPOSITORY_DIR : str
+    REPOSITORY_DIR : str
         Folder of cloned repository.
-    VERSION_COMMITS : str
+    COMMITS : str
         Pandas table file for commits.
-    VERSION_EDITS : str
+    EDITS : str
         Pandas table file for edit data per commit.
-    VERSION_BRANCHES : str
+    BRANCHES : str
         Pandas table file for branch names.
     VERSION_DB : str
         MYSQL data base file containing version history.
@@ -54,16 +54,21 @@ class Version(Core):
         Define unknown user in commits pandas table.
     get_unknown_users(data_root_dir)
         Get all unknown users in from commits.
-    get_version(data_root_dir, filename=VERSION_COMMITS)
+    get_version(data_root_dir, filename=COMMITS)
         Get the generated pandas table.
 
     """  
 
-    VERSION_DIR = "Versions"
-    VERSION_REPOSITORY_DIR = "repo"
-    VERSION_COMMITS = "pdCommits.p"
-    VERSION_EDITS = "pdEdits.p"
-    VERSION_BRANCHES = "pdBrances.p"
+    DATA_DIR = "Versions"
+    COMMITS = "Commits.p"
+    EDITS = "Edits.p"
+    BRANCHES = "Brances.p"
+    FILES = [
+        COMMITS,
+        EDITS,
+        BRANCHES
+    ]
+    REPOSITORY_DIR = "repo"
     VERSION_DB = "Versions.db"
 
     COMMIT_DELETEABLE_COLUMNS = ['author_email', 'author_name', 'committer_email', 'author_date', 'author_timezone', 'commit_message_len', 'project_name', 'merge']
@@ -101,24 +106,24 @@ class Version(Core):
             github_connection,
             repo,
             data_root_dir,
-            Version.VERSION_DIR,
+            Version.DATA_DIR,
             request_maximum=request_maximum,
             log_level=log_level
         )
         self.number_of_proceses = number_of_proceses
-        self.repo_dir = self.current_dir.joinpath(self.VERSION_REPOSITORY_DIR)
+        self.repo_dir = self.current_dir.joinpath(self.REPOSITORY_DIR)
         self.sqlite_db_file = self.current_dir.joinpath(self.VERSION_DB)
 
     
     @property
     def commits_df(self):
-        return Version.get_version(self.repo_data_dir)
+        return Core.get_pandas_data_frame(self.current_dir, Version.COMMITS)
     @property
     def edits_df(self):
-        return Version.get_version(self.repo_data_dir, self.VERSION_EDITS)
+        return Core.get_pandas_data_frame(self.current_dir, Version.EDITS)
     @property
     def branches_df(self):
-        return Version.get_version(self.repo_data_dir, self.VERSION_BRANCHES)
+        return Core.get_pandas_data_frame(self.current_dir, Version.BRANCHES)
 
     def generate_pandas_tables(self, check_for_updates=False):
         """
@@ -170,7 +175,7 @@ class Version(Core):
                     pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'author'] = author_id   
                     pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'committer'] = committer_id 
                     if (author_id is None) and (committer_id is None):
-                        users = self.get_users(self.repo_data_dir)
+                        users = Core.get_pandas_data_frame(self.repo_data_dir, Core.USERS)
                         found = False
                         if "alias" in users:
                             users = users[users["alias"].notna()]
@@ -194,7 +199,7 @@ class Version(Core):
                 pd_commits.loc[pd_commits.committer_name == commiter_name, 'author'] = author_id   
                 pd_commits.loc[pd_commits.committer_name == commiter_name, 'committer'] = committer_id 
                 if (author_id is None) and (committer_id is None):
-                    users = self.get_users(self.repo_data_dir)
+                    users = Core.get_pandas_data_frame(self.repo_data_dir, Core.USERS)
                     found = False
                     if "alias" in users:
                         users = users[users["alias"].notna()]
@@ -213,7 +218,7 @@ class Version(Core):
                         pd_commits.loc[pd_commits.committer_name == commiter_name, 'unknown_user'] = commiter_name 
         pd_commits.drop(['committer_name'], axis=1, inplace=True)  
 
-        users = self.get_users(self.repo_data_dir)
+        users = Core.get_pandas_data_frame(self.repo_data_dir, Core.USERS)
         if "unknown_user" in pd_commits:
             unknown_user_commits = pd_commits.loc[pd_commits.unknown_user.notna()]
             unknown_users = unknown_user_commits.unknown_user.unique()
@@ -246,9 +251,9 @@ class Version(Core):
         pd_commits['branch_ids'] = branch_ids
         pd_commits.drop(['branches'], axis = 1, inplace=True)
         
-        self.save_pandas_data_frame(self.VERSION_COMMITS, pd_commits)
-        self.save_pandas_data_frame(self.VERSION_EDITS, pd_edits)
-        self.save_pandas_data_frame(self.VERSION_BRANCHES, pd_Branches)      
+        self.save_pandas_data_frame(self.COMMITS, pd_commits)
+        self.save_pandas_data_frame(self.EDITS, pd_edits)
+        self.save_pandas_data_frame(self.BRANCHES, pd_Branches)      
 
     def generate_data_base(self, new_extraction=False):
         """
@@ -339,31 +344,3 @@ class Version(Core):
                                 'remotes/origin/'+branch_name)
                 except Exception:
                     self.logger.warning(" -> An exception occurred")
-
-    @staticmethod
-    def get_version(data_root_dir, filename=VERSION_COMMITS):
-        """
-        get_version(data_root_dir, filename=VERSION_COMMITS)
-
-        Get the generated pandas table.
-
-        Parameters
-        ----------
-        data_root_dir : str
-            Data root directory for the repository.
-        filename : str, default=VERSION_COMMITS
-            Pandas table file for commits or edits.
-
-        Returns
-        -------
-        DataFrame
-            Pandas DataFrame which includes the commit or edit data set
-        
-        """
-        
-        workflows_dir = Path(data_root_dir, Version.VERSION_DIR)
-        pd_workflows_file = Path(workflows_dir, filename)
-        if pd_workflows_file.is_file():
-            return pd.read_pickle(pd_workflows_file)
-        else:
-            return pd.DataFrame()

@@ -47,7 +47,7 @@ class Core():
         if repo is not None:
             self.repo_data_dir = Path(self.data_root_dir,repo.full_name)
             self.repo_data_dir.mkdir(parents=True, exist_ok=True)
-            df_users = Core.get_users(self.repo_data_dir)
+            df_users = Core.get_pandas_data_frame(self.repo_data_dir, Core.USERS)
             self.users_ids = {}
             for index, row in df_users.iterrows():
                 self.users_ids[row["id"]] = row["anonym_uuid"]
@@ -581,26 +581,10 @@ class Core():
         self.logger.debug(f"{string}: {requests_remaning}")
 
     @staticmethod
-    def get_users(data_root_dir:Path):
-        """
-        get_users(data_root_dir)
-
-        Get the generated users pandas table.
-
-        Parameters
-        ----------
-        data_root_dir : Path
-            Data root directory for the repository.
-
-        Returns
-        -------
-        pd.DataFrame
-            Pandas pd.DataFrame which includes the users data
-
-        """
-        users_file = Path(data_root_dir, Core.USERS)
-        if users_file.is_file():
-            return pd.read_pickle(users_file)
+    def get_pandas_data_frame(data_dir:Path, filename:str) -> pd.DataFrame:
+        pd_file = Path(data_dir, filename)
+        if pd_file.is_file():
+            return pd.read_pickle(pd_file)
         else:
             return pd.DataFrame()
 
