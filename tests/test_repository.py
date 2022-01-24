@@ -1,9 +1,11 @@
+import logging
 import unittest
 import os
 from pathlib import Path
-import datetime
 import shutil
+# github2pandas imports
 from github import Github
+from github2pandas.core import Core
 from github2pandas.github2pandas import GitHub2Pandas
 from github2pandas.repository import Repository
 
@@ -11,52 +13,42 @@ class TestRepositories(unittest.TestCase):
     """
     Test case for Repository class.
     """
-    
     github_token = os.environ['TOKEN']
-
     git_repo_name = "github2pandas"
     git_repo_owner = "TUBAF-IFI-DiPiT"
+    data_root_dir = Path("test_data")
+    log_level = logging.DEBUG
 
-    default_data_folder = Path("test_data")
+    def __init__(self, methodName: str = ...) -> None:
+        super().__init__(methodName)
+        shutil.rmtree("test_data", onerror=Core._file_error_handling)
+        self.data_root_dir.mkdir(parents=True, exist_ok=True)
 
-    github2pandas = GitHub2Pandas(github_token,default_data_folder)
-    repo = github2pandas.get_repo(git_repo_owner, git_repo_name)
-    params = {
-        "git_releases": False,
-        "issues": False,
-        "pull_requests": False,
-        "repository": True,
-        "version": False,
-        "workflows": False
-    }
+    def test_generate_pandas_tables(self):
+        github2pandas = GitHub2Pandas(self.github_token,self.data_root_dir, log_level=self.log_level)
+        repo = github2pandas.get_repo(self.git_repo_owner, self.git_repo_name)
 
-    def test_generate_pandas_tables_repository(self):
-        repository = Repository(Github(self.github_token), self.repo, self.default_data_folder)
+        repository = Repository(github2pandas.github_connection, repo, self.data_root_dir)
         repository.print_calls("Start repository")
         repository.generate_pandas_tables()
         repository.print_calls("End repository")
-        repository.print_calls("Start repository")
+        repository.print_calls("Start repository with companies")
         repository.generate_pandas_tables(contributor_companies_included=True)
-        repository.print_calls("End repository")
+        repository.print_calls("End repository with companies")
     
-    def test_repository_on_large_repo(self):
-        repo = self.github2pandas.get_repo("microsoft","vscode")
-        repository = Repository(Github(self.github_token), repo, self.default_data_folder)
-        repository.print_calls("Start large repository")
-        repository.generate_pandas_tables(contributor_companies_included=True)
-        repository.print_calls("End large repository")
+    def test_generate_pandas_tables_on_large_repo(self):
+        github2pandas = GitHub2Pandas(self.github_token,self.data_root_dir, log_level=self.log_level)
+        repo = github2pandas.get_repo("microsoft","vscode")
 
-    def test_generate_pandas_tables_github2pandas(self):
-        self.github2pandas.generate_pandas_tables(self.repo,self.params)
+        repository = Repository(github2pandas.github_connection, repo, self.data_root_dir)
+        repository.print_calls("Start large repository with companies")
+        repository.generate_pandas_tables(contributor_companies_included=True)
+        repository.print_calls("End large repository with companies")
         
     def test_get_workflows(self):
-        pd_repository = Repository.get_repository_keyparameter(self.default_data_folder)
-
-    def setUp(self):
-        self.default_data_folder.mkdir(parents=True, exist_ok=True)
-
-    def tearDown(self):
-        shutil.rmtree("test_data")
+        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,Repository.DATA_DIR)
+        repository = Core.get_pandas_data_frame(data_dir, Repository.REPOSITORY)
+        pass
 
 if "__main__" == __name__:
     unittest.main()
