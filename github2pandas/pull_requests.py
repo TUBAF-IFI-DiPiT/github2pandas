@@ -19,15 +19,15 @@ class PullRequests(Core):
 
     Attributes
     ----------
-    PULL_REQUESTS_DIR : str
+    DATA_DIR : str
         Pull request dir where all files are saved in.
     PULL_REQUESTS : str
         Pandas table file for pull request data.
-    PULL_REQUESTS_COMMENTS : str
+    REVIEWS_COMMENTS : str
         Pandas table file for comments data in pull requests.
     PULL_REQUESTS_REACTIONS : str
         Pandas table file for reactions data in pull requests.
-    PULL_REQUESTS_REVIEWS : str
+    REVIEWS : str
         Pandas table file for reviews data in pull requests.
     EXTRACTION_PARAMS : dict
         Holds all extraction parameters with a default setting.
@@ -60,11 +60,17 @@ class PullRequests(Core):
         Get a genearted pandas table.
     
     """
-    PULL_REQUESTS_DIR = "PullRequests"
-    PULL_REQUESTS = "pdPullRequests.p"
-    PULL_REQUESTS_COMMENTS = "pdPullRequestsComments.p"
-    PULL_REQUESTS_REACTIONS = "pdPullRequestsReactions.p"
-    PULL_REQUESTS_REVIEWS = "pdPullRequestsReviews.p"
+    DATA_DIR = "PullRequests"
+    PULL_REQUESTS = "PullRequests.p"
+    REVIEWS_COMMENTS = "ReviewsComments.p"
+    PULL_REQUESTS_REACTIONS = "PullRequestsReactions.p"
+    REVIEWS = "Reviews.p"
+    FILES = [
+        PULL_REQUESTS,
+        REVIEWS_COMMENTS,
+        REVIEWS,
+        PULL_REQUESTS_REACTIONS
+    ]
     EXTRACTION_PARAMS = {
         "pull_requests": True,
         "deep_pull_requests": False, # requires pull_requests
@@ -104,23 +110,23 @@ class PullRequests(Core):
             github_connection,
             repo,
             data_root_dir,
-            PullRequests.PULL_REQUESTS_DIR,
+            PullRequests.DATA_DIR,
             request_maximum=request_maximum,
             log_level=log_level
         )
     
     @property
     def pull_request_df(self):
-        return PullRequests.get_pull_requests(self.repo_data_dir)
+        return Core.get_pandas_data_frame(self.current_dir, PullRequests.PULL_REQUESTS)
     @property
     def review_comment_df(self):
-        return PullRequests.get_pull_requests(self.repo_data_dir, PullRequests.PULL_REQUESTS_COMMENTS)
+        return Core.get_pandas_data_frame(self.current_dir, PullRequests.REVIEWS_COMMENTS)
     @property
     def reviews_df(self):
-        return PullRequests.get_pull_requests(self.repo_data_dir, PullRequests.PULL_REQUESTS_REVIEWS)
+        return Core.get_pandas_data_frame(self.current_dir, PullRequests.REVIEWS)
     @property
     def reactions_df(self):
-        return PullRequests.get_pull_requests(self.repo_data_dir, PullRequests.PULL_REQUESTS_REACTIONS)
+        return Core.get_pandas_data_frame(self.current_dir, PullRequests.PULL_REQUESTS_REACTIONS)
   
     def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}):
         """
@@ -166,7 +172,7 @@ class PullRequests(Core):
         self.__reactions_list = []
         if extract_pull_requests:
             # check if issues(with pull request data) are extracted
-            issues_df = Issues.get_pandas_table(self.repo_data_dir)
+            issues_df = Core.get_pandas_data_frame(Path(self.repo_data_dir,Issues.DATA_DIR), Issues.ISSUES)
             if issues_df.empty or issues_df[issues_df["is_pull_request"] == True]["is_pull_request"].count() < total_count:
                 self.logger.warning("Issues are missing. Extracting Issues now!")
                 issues = Issues(
@@ -203,10 +209,10 @@ class PullRequests(Core):
             self.save_pandas_data_frame(PullRequests.PULL_REQUESTS, pull_request_df)
         if params["review_comment"]:
             review_comment_df = DataFrame(self.__review_comment_list)
-            self.save_pandas_data_frame(PullRequests.PULL_REQUESTS_COMMENTS, review_comment_df)
+            self.save_pandas_data_frame(PullRequests.REVIEWS_COMMENTS, review_comment_df)
         if params["reviews"]:
             reviews_df = DataFrame(self.__reviews_list)
-            self.save_pandas_data_frame(PullRequests.PULL_REQUESTS_REVIEWS, reviews_df)
+            self.save_pandas_data_frame(PullRequests.REVIEWS, reviews_df)
         if params["reactions"]:
             reactions_df = DataFrame(self.__reactions_list)
             self.save_pandas_data_frame(PullRequests.PULL_REQUESTS_REACTIONS, reactions_df)
@@ -410,30 +416,3 @@ class PullRequests(Core):
         review_data["state"] = review.state
         review_data["submitted_at"] = review.submitted_at
         return review_data
-    
-    @staticmethod
-    def get_pull_requests(data_root_dir:Path, filename:str=PULL_REQUESTS) -> DataFrame:
-        """
-        get_pull_requests(data_root_dir, filename=PULL_REQUESTS)
-
-        Get a genearted pandas table.
-
-        Parameters
-        ----------
-        data_root_dir : Path
-            Data root directory for the repository.
-        filename : str, default=PULL_REQUESTS
-            Pandas table file for pull requests or comments or reactions or reviews or events data.
-
-        Returns
-        -------
-        DataFrame
-            Pandas DataFrame which can includes the desired data
-
-        """
-        pull_request_dir = Path(data_root_dir, PullRequests.PULL_REQUESTS_DIR)
-        pd_pull_requests_file = Path(pull_request_dir, filename)
-        if pd_pull_requests_file.is_file():
-            return pd.read_pickle(pd_pull_requests_file)
-        else:
-            return DataFrame()

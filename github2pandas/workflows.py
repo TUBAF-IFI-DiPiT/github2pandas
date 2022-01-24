@@ -19,7 +19,7 @@ class Workflows(Core):
 
     Attributes
     ----------
-    WORKFLOWS_DIR : str
+    DATA_DIR : str
         workflow dir where all files are saved in.
     WORKFLOWS : str
         Pandas table file for workflow data.
@@ -43,9 +43,13 @@ class Workflows(Core):
     
     """
 
-    WORKFLOWS_DIR = "Workflows"
+    DATA_DIR = "Workflows"
     WORKFLOWS = "Workflows.p"
     RUNS =  "Runs.p"
+    FILES = [
+        WORKFLOWS,
+        RUNS
+    ]
     EXTRACTION_PARAMS = {
         "workflows": True,
         "runs": True
@@ -79,17 +83,17 @@ class Workflows(Core):
             github_connection,
             repo,
             data_root_dir,
-            Workflows.WORKFLOWS_DIR,
+            Workflows.DATA_DIR,
             request_maximum=request_maximum,
             log_level=log_level
         )
 
     @property
     def workflows_df(self):
-        return Workflows.get_workflows(self.repo_data_dir)
+        return Core.get_pandas_data_frame(self.current_dir, Workflows.WORKFLOWS)
     @property
     def runs_df(self):
-        return Workflows.get_workflows(self.repo_data_dir, Workflows.RUNS)
+        return Core.get_pandas_data_frame(self.current_dir, Workflows.RUNS)
 
     def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}):
         """
@@ -240,35 +244,8 @@ class Workflows(Core):
                                 auth=('username', github_token))
         if 'zip' in response.headers['Content-Type']:
             zip_obj = ZipFile(BytesIO(response.content))
-            data_dir = Path(data_root_dir, Workflows.WORKFLOWS_DIR, str(workflow_run_id))
+            data_dir = Path(data_root_dir, Workflows.DATA_DIR, str(workflow_run_id))
             zip_obj.extractall(data_dir)
             return len(zip_obj.namelist())
         else:
             return None
-
-    @staticmethod
-    def get_workflows(data_root_dir:Path, filename:str=WORKFLOWS):
-        """
-        get_workflows(data_root_dir, filename=WORKFLOWS)
-
-        Get a generated pandas tables.
-
-        Parameters
-        ----------
-        data_root_dir : str
-            Data root directory for the repository.
-        filename : str, default=WORKFLOWS
-            Pandas table file for workflows or workflows runs data.
-
-        Returns
-        -------
-        DataFrame
-            Pandas DataFrame which can include the desired data.
-
-        """
-        workflow_dir = Path(data_root_dir, Workflows.WORKFLOWS_DIR)
-        pd_workflows_file = Path(workflow_dir, filename)
-        if pd_workflows_file.is_file():
-            return pd.read_pickle(pd_workflows_file)
-        else:
-            return DataFrame()

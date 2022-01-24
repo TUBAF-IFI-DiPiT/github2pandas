@@ -29,6 +29,14 @@ class GitHub2Pandas():
         "workflows": True,
         "workflows_params": Workflows.EXTRACTION_PARAMS
     }
+    FILES = {
+        GitReleases.DATA_DIR: GitReleases.FILES,
+        Issues.DATA_DIR: Issues.FILES,
+        PullRequests.DATA_DIR: PullRequests.FILES,
+        Repository.DATA_DIR: Repository.FILES,
+        Version.DATA_DIR: Version.FILES,
+        Workflows.DATA_DIR: Workflows.FILES,
+    }
 
     def __init__(self, github_token:str, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
@@ -121,7 +129,7 @@ class GitHub2Pandas():
         if "unknown_user" in pd_commits:
             unknown_users = pd_commits.unknown_user.unique()
             if unknown_user_name in unknown_users:
-                users = Core.get_users(self.data_root_dir)
+                users = Core.get_pandas_data_frame(self.repo_data_dir, Core.USERS)
                 p_user = users.loc[users.anonym_uuid == uuid]
                 if not p_user.empty:
                     alias = []
@@ -261,7 +269,11 @@ class GitHub2Pandas():
         with open(repo_file, 'w') as json_file:
             json.dump({"repo_owner": repo_owner,"repo_name":repo_name}, json_file)
         return self.__core.save_api_call(self.github_connection.get_repo,repo_owner + "/" + repo_name)
- 
+
+    @staticmethod
+    def get_pandas_data_frame(repo_data_dir:Path, data_dir_name:str,  filename:str):
+        return Core.get_pandas_data_frame(Path(repo_data_dir,data_dir_name), filename)
+
     @staticmethod      
     def get_repo_informations(data_root_dir):
         """

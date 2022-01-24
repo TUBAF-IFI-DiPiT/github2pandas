@@ -16,7 +16,7 @@ class Repository(Core):
 
     Attributes
     ----------
-    REPOSITORY_DIR : str
+    DATA_DIR : str
         repository dir where all files are saved in.
     REPOSITORY : str
         Pandas table file for basic repository data.
@@ -32,8 +32,11 @@ class Repository(Core):
 
     """
 
-    REPOSITORY_DIR = "Repository"
-    REPOSITORY = "pdRepository.p"
+    DATA_DIR = "Repository"
+    REPOSITORY = "Repository.p"
+    FILES = [
+        REPOSITORY
+    ]
 
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
@@ -63,14 +66,14 @@ class Repository(Core):
             github_connection,
             repo,
             data_root_dir,
-            Repository.REPOSITORY_DIR,
+            Repository.DATA_DIR,
             request_maximum=request_maximum,
             log_level=log_level
         )
 
     @property
     def repository_df(self):
-        return Repository.get_repository_keyparameter(self.repo_data_dir)
+        return Core.get_pandas_data_frame(self.current_dir, Repository.REPOSITORY)
 
     def generate_pandas_tables(self, contributor_companies_included:bool = False):
         """
@@ -219,28 +222,3 @@ class Repository(Core):
             'prog_language': self.repo.language
         }
         return repository_data
-    
-    @staticmethod
-    def get_repository_keyparameter(data_root_dir:Path):
-        """
-        get_repository_keyparameter(data_root_dir)
-
-        Get a generated pandas tables.
-
-        Parameters
-        ----------
-        data_root_dir : Path
-            Data root directory for the repository.
-
-        Returns
-        -------
-        DataFrame
-            Pandas DataFrame which can include the desired data.
-
-        """
-        repository_dir = Path(data_root_dir, Repository.REPOSITORY_DIR)
-        pd_repository_file = Path(repository_dir, Repository.REPOSITORY)
-        if pd_repository_file.is_file():
-            return pd.read_pickle(pd_repository_file)
-        else:
-            return DataFrame()

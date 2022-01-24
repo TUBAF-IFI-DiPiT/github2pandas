@@ -40,6 +40,8 @@ class Core():
         self.logger.setLevel(log_level)
         if len(self.logger.handlers) == 0:
             self.logger.addHandler(logging.StreamHandler())
+        self.logger_no_print = logging.getLogger("github2pandas_no_print")
+        self.logger_no_print.setLevel(log_level)
         logging.basicConfig(format='%(levelname)s;%(asctime)s;%(message)s', filename=Path(data_root_dir,"github2pandas.log"))
         self.github_connection = github_connection
         self.repo = repo
@@ -47,7 +49,7 @@ class Core():
         if repo is not None:
             self.repo_data_dir = Path(self.data_root_dir,repo.full_name)
             self.repo_data_dir.mkdir(parents=True, exist_ok=True)
-            df_users = Core.get_users(self.repo_data_dir)
+            df_users = Core.get_pandas_data_frame(self.repo_data_dir, Core.USERS)
             self.users_ids = {}
             for index, row in df_users.iterrows():
                 self.users_ids[row["id"]] = row["anonym_uuid"]
@@ -502,15 +504,15 @@ class Core():
         count = len(iterable)
         def show(j):
             x = int(size*j/count)
-            if self.log_level == logging.INFO:
+            if self.log_level <= logging.INFO:
                 sys.stdout.write("%s[%s%s] %i/%i\r" % (prefix, "#"*x, "."*(size-x), j, count))
                 sys.stdout.flush()     
-            self.logger.debug("%s[%s%s] %i/%i\r" % (prefix, "#"*x, "."*(size-x), j, count))
+            self.logger_no_print.info("%s[%s%s] %i/%i" % (prefix, "#"*x, "."*(size-x), j, count))
         show(0)
         for i, item in enumerate(iterable):
             yield item
             show(i+1)
-        if self.log_level == logging.INFO:
+        if self.log_level <= logging.INFO:
             sys.stdout.write("\n")
             sys.stdout.flush()
 
@@ -540,12 +542,7 @@ class Core():
         
         self.logger.warning('Handling Error for file ' + path)
         self.logger.warning("Catched Error Message:", exc_info=exc_info)
-        # Check if file access issue
-        if not os.access(path, os.W_OK):
-            # Try to change the permision of file
-            os.chmod(path, stat.S_IWUSR)
-            # call the calling function again
-            func(path)
+        Core._file_error_handling(func, path, exc_info)
 
     def apply_datetime_format(self, pd_table:pd.DataFrame, source_column:str, destination_column:str = None):
         """
@@ -581,26 +578,34 @@ class Core():
         self.logger.debug(f"{string}: {requests_remaning}")
 
     @staticmethod
-    def get_users(data_root_dir:Path):
+    def _file_error_handling(func, path:str, exc_info:str):
         """
-        get_users(data_root_dir)
+        handleError(func, path, exc_info)
 
-        Get the generated users pandas table.
+        Error handler function which will try to change file permission and call the calling function again.
 
         Parameters
         ----------
-        data_root_dir : Path
-            Data root directory for the repository.
-
-        Returns
-        -------
-        pd.DataFrame
-            Pandas pd.DataFrame which includes the users data
-
+        func : Function
+            Calling function.
+        path : str
+            Path of the file which causes the Error.
+        exc_info : str
+            Execution information.
+        
         """
-        users_file = Path(data_root_dir, Core.USERS)
-        if users_file.is_file():
-            return pd.read_pickle(users_file)
+        # Check if file access issue
+        if not os.access(path, os.W_OK):
+            # Try to change the permision of file
+            os.chmod(path, stat.S_IWUSR)
+            # call the calling function again
+            func(path)
+
+    @staticmethod
+    def get_pandas_data_frame(data_dir:Path, filename:str) -> pd.DataFrame:
+        pd_file = Path(data_dir, filename)
+        if pd_file.is_file():
+            return pd.read_pickle(pd_file)
         else:
             return pd.DataFrame()
 

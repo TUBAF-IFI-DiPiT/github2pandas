@@ -15,7 +15,7 @@ class GitReleases(Core):
 
     Attributes
     ----------
-    GIT_RELEASES_DIR : str
+    DATA_DIR : str
         Git releases dir where all files are saved in.
     GIT_RELEASES : str
         Pandas table file for git releases data.
@@ -35,8 +35,11 @@ class GitReleases(Core):
     
     """
 
-    GIT_RELEASES_DIR = "Releases"
-    GIT_RELEASES = "pdReleases.p"
+    DATA_DIR = "Releases"
+    GIT_RELEASES = "Releases.p"
+    FILES = [
+        GIT_RELEASES
+    ]
 
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
@@ -66,14 +69,14 @@ class GitReleases(Core):
             github_connection,
             repo,
             data_root_dir,
-            GitReleases.GIT_RELEASES_DIR,
+            GitReleases.DATA_DIR,
             request_maximum=request_maximum,
             log_level=log_level
         )
 
     @property
     def git_releases_df(self):
-        return GitReleases.get_git_releases(self.repo_data_dir)
+        return Core.get_pandas_data_frame(self.current_dir,GitReleases.GIT_RELEASES)
 
     def generate_pandas_tables(self, check_for_updates:bool = False):
         """
@@ -139,28 +142,3 @@ class GitReleases(Core):
         git_releases_data["created_at"] = git_release.created_at
         git_releases_data["published_at"] = git_release.published_at
         return git_releases_data
-
-    @staticmethod
-    def get_git_releases(data_root_dir:Path):
-        """
-        get_git_releases(data_root_dir)
-
-        Get the git releases pandas dataframe.
-
-        Parameters
-        ----------
-        data_root_dir : str
-            Data root directory for the repository.
-
-        Returns
-        -------
-        pd.DataFrame
-            Pandas pd.DataFrame which can includes the desired data
-
-        """
-        git_releases_dir = Path(data_root_dir, GitReleases.GIT_RELEASES_DIR)
-        pd_git_releases_file = Path(git_releases_dir, GitReleases.GIT_RELEASES)
-        if pd_git_releases_file.is_file():
-            return pd.read_pickle(pd_git_releases_file)
-        else:
-            return pd.DataFrame()

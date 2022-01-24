@@ -18,13 +18,13 @@ class Issues(Core):
 
     Attributes
     ----------
-    ISSUES_DIR : str
+    DATA_DIR : str
         Issues dir where all files are saved in.
     ISSUES : str
         Pandas table file for issues data.
     COMMENTS : str
         Pandas table file for comments data in issues.
-    REACTIONS : str
+    ISSUES_REACTIONS : str
         Pandas table file for reactions data in issues.
     EVENTS : str
         Pandas table file for reviews data in issues.
@@ -59,11 +59,17 @@ class Issues(Core):
         Get a genearted pandas table.
     
     """
-    ISSUES_DIR = "Issues"
+    DATA_DIR = "Issues"
     ISSUES = "Issues.p"
     COMMENTS = "Comments.p"
-    REACTIONS = "Reactions.p"
+    ISSUES_REACTIONS = "IssuesReactions.p"
     EVENTS = "Events.p"
+    FILES = [
+        ISSUES,
+        COMMENTS,
+        EVENTS,
+        ISSUES_REACTIONS
+    ]
     EXTRACTION_PARAMS = {
         "issues": True, # check for updates
         "reactions": False,
@@ -99,23 +105,23 @@ class Issues(Core):
             github_connection,
             repo,
             data_root_dir,
-            Issues.ISSUES_DIR,
+            Issues.DATA_DIR,
             request_maximum=request_maximum,
             log_level=log_level
         )
     
     @property
     def issues_df(self):
-        return Issues.get_pandas_table(self.repo_data_dir)
+        return Core.get_pandas_data_frame(self.current_dir, Issues.ISSUES)
     @property
     def comments_df(self):
-        return Issues.get_pandas_table(self.repo_data_dir, Issues.COMMENTS)
+        return Core.get_pandas_data_frame(self.current_dir, Issues.COMMENTS)
     @property
     def events_df(self):
-        return Issues.get_pandas_table(self.repo_data_dir, Issues.EVENTS)
+        return Core.get_pandas_data_frame(self.current_dir, Issues.EVENTS)
     @property
     def reactions_df(self):
-        return Issues.get_pandas_table(self.repo_data_dir, Issues.REACTIONS)
+        return Core.get_pandas_data_frame(self.current_dir, Issues.ISSUES_REACTIONS)
 
     def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}):
         """
@@ -194,7 +200,7 @@ class Issues(Core):
             self.save_pandas_data_frame(Issues.EVENTS, events_df)
         if params["reactions"]:
             reactions_df = DataFrame(self.__reaction_list)
-            self.save_pandas_data_frame(Issues.REACTIONS, reactions_df)
+            self.save_pandas_data_frame(Issues.ISSUES_REACTIONS, reactions_df)
     
     def extract_issue(self, data:GitHubIssue, params:dict, events_overflow:bool):
         """
@@ -392,30 +398,3 @@ class Issues(Core):
         # requested_reviewer ?
         # review_requesters ?
         return event_data
-    
-    @staticmethod
-    def get_pandas_table(data_root_dir:Path, filename:str=ISSUES) -> DataFrame:
-        """
-        get_pandas_table(data_root_dir, filename=ISSUES)
-
-        Get a genearted issue pandas table.
-
-        Parameters
-        ----------
-        data_root_dir : Path
-            Data root directory for the repository.
-        filename : str, default=ISSUES
-            Pandas table file for issues or comments or reactions or events data.
-
-        Returns
-        -------
-        DataFrame
-            Pandas DataFrame which can include the desired data
-
-        """
-        
-        pd_issues_file = Path(data_root_dir, Issues.ISSUES_DIR, filename)
-        if pd_issues_file.is_file():
-            return pd.read_pickle(pd_issues_file)
-        else:
-            return DataFrame()
