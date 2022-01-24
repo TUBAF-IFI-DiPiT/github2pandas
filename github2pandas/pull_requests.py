@@ -262,7 +262,7 @@ class PullRequests(Core):
             for i in range(self.request_maximum):
                 try:
                     commit = self.get_save_api_data(commits, i)
-                    pull_request_data["commits"].append(commit)
+                    pull_request_data["commits"].append(commit.sha)
                 except IndexError:
                     break
         self.__pull_request_list.append(pull_request_data)
