@@ -1,3 +1,4 @@
+import logging
 import unittest
 import os
 from pathlib import Path
@@ -15,6 +16,7 @@ class TestIssues(unittest.TestCase):
     git_repo_name = "github2pandas"
     git_repo_owner = "TUBAF-IFI-DiPiT"
     data_root_dir = Path("test_data")
+    log_level = logging.DEBUG
 
     def __init__(self, methodName: str = ...) -> None:
         super().__init__(methodName)
@@ -22,15 +24,15 @@ class TestIssues(unittest.TestCase):
         self.data_root_dir.mkdir(parents=True, exist_ok=True)
 
     def test_generate_pandas_tables(self):
-        github2pandas = GitHub2Pandas(self.github_token,self.data_root_dir)
+        github2pandas = GitHub2Pandas(self.github_token,self.data_root_dir, log_level=self.log_level)
         repo = github2pandas.get_repo(self.git_repo_owner, self.git_repo_name)
 
-        issues = Issues(github2pandas.github_connection, repo, self.data_root_dir)
+        issues = Issues(github2pandas.github_connection, repo, self.data_root_dir, log_level=self.log_level)
         issues.print_calls("Start issues")
         issues.generate_pandas_tables()
         issues.print_calls("End issues")
         # check max request limit
-        issues = Issues(github2pandas.github_connection, repo, self.data_root_dir, 20)
+        issues = Issues(github2pandas.github_connection, repo, self.data_root_dir, 20, log_level=self.log_level)
         issues.print_calls("Start rate limit issues")
         issues.generate_pandas_tables()
         issues.print_calls("End rate limit issues")

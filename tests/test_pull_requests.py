@@ -1,3 +1,4 @@
+import logging
 import unittest
 import os
 from pathlib import Path
@@ -15,6 +16,7 @@ class TestPullRequests(unittest.TestCase):
     git_repo_name = "github2pandas"
     git_repo_owner = "TUBAF-IFI-DiPiT"
     data_root_dir = Path("test_data")
+    log_level = logging.DEBUG
 
     def __init__(self, methodName: str = ...) -> None:
         super().__init__(methodName)
@@ -22,17 +24,17 @@ class TestPullRequests(unittest.TestCase):
         self.data_root_dir.mkdir(parents=True, exist_ok=True)
 
     def test_generate_pandas_tables(self):
-        github2pandas = GitHub2Pandas(self.github_token,self.data_root_dir)
+        github2pandas = GitHub2Pandas(self.github_token,self.data_root_dir, log_level=self.log_level)
         repo = github2pandas.get_repo(self.git_repo_owner, self.git_repo_name)
 
-        pull_requests = PullRequests(github2pandas.github_connection, repo, self.data_root_dir)
+        pull_requests = PullRequests(github2pandas.github_connection, repo, self.data_root_dir, log_level=self.log_level)
         pull_requests.print_calls("Start pr (No Issues)")
         pull_requests.generate_pandas_tables()
         pull_requests.print_calls("End pr (No Issues)")
         pull_requests.print_calls("Start pr")
         pull_requests.generate_pandas_tables()
         pull_requests.print_calls("End pr")
-        pull_requests = PullRequests(github2pandas.github_connection, repo, self.data_root_dir,10)
+        pull_requests = PullRequests(github2pandas.github_connection, repo, self.data_root_dir,10, log_level=self.log_level)
         pull_requests.print_calls("Start rate limit pr")
         pull_requests.generate_pandas_tables()
         pull_requests.print_calls("End rate limit pr")

@@ -40,6 +40,8 @@ class Core():
         self.logger.setLevel(log_level)
         if len(self.logger.handlers) == 0:
             self.logger.addHandler(logging.StreamHandler())
+        self.logger_no_print = logging.getLogger("github2pandas_no_print")
+        self.logger_no_print.setLevel(log_level)
         logging.basicConfig(format='%(levelname)s;%(asctime)s;%(message)s', filename=Path(data_root_dir,"github2pandas.log"))
         self.github_connection = github_connection
         self.repo = repo
@@ -502,15 +504,15 @@ class Core():
         count = len(iterable)
         def show(j):
             x = int(size*j/count)
-            if self.log_level == logging.INFO:
+            if self.log_level <= logging.INFO:
                 sys.stdout.write("%s[%s%s] %i/%i\r" % (prefix, "#"*x, "."*(size-x), j, count))
                 sys.stdout.flush()     
-            self.logger.debug("%s[%s%s] %i/%i\r" % (prefix, "#"*x, "."*(size-x), j, count))
+            self.logger_no_print.info("%s[%s%s] %i/%i" % (prefix, "#"*x, "."*(size-x), j, count))
         show(0)
         for i, item in enumerate(iterable):
             yield item
             show(i+1)
-        if self.log_level == logging.INFO:
+        if self.log_level <= logging.INFO:
             sys.stdout.write("\n")
             sys.stdout.flush()
 
@@ -573,7 +575,7 @@ class Core():
     def print_calls(self, string:str):
         self.github_connection.get_rate_limit()
         requests_remaning, requests_limit = self.github_connection.rate_limiting
-        self.logger.info(f"{string}: {requests_remaning}")
+        self.logger.debug(f"{string}: {requests_remaning}")
 
     @staticmethod
     def _file_error_handling(func, path:str, exc_info:str):
