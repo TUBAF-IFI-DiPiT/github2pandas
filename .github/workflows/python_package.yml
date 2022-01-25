@@ -2,7 +2,7 @@ name: RunTests
 
 on:
   push:
-    branches: [ main, bug-fix/tests ]
+    branches: [ main, bug-fix/tests, github2pandas-v2.0.0]
 
   workflow_dispatch:
 
