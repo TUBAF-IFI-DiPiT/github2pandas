@@ -174,7 +174,7 @@ class PullRequests(Core):
             # check if issues(with pull request data) are extracted
             issues_df = Core.get_pandas_data_frame(Path(self.repo_data_dir,Issues.DATA_DIR), Issues.ISSUES)
             if issues_df.empty or issues_df[issues_df["is_pull_request"] == True]["is_pull_request"].count() < total_count:
-                self.logger.warning("Issues are missing. Extracting Issues now!")
+                self.logger.info("Issues are missing. Extracting Issues now!")
                 issues = Issues(
                     self.github_connection,
                     self.repo,

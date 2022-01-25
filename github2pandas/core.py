@@ -144,7 +144,7 @@ class Core():
         Wait until request limit is refreshed.
 
         """
-        self.logger.warning("Waiting for request limit refresh ...")
+        self.logger.debug("Waiting for request limit refresh ...")
         self.github_connection.get_rate_limit()
         reset_timestamp = self.github_connection.rate_limiting_resettime
         seconds_until_reset = reset_timestamp - time()
@@ -155,7 +155,7 @@ class Core():
         self.github_connection.get_rate_limit()
         requests_remaning, requests_limit = self.github_connection.rate_limiting
         while requests_remaning == 0:
-            self.logger.warning("No remaining requests sleep 1s ...")
+            self.logger.debug("No remaining requests sleep 1s ...")
             time.sleep(1)
             self.github_connection.get_rate_limit()
             requests_remaning, requests_limit = self.github_connection.rate_limiting
@@ -540,8 +540,8 @@ class Core():
         
         """
         
-        self.logger.warning('Handling Error for file ' + path)
-        self.logger.warning("Catched Error Message:", exc_info=exc_info)
+        self.logger.debug('Handling Error for file ' + path)
+        self.logger.debug("Catched Error Message:", exc_info=exc_info)
         Core._file_error_handling(func, path, exc_info)
 
     def apply_datetime_format(self, pd_table:pd.DataFrame, source_column:str, destination_column:str = None):

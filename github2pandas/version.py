@@ -4,7 +4,6 @@ import sqlite3
 import pandas as pd
 import pygit2 as git2
 import git
-import git2net
 import shutil
 import numpy
 from pathlib import Path
@@ -13,6 +12,7 @@ from github.MainClass import Github
 from github.Repository import Repository as GitHubRepository
 # github2pandas imports
 from github2pandas.core import Core
+
 class Version(Core):
     """
     Class to aggregate Version
@@ -285,6 +285,18 @@ class Version(Core):
         self.current_dir.mkdir(parents=True, exist_ok=True)
         if new_extraction & os.path.exists(self.sqlite_db_file):
             os.remove(self.sqlite_db_file)
+        # overwrite git2net progress bar
+        import tqdm
+        def version_progress_bar(iterable=None, total:int=None, desc:str="", **kwargs):
+            if iterable is None:
+                if total is not None:
+                    iterable = range(total)
+                else:
+                    logging.error("Error in progressbar for version")
+                    return
+            return self.progress_bar(iterable, f"Version {desc}:")
+        tqdm.tqdm = version_progress_bar
+        import git2net
         git2net.mine_git_repo(self.repo_dir, self.sqlite_db_file,
                                 extract_complexity=True,
                                 extract_text=True,
@@ -343,4 +355,4 @@ class Version(Core):
                     r.git.branch('--track', branch_name,
                                 'remotes/origin/'+branch_name)
                 except Exception:
-                    self.logger.warning(" -> An exception occurred")
+                    self.logger.debug(" -> An exception occurred")
