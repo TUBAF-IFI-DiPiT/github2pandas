@@ -21,7 +21,8 @@ class TestVersion(unittest.TestCase):
 
     def __init__(self, methodName: str = ...) -> None:
         super().__init__(methodName)
-        shutil.rmtree("test_data", onerror=Core._file_error_handling)
+        if self.data_root_dir.exists() and self.data_root_dir.is_dir():
+            shutil.rmtree(self.data_root_dir, onerror=Core._file_error_handling)
         self.data_root_dir.mkdir(parents=True, exist_ok=True)
 
     def test_generate_pandas_tables(self):
