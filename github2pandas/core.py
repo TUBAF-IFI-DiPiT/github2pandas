@@ -293,17 +293,17 @@ class Core():
         else:
             user_data["anonym_uuid"] = human_id.generate_id(seed=user.node_id)
         user_data["id"] = user.node_id
-        if "name" in user_data:
+        if hasattr(user, "name"):
             user_data["name"] = user.name
-        if "email" in user_data:
+        if hasattr(user, "email"):
             user_data["email"] = user.email
-        if "login" in user_data:
+        if hasattr(user, "login"):
             user_data["login"] = user.login
-        if "login" in user_data:
             if user_data["login"] == "invalid-email-address" and not "name" in user_data:
+                logging.warning("None User",user)
                 return None
         self.users_ids[user.node_id] = user_data["anonym_uuid"]
-        users_df = users_df.append(user_data, ignore_index=True)
+        users_df = pd.concat([users_df,pd.DataFrame([user_data])], ignore_index=True)
         with open(users_file, "wb") as f:
             pickle.dump(users_df, f)
         return user_data["anonym_uuid"]
