@@ -166,7 +166,7 @@ class Version(Core):
         pd_commits['author'] = ""
         pd_commits['committer'] = ""
         commiter_list = pd_commits.committer_name.unique()
-        for commiter_name in commiter_list:
+        for commiter_name in self.progress_bar(commiter_list, "Version parse user:"):
             if commiter_name == "GitHub":
                 pd_selected_commits = pd_commits[pd_commits.committer_name == commiter_name]
                 for index, row in pd_selected_commits.iterrows():
@@ -233,7 +233,7 @@ class Version(Core):
         pd_commits['tag'] = ""
         tags = self.save_api_call(self.repo.get_tags)
         tags_total_count = self.get_save_total_count(tags)
-        for i in self.progress_bar(range(tags_total_count), "Tags:   "):
+        for i in self.progress_bar(range(tags_total_count), "Version tags:   "):
             tag = self.get_save_api_data(tags, i)
             pd_commits.loc[pd_commits.commit_sha == tag.commit.sha, 'tag'] = tag.name   
             
