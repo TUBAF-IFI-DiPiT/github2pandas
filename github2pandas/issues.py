@@ -302,8 +302,9 @@ class Issues(Core):
         issue_data["created_at"] = issue.created_at
         issue_data["id"] = issue.id
         issue_data["labels"]  = self.extract_labels(issue.labels)
-        issue_data["last_modified"] = issue.comments
-        issue_data["locked"] = issue.comments
+        # issue_data["last_modified"] = issue.last_modified NaN?
+        issue_data["locked"] = issue.locked
+        issue_data["active_lock_reason"] = issue.active_lock_reason
         # milestone ?
         issue_data["number"] = issue.number
         issue_data["state"] = issue.state
@@ -390,11 +391,6 @@ class Issues(Core):
             event_data["issue_id"] = issue_id
         if not event._label == GithubObject.NotSet:
             event_data["label"] = event.label.name
-        event_data["last_modified"] = event.last_modified
-        # lock_reason ?
+        # event_data["last_modified"] = event.last_modified NaN?
         # milestone ?
-        # node_id ?
-        # rename ?
-        # requested_reviewer ?
-        # review_requesters ?
         return event_data
