@@ -26,9 +26,9 @@ class GitHub2Pandas():
         "workflows": True,
         "workflows_params": Workflows.EXTRACTION_PARAMS
     }
-
+    REPOSITORIES_KEY = "repos"
     class Files():
-        REPO = "Repo.json"
+        REPOS = "Repos.json"
         GIT_RELEASES = GitReleases.Files
         ISSUES = Issues.Files
         PULL_REQUESTS = PullRequests.Files
@@ -54,7 +54,6 @@ class GitHub2Pandas():
             d = {}
             for files in GitHub2Pandas.Files.to_list():
                 d.update(files.to_dict())
-            d[""].append(GitHub2Pandas.Files.REPO)
             return d
 
     def __init__(self, github_token:str, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
@@ -249,11 +248,13 @@ class GitHub2Pandas():
                             blacklist_pass = False
                             break
                 if blacklist_pass:
-                    repo_dir = Path(self.data_root_dir, repo.owner.login + "/" + repo.name)
+                    repo_dir = Path(self.data_root_dir, repo.full_name)
                     repo_dir.mkdir(parents=True, exist_ok=True)
-                    repo_file = Path(repo_dir, GitHub2Pandas.Files.REPO)
+                    repo_file = Path(self.data_root_dir, GitHub2Pandas.Files.REPOS)
+                    existing_repos = GitHub2Pandas.get_full_names_of_repositories(self.data_root_dir)
+                    existing_repos.append(repo.full_name)
                     with open(repo_file, 'w') as json_file:
-                        json.dump({"repo_owner": repo.owner.login,"repo_name":repo.name}, json_file)
+                        json.dump({GitHub2Pandas.REPOSITORIES_KEY: existing_repos}, json_file)
                     relevant_repos.append(repo)
         return relevant_repos
     
@@ -284,9 +285,11 @@ class GitHub2Pandas():
             PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
 
         """
-        repo_file = Path(self.data_root_dir, GitHub2Pandas.Files.REPO)
+        repo_file = Path(self.data_root_dir, GitHub2Pandas.Files.REPOS)
+        existing_repos = GitHub2Pandas.get_full_names_of_repositories(self.data_root_dir)
+        existing_repos.append(repo_owner + "/" + repo_name)
         with open(repo_file, 'w') as json_file:
-            json.dump({"repo_owner": repo_owner,"repo_name":repo_name}, json_file)
+            json.dump({GitHub2Pandas.REPOSITORIES_KEY: existing_repos}, json_file)
         return self.__core.save_api_call(self.github_connection.get_repo,repo_owner + "/" + repo_name)
 
     @staticmethod
@@ -294,7 +297,7 @@ class GitHub2Pandas():
         return Core.get_pandas_data_frame(data_dir, filename)
 
     @staticmethod      
-    def get_repo_informations(data_root_dir):
+    def get_full_names_of_repositories(data_root_dir) -> list:
         """
         get_repo_informations(data_root_dir)
 
@@ -311,9 +314,9 @@ class GitHub2Pandas():
             Repository Owner and name
 
         """
-        repo_file = Path(data_root_dir, GitHub2Pandas.Files.REPO)
+        repo_file = Path(data_root_dir, GitHub2Pandas.Files.REPOS)
         if repo_file.is_file():
             with open(repo_file, 'r') as json_file:
                 repo_data = json.load(json_file)
-                return (repo_data["repo_owner"], repo_data["repo_name"])
-        return None, None
+                return repo_data[GitHub2Pandas.REPOSITORIES_KEY]
+        return []

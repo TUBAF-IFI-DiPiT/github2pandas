@@ -25,7 +25,15 @@ class TestPullRequests(unittest.TestCase):
             shutil.rmtree(self.data_root_dir, onerror=Core._file_error_handling)
         self.data_root_dir.mkdir(parents=True, exist_ok=True)
 
+    def test_get_repository_information(self):
+        github2pandas = GitHub2Pandas(self.github_token,self.data_root_dir,log_level=self.log_level)
+        repo = github2pandas.get_repo(self.git_repo_owner, self.git_repo_name)
+        repo = github2pandas.get_repo("microsoft","vscode")
+        repo_fullnames = GitHub2Pandas.get_full_names_of_repositories(self.data_root_dir)
+        pass
+    
     def test_generate_pandas_tables(self):
+        self.skipTest("")
         github2pandas = GitHub2Pandas(self.github_token,self.data_root_dir,log_level=self.log_level)
         repo = github2pandas.get_repo(self.git_repo_owner, self.git_repo_name)
         github2pandas.generate_pandas_tables(repo)
