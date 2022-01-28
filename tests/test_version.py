@@ -43,10 +43,10 @@ class TestVersion(unittest.TestCase):
         version.print_calls("End version")
 
     def test_get_data_frames(self):
-        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,Version.DATA_DIR)
-        commits = Core.get_pandas_data_frame(data_dir, Version.COMMITS)
-        edits = Core.get_pandas_data_frame(data_dir, Version.EDITS)
-        branches = Core.get_pandas_data_frame(data_dir, Version.BRANCHES)
+        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,Version.Files.DATA_DIR)
+        commits = Core.get_pandas_data_frame(data_dir, Version.Files.COMMITS)
+        edits = Core.get_pandas_data_frame(data_dir, Version.Files.EDITS)
+        branches = Core.get_pandas_data_frame(data_dir, Version.Files.BRANCHES)
         pass
     
 

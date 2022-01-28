@@ -39,11 +39,11 @@ class TestIssues(unittest.TestCase):
         issues.print_calls("End rate limit issues")
 
     def test_get_data_frames(self):
-        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,Issues.DATA_DIR)
-        issues = Core.get_pandas_data_frame(data_dir, Issues.ISSUES)
-        comments = Core.get_pandas_data_frame(data_dir, Issues.COMMENTS)
-        events = Core.get_pandas_data_frame(data_dir, Issues.EVENTS)
-        reactions = Core.get_pandas_data_frame(data_dir, Issues.ISSUES_REACTIONS)
+        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,Issues.Files.DATA_DIR)
+        issues = Core.get_pandas_data_frame(data_dir, Issues.Files.ISSUES)
+        comments = Core.get_pandas_data_frame(data_dir, Issues.Files.COMMENTS)
+        events = Core.get_pandas_data_frame(data_dir, Issues.Files.EVENTS)
+        reactions = Core.get_pandas_data_frame(data_dir, Issues.Files.ISSUES_REACTIONS)
         pass
 
 if __name__ == "__main__":

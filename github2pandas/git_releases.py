@@ -35,11 +35,18 @@ class GitReleases(Core):
     
     """
 
-    DATA_DIR = "Releases"
-    GIT_RELEASES = "Releases.p"
-    FILES = [
-        GIT_RELEASES
-    ]
+    class Files():
+        DATA_DIR = "Releases"
+        GIT_RELEASES = "Releases.p"
+
+        @staticmethod
+        def to_list() -> list:
+            return [GitReleases.Files.GIT_RELEASES]
+
+        @staticmethod
+        def to_dict() -> dict:
+            return {GitReleases.Files.DATA_DIR: GitReleases.Files.to_list()}
+
 
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
@@ -69,14 +76,14 @@ class GitReleases(Core):
             github_connection,
             repo,
             data_root_dir,
-            GitReleases.DATA_DIR,
+            GitReleases.Files.DATA_DIR,
             request_maximum=request_maximum,
             log_level=log_level
         )
 
     @property
     def git_releases_df(self):
-        return Core.get_pandas_data_frame(self.current_dir,GitReleases.GIT_RELEASES)
+        return Core.get_pandas_data_frame(self.current_dir,GitReleases.Files.GIT_RELEASES)
 
     def generate_pandas_tables(self, check_for_updates:bool = False):
         """
@@ -106,7 +113,7 @@ class GitReleases(Core):
             git_release_data = self.extract_git_releases_data(git_release)
             git_releases_list.append(git_release_data)
         git_releases_df = pd.DataFrame(git_releases_list)
-        self.save_pandas_data_frame(GitReleases.GIT_RELEASES, git_releases_df)
+        self.save_pandas_data_frame(GitReleases.Files.GIT_RELEASES, git_releases_df)
     
     def extract_git_releases_data(self, git_release:GitHubGitRelease):
         """

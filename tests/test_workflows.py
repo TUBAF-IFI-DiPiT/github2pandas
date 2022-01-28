@@ -35,9 +35,9 @@ class TestWorkflows(unittest.TestCase):
         workflows.print_calls("End workflows")
         
     def test_get_data_frames(self):
-        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,Workflows.DATA_DIR)
-        workflows = Core.get_pandas_data_frame(data_dir, Workflows.WORKFLOWS)
-        runs = Core.get_pandas_data_frame(data_dir, Workflows.RUNS)
+        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,Workflows.Files.DATA_DIR)
+        workflows = Core.get_pandas_data_frame(data_dir, Workflows.Files.WORKFLOWS)
+        runs = Core.get_pandas_data_frame(data_dir, Workflows.Files.RUNS)
         pass
 
     # def test_download_workflow_log_files(self):

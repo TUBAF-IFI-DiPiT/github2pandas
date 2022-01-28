@@ -59,23 +59,32 @@ class Issues(Core):
         Get a genearted pandas table.
     
     """
-    DATA_DIR = "Issues"
-    ISSUES = "Issues.p"
-    COMMENTS = "Comments.p"
-    ISSUES_REACTIONS = "IssuesReactions.p"
-    EVENTS = "Events.p"
-    FILES = [
-        ISSUES,
-        COMMENTS,
-        EVENTS,
-        ISSUES_REACTIONS
-    ]
     EXTRACTION_PARAMS = {
         "issues": True, # check for updates
         "reactions": False,
         "events": True,
         "comments": True
     }
+    
+    class Files():
+        DATA_DIR = "Issues"
+        ISSUES = "Issues.p"
+        COMMENTS = "Comments.p"
+        ISSUES_REACTIONS = "IssuesReactions.p"
+        EVENTS = "Events.p"
+
+        @staticmethod
+        def to_list() -> list:
+            return [
+                Issues.Files.ISSUES,
+                Issues.Files.COMMENTS,
+                Issues.Files.ISSUES_REACTIONS,
+                Issues.Files.EVENTS
+            ]
+
+        @staticmethod
+        def to_dict() -> dict:
+            return {Issues.Files.DATA_DIR: Issues.Files.to_list()}
 
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
@@ -105,23 +114,23 @@ class Issues(Core):
             github_connection,
             repo,
             data_root_dir,
-            Issues.DATA_DIR,
+            Issues.Files.DATA_DIR,
             request_maximum=request_maximum,
             log_level=log_level
         )
     
     @property
     def issues_df(self):
-        return Core.get_pandas_data_frame(self.current_dir, Issues.ISSUES)
+        return Core.get_pandas_data_frame(self.current_dir, Issues.Files.ISSUES)
     @property
     def comments_df(self):
-        return Core.get_pandas_data_frame(self.current_dir, Issues.COMMENTS)
+        return Core.get_pandas_data_frame(self.current_dir, Issues.Files.COMMENTS)
     @property
     def events_df(self):
-        return Core.get_pandas_data_frame(self.current_dir, Issues.EVENTS)
+        return Core.get_pandas_data_frame(self.current_dir, Issues.Files.EVENTS)
     @property
     def reactions_df(self):
-        return Core.get_pandas_data_frame(self.current_dir, Issues.ISSUES_REACTIONS)
+        return Core.get_pandas_data_frame(self.current_dir, Issues.Files.ISSUES_REACTIONS)
 
     def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}):
         """
@@ -191,16 +200,16 @@ class Issues(Core):
         # Save lists
         if extract_issues:
             issues_df = DataFrame(self.__issue_list)
-            self.save_pandas_data_frame(Issues.ISSUES, issues_df)
+            self.save_pandas_data_frame(Issues.Files.ISSUES, issues_df)
         if params["comments"]:
             comments_df = DataFrame(self.__comment_list)
-            self.save_pandas_data_frame(Issues.COMMENTS, comments_df)
+            self.save_pandas_data_frame(Issues.Files.COMMENTS, comments_df)
         if params["events"]:
             events_df = DataFrame(self.__event_list)
-            self.save_pandas_data_frame(Issues.EVENTS, events_df)
+            self.save_pandas_data_frame(Issues.Files.EVENTS, events_df)
         if params["reactions"]:
             reactions_df = DataFrame(self.__reaction_list)
-            self.save_pandas_data_frame(Issues.ISSUES_REACTIONS, reactions_df)
+            self.save_pandas_data_frame(Issues.Files.ISSUES_REACTIONS, reactions_df)
     
     def extract_issue(self, data:GitHubIssue, params:dict, events_overflow:bool):
         """

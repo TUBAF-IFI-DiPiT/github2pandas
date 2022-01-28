@@ -47,8 +47,8 @@ class TestRepositories(unittest.TestCase):
         repository.print_calls("End large repository with companies")
         
     def test_get_workflows(self):
-        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,Repository.DATA_DIR)
-        repository = Core.get_pandas_data_frame(data_dir, Repository.REPOSITORY)
+        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,Repository.Files.DATA_DIR)
+        repository = Core.get_pandas_data_frame(data_dir, Repository.Files.REPOSITORY)
         pass
 
 if "__main__" == __name__:

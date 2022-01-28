@@ -41,11 +41,11 @@ class TestPullRequests(unittest.TestCase):
         pull_requests.print_calls("End rate limit pr")
 
     def test_get_data_frames(self):
-        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,PullRequests.DATA_DIR)
-        pull_requests = Core.get_pandas_data_frame(data_dir, PullRequests.PULL_REQUESTS)
-        reviews = Core.get_pandas_data_frame(data_dir, PullRequests.REVIEWS)
-        reviews_comments = Core.get_pandas_data_frame(data_dir, PullRequests.REVIEWS_COMMENTS)
-        reactions = Core.get_pandas_data_frame(data_dir, PullRequests.PULL_REQUESTS_REACTIONS)
+        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,PullRequests.Files.DATA_DIR)
+        pull_requests = Core.get_pandas_data_frame(data_dir, PullRequests.Files.PULL_REQUESTS)
+        reviews = Core.get_pandas_data_frame(data_dir, PullRequests.Files.REVIEWS)
+        reviews_comments = Core.get_pandas_data_frame(data_dir, PullRequests.Files.REVIEWS_COMMENTS)
+        reactions = Core.get_pandas_data_frame(data_dir, PullRequests.Files.PULL_REQUESTS_REACTIONS)
         pass
 
 if __name__ == "__main__":

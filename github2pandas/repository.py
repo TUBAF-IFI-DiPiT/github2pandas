@@ -32,12 +32,17 @@ class Repository(Core):
         Get a generated pandas tables.
 
     """
+    class Files():
+        DATA_DIR = "Repository"
+        REPOSITORY = "Repository.p"
 
-    DATA_DIR = "Repository"
-    REPOSITORY = "Repository.p"
-    FILES = [
-        REPOSITORY
-    ]
+        @staticmethod
+        def to_list() -> list:
+            return [Repository.Files.REPOSITORY]
+
+        @staticmethod
+        def to_dict() -> dict:
+            return {Repository.Files.DATA_DIR: Repository.Files.to_list()}
 
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
@@ -67,14 +72,14 @@ class Repository(Core):
             github_connection,
             repo,
             data_root_dir,
-            Repository.DATA_DIR,
+            Repository.Files.DATA_DIR,
             request_maximum=request_maximum,
             log_level=log_level
         )
 
     @property
     def repository_df(self):
-        return Core.get_pandas_data_frame(self.current_dir, Repository.REPOSITORY)
+        return Core.get_pandas_data_frame(self.current_dir, Repository.Files.REPOSITORY)
 
     def generate_pandas_tables(self, contributor_companies_included:bool = False):
         """
@@ -92,7 +97,7 @@ class Repository(Core):
         repository_data = self.extract_repository_data(contributor_companies_included)
         repository_data_list.append(repository_data)
         repository_df = DataFrame(repository_data_list)
-        self.save_pandas_data_frame(Repository.REPOSITORY, repository_df)
+        self.save_pandas_data_frame(Repository.Files.REPOSITORY, repository_df)
 
     def extract_repository_data(self, contributor_companies_included:bool = False):
         """
@@ -135,7 +140,7 @@ class Repository(Core):
         #     last_commit_date = numpy.nan
         #     print("No commits found!")  
          
-        contributors = self.save_api_call(self.repo.get_contributors,"all")
+        contributors = self.save_api_call(self.repo.get_contributors,"True")
         contributors_count = self.get_save_total_count(contributors)
         # contributor = self.repo.get_contributors( 'all')
         # try:

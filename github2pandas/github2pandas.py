@@ -15,9 +15,6 @@ from github2pandas.version import Version
 from github2pandas.workflows import Workflows
 
 class GitHub2Pandas():
-
-    REPO = "Repo.json"
-    
     EXTRACTION_PARAMS = {
         "git_releases": True,
         "issues": True,
@@ -29,14 +26,36 @@ class GitHub2Pandas():
         "workflows": True,
         "workflows_params": Workflows.EXTRACTION_PARAMS
     }
-    FILES = {
-        GitReleases.DATA_DIR: GitReleases.FILES,
-        Issues.DATA_DIR: Issues.FILES,
-        PullRequests.DATA_DIR: PullRequests.FILES,
-        Repository.DATA_DIR: Repository.FILES,
-        Version.DATA_DIR: Version.FILES,
-        Workflows.DATA_DIR: Workflows.FILES,
-    }
+
+    class Files():
+        REPO = "Repo.json"
+        GIT_RELEASES = GitReleases.Files
+        ISSUES = Issues.Files
+        PULL_REQUESTS = PullRequests.Files
+        REPOSITORY = Repository.Files
+        VERSION = Version.Files
+        WORKFLOWS = Workflows.Files
+        CORE = Core.Files
+
+        @staticmethod
+        def to_list() -> list:
+            return [
+                GitHub2Pandas.Files.GIT_RELEASES,
+                GitHub2Pandas.Files.ISSUES,
+                GitHub2Pandas.Files.PULL_REQUESTS,
+                GitHub2Pandas.Files.REPOSITORY,
+                GitHub2Pandas.Files.VERSION,
+                GitHub2Pandas.Files.WORKFLOWS,
+                GitHub2Pandas.Files.CORE
+            ]
+
+        @staticmethod
+        def to_dict() -> dict:
+            d = {}
+            for files in GitHub2Pandas.Files.to_list():
+                d.update(files.to_dict())
+            d[""].append(GitHub2Pandas.Files.REPO)
+            return d
 
     def __init__(self, github_token:str, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
@@ -129,7 +148,7 @@ class GitHub2Pandas():
         if "unknown_user" in pd_commits:
             unknown_users = pd_commits.unknown_user.unique()
             if unknown_user_name in unknown_users:
-                users = Core.get_pandas_data_frame(self.repo_data_dir, Core.USERS)
+                users = Core.get_pandas_data_frame(self.repo_data_dir, Core.Files.USERS)
                 p_user = users.loc[users.anonym_uuid == uuid]
                 if not p_user.empty:
                     alias = []
@@ -141,7 +160,7 @@ class GitHub2Pandas():
                     if not unknown_user_name in alias:
                         alias.append(unknown_user_name)
                     users.loc[users.anonym_uuid == uuid, 'alias'] = alias
-                    self.__core.save_pandas_data_frame(Core.USERS, users)
+                    self.__core.save_pandas_data_frame(Core.Files.USERS, users)
                     new_uuid = user["anonym_uuid"]
                 else:
                     class UserData:
@@ -232,7 +251,7 @@ class GitHub2Pandas():
                 if blacklist_pass:
                     repo_dir = Path(self.data_root_dir, repo.owner.login + "/" + repo.name)
                     repo_dir.mkdir(parents=True, exist_ok=True)
-                    repo_file = Path(repo_dir, self.REPO)
+                    repo_file = Path(repo_dir, GitHub2Pandas.Files.REPO)
                     with open(repo_file, 'w') as json_file:
                         json.dump({"repo_owner": repo.owner.login,"repo_name":repo.name}, json_file)
                     relevant_repos.append(repo)
@@ -265,14 +284,14 @@ class GitHub2Pandas():
             PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
 
         """
-        repo_file = Path(self.data_root_dir, self.REPO)
+        repo_file = Path(self.data_root_dir, GitHub2Pandas.Files.REPO)
         with open(repo_file, 'w') as json_file:
             json.dump({"repo_owner": repo_owner,"repo_name":repo_name}, json_file)
         return self.__core.save_api_call(self.github_connection.get_repo,repo_owner + "/" + repo_name)
 
     @staticmethod
-    def get_pandas_data_frame(repo_data_dir:Path, data_dir_name:str,  filename:str):
-        return Core.get_pandas_data_frame(Path(repo_data_dir,data_dir_name), filename)
+    def get_pandas_data_frame(data_dir:Path, filename:str) -> pd.DataFrame:
+        return Core.get_pandas_data_frame(data_dir, filename)
 
     @staticmethod      
     def get_repo_informations(data_root_dir):
@@ -292,7 +311,7 @@ class GitHub2Pandas():
             Repository Owner and name
 
         """
-        repo_file = Path(data_root_dir, GitHub2Pandas.REPO)
+        repo_file = Path(data_root_dir, GitHub2Pandas.Files.REPO)
         if repo_file.is_file():
             with open(repo_file, 'r') as json_file:
                 repo_data = json.load(json_file)

@@ -32,7 +32,18 @@ class Core():
        Json file for general repository informations.
 
     """
-    USERS = "Users.p"
+    
+    class Files():
+        DATA_DIR = ""
+        USERS = "Users.p"
+
+        @staticmethod
+        def to_list() -> list:
+            return [Core.Files.USERS]
+
+        @staticmethod
+        def to_dict() -> dict:
+            return {Core.Files.DATA_DIR: Core.Files.to_list()}
     
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, current_dir:str, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         self.log_level = log_level
@@ -49,7 +60,7 @@ class Core():
         if repo is not None:
             self.repo_data_dir = Path(self.data_root_dir,repo.full_name)
             self.repo_data_dir.mkdir(parents=True, exist_ok=True)
-            df_users = Core.get_pandas_data_frame(self.repo_data_dir, Core.USERS)
+            df_users = Core.get_pandas_data_frame(self.repo_data_dir, Core.Files.USERS)
             self.users_ids = {}
             for index, row in df_users.iterrows():
                 self.users_ids[row["id"]] = row["anonym_uuid"]
@@ -283,7 +294,7 @@ class Core():
             return None
         if user.node_id in self.users_ids:
             return self.users_ids[user.node_id]
-        users_file = Path(self.repo_data_dir, self.USERS)
+        users_file = Path(self.repo_data_dir, Core.Files.USERS)
         users_df = pd.DataFrame()
         if users_file.is_file():
             users_df = pd.read_pickle(users_file)
@@ -453,7 +464,10 @@ class Core():
 
     def extract_with_updated_and_since(self, github_method, label:str, data_extraction_function, *args, initial_data_list:PaginatedList=None,initial_total_count:int=None, state:str=None,**kwargs):
         if initial_data_list is None:
-            data_list = self.save_api_call(github_method, sort="updated", direction="asc")
+            if state is None:
+                data_list = self.save_api_call(github_method, sort="updated", direction="asc")
+            else:
+                data_list = self.save_api_call(github_method, state=state, sort="updated", direction="asc")
         else:
             data_list = initial_data_list
         if initial_total_count is None:

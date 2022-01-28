@@ -34,8 +34,8 @@ class TestGitReleases(unittest.TestCase):
         git_releases.print_calls("End git releases")
 
     def test_get_data_frames(self):
-        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,GitReleases.DATA_DIR)
-        git_releases = Core.get_pandas_data_frame(data_dir, GitReleases.GIT_RELEASES)
+        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,GitReleases.Files.DATA_DIR)
+        git_releases = Core.get_pandas_data_frame(data_dir, GitReleases.Files.GIT_RELEASES)
         pass
 
 if __name__ == "__main__":
