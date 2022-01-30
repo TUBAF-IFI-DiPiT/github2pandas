@@ -68,7 +68,7 @@ class Version(Core):
         DATA_DIR = "Versions"
         COMMITS = "Commits.p"
         EDITS = "Edits.p"
-        BRANCHES = "Brances.p"
+        BRANCHES = "Branches.p"
         REPOSITORY_DIR = "repo"
         VERSION_DB = "Versions.db"
 
