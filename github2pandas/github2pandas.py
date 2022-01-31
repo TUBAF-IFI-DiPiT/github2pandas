@@ -15,6 +15,10 @@ from github2pandas.version import Version
 from github2pandas.workflows import Workflows
 
 class GitHub2Pandas():
+    """
+    REPO : str
+        Json file for general repository informations.
+    """
 
     REPO = "Repo.json"
     
