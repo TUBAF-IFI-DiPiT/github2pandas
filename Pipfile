@@ -23,6 +23,7 @@ pywin32 = {sys_platform = "== 'win32'"}
 human-id = "*"
 psutil = "*"
 sphinx-rtd-theme = "*"
+cffi="*"
 
 [dev-packages]
 github2pandas = {editable = true, path = "."}
