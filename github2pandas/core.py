@@ -50,6 +50,52 @@ class Core():
 
     users_ids : dict
         Dictionary of User Ids as Keys and anonym Ids as Value.
+
+    Methods
+    -------
+    __init__(self, github_connection, repo, repo_data_root_dir, current_dir, request_maximum, log_level)
+        Initializes core object with general informations.
+    save_api_call(self, function, *args, **kwargs)
+        Calls a function or method savely.
+    get_save_total_count(self, paginated_list)
+        Gets the total count of a paginated list savely. Waits until request limit is restored.
+    get_save_api_data(self, paginated_list, index)
+        Gets one item of the paginated list by index.
+    wait_for_reset(self)
+        Waits until request limit is refreshed.
+    check_for_updates_paginated(self, new_paginated_list, list_count, old_df)
+        Checks if the new_paginated_list has updates.
+    extract_reactions(self, extract_function, parent_id, parent_name)
+        Extracts reactions for element with parent_id by calling of extract_function.
+    extract_reaction_data(self, reaction, parent_id, parent_name)
+        Extracts general reaction data.
+    extract_user_data(self, user, node_id_to_anonym_uuid=False)
+        Extracts general user data.
+    save_pandas_data_frame(self, file, data_frame)
+        Saves the data_frame to a given file.
+    extract_users(self, users)
+        Extracts user data based on parameter users and returns a list of anonym user UUIDs. 
+    extract_author_data_from_commit(self, commit_sha)
+        Extracts general author data from a commit.
+    extract_committer_data_from_commit(self, commit_sha)
+        Extracts general committer data from a commit.
+    extract_labels(self, github_labels)
+        Gets all label names as a list.
+    extract_with_updated_and_since(self, github_method, label, data_extraction_function, *args, initial_data_list=None,initial_total_count=None, state=None,**kwargs)
+        Extracts and updates data, calls the method git_method and the function data_extraction_function.
+    progress_bar(self,iterable, prefix="", size=60, file=sys.stdout)
+        Prints out a progress bar.
+    copy_valid_params(self, base_dict ,input_params)
+        Appends base_dict with the elements of input_param, returns the new dictionary.
+    file_error_handling(self, function, path, exc_info)
+        Tries to change file permission and call the calling function again.
+    apply_datetime_format(self, pd_table, source_column, destination_column=None)
+        Provides equal date formate for all destination_column timestamps.
+    _file_error_handling(function, path)
+        Tries to change file permission and call the calling function again.
+    get_pandas_data_frame(data_dir, filename)
+        Returns a pandas data frame stored in file.
+
     """
     USERS = "Users.p"
     
@@ -57,7 +103,7 @@ class Core():
         """
         __init__(self, github_connection, repo, repo_data_root_dir, current_dir, request_maximum, log_level)
 
-        Initial core object with general information.
+        Initializes core object with general informations.
 
         Parameters
         ----------
@@ -106,7 +152,7 @@ class Core():
         """
         save_api_call(self, function, *args, **kwargs)
 
-        Call a function or method savely.
+        Calls a function or method savely.
 
         Parameters
         ----------
@@ -133,7 +179,7 @@ class Core():
         """
         get_save_total_count(self, paginated_list)
 
-        Get the total count of a paginated list savely. Waits until request limit is restored.
+        Gets the total count of a paginated list savely. Waits until request limit is restored.
 
         Parameters
         ----------
@@ -156,7 +202,7 @@ class Core():
         """
         get_save_api_data(self, paginated_list, index)
 
-        Get one item of the paginated list by index.
+        Gets one item of the paginated list by index.
 
         Parameters
         ----------
@@ -181,7 +227,7 @@ class Core():
         """
         wait_for_reset(self)
 
-        Wait until request limit is refreshed.
+        Waits until request limit is refreshed.
 
         """
         self.logger.debug("Waiting for request limit refresh ...")
@@ -204,7 +250,7 @@ class Core():
         """
         check_for_updates_paginated(self, new_paginated_list, list_count, old_df)
 
-        Check if the new_paginated_list has updates.
+        Checks if the new_paginated_list has updates.
 
         Parameters
         ----------
@@ -240,7 +286,7 @@ class Core():
         """
         extract_reactions(self, extract_function, parent_id, parent_name)
 
-        Extracting reactions for element with parent_id by calling of extract_function.
+        Extracts reactions for element with parent_id by calling of extract_function.
 
         Parameters
         ----------
@@ -271,7 +317,7 @@ class Core():
         """
         extract_reaction_data(self, reaction, parent_id, parent_name)
 
-        Extracting general reaction data.
+        Extracts general reaction data.
 
         Parameters
         ----------
@@ -306,14 +352,14 @@ class Core():
         """
         extract_user_data(self, user, node_id_to_anonym_uuid=False)
 
-        Extracting general user data.
+        Extracts general user data.
 
         Parameters
         ----------
         user : GitHubNamedUser
             NamedUser object from pygithub.
         node_id_to_anonym_uuid : bool
-            Node_id will be the anonym_uuid if True, anotherwise anonym_uuid is to generate, default=False
+            Node_id will be the anonym_uuid if True, otherwise anonym_uuid is to generate, default=False
         
         Returns
         -------
@@ -358,7 +404,7 @@ class Core():
         """
         save_pandas_data_frame(self, file, data_frame)
 
-        Save the data_frame to a given file.
+        Saves the data_frame to a given file.
 
         Parameters
         ----------
@@ -377,7 +423,7 @@ class Core():
         """
         extract_users(self, users)
 
-        Extracts user data based on parameter users and returns a list of anonym user UUIDs 
+        Extracts user data based on parameter users and returns a list of anonym user UUIDs. 
 
         Parameters
         ----------
@@ -403,7 +449,7 @@ class Core():
         """
         extract_author_data_from_commit(self, commit_sha)
 
-        Extracting general author data from a commit.
+        Extracts general author data from a commit.
 
         Parameters
         ----------
@@ -433,7 +479,7 @@ class Core():
         """
         extract_committer_data_from_commit(self, commit_sha)
 
-        Extracting general committer data from a commit.
+        Extracts general committer data from a commit.
 
         Parameters
         ----------
@@ -463,7 +509,7 @@ class Core():
         """
         extract_labels(self, github_labels)
 
-        Get all label names as a list.
+        Gets all label names as a list.
 
         Parameters
         ----------
@@ -602,7 +648,7 @@ class Core():
         """
         file_error_handling(self, function, path, exc_info)
 
-        Error handler function which will try to change file permission and call the calling function again.
+        Is an error handler function which will try to change file permission and call the calling function again.
 
         Parameters
         ----------
@@ -623,7 +669,7 @@ class Core():
         """
         apply_datetime_format(self, pd_table, source_column, destination_column=None)
 
-        Provide equal date formate for all destination_column timestamps
+        Provides equal date formate for all destination_column timestamps.
 
         Parameters
         ----------
@@ -657,7 +703,7 @@ class Core():
         """
         _file_error_handling(function, path)
 
-        Error handler function which will try to change file permission and call the calling function again.
+        Is an error handler function which will try to change file permission and call the calling function again.
 
         Parameters
         ----------
@@ -680,19 +726,19 @@ class Core():
         """
         get_pandas_data_frame(data_dir, filename)
 
-        Returns a pandas data frame stored in file, if necessary creates one
+        Returns a pandas data frame stored in file, if necessary creates one.
 
         Parameters
         ----------
-        data_dir
-            Path to pandas file
-        filename
-            Filename
+        data_dir:Path
+            Path to pandas file.
+        filename:str
+            Filename.
 
         Returns
         -------
         pd.DataFrame
-            Returns pandas data frame stored in file if file exist, otherwise a new data frame object
+            Returns pandas data frame stored in file if file exist, otherwise a new data frame object.
 
         """        
         pd_file = Path(data_dir, filename)

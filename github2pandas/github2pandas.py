@@ -1,5 +1,6 @@
 import json
 import logging
+from types import NoneType
 from pathlib import Path
 import numpy
 import pandas as pd
@@ -16,8 +17,49 @@ from github2pandas.workflows import Workflows
 
 class GitHub2Pandas():
     """
+    An object of the class GitHub2Pandas is required to use the program package. 
+    The object obtains general informations about the Github repository: github access token and
+    path to a root directory. The class provides methods for accessing the repository.
+
+    Attributes
+    ----------
     REPO : str
         Json file for general repository informations.
+    EXTRACTION_PARAMS : dict
+        Extraction Parameter.
+    FILES : dict
+        Mappings from data directories to pandas table files.
+    __github_token : str
+        Github access token.
+    github_connection : Github
+        Github object from pygithub.
+    data_root_dir : Path 
+        Root directory of the repository.
+    request_maximum : int
+        Maximum amount of returned informations for a general api call, default=40000.
+    log_level : int
+        Logging level (CRITICAL, ERROR, WARNING, INFO, DEBUG or NOTSET) 
+    __core : Core
+        Core object, contains common information about GitHub2Pandas request.
+
+    Methods
+    -------
+    __init__(self, github_token, data_root_dir, request_maximum = 40000, log_level=logging.INFO)
+        Initializes Github2Pandas object with general informations. 
+    generate_pandas_tables(self, repo, extraction_params)
+        Generates pandas tables for given Github repository depending on extraction parameters.
+    define_unknown_user(self, unknown_user_name, uuid, data_root_dir, new_user=False)
+        Defines unknown user in commits pandas table.
+    get_unknown_users(self)
+        Gets all unknown users from commits.
+    get_repos(self, whitelist_patterns=None, blacklist_patterns=None)
+        Returns repositories corresponding with the pattern in the given lists.
+    get_repo(self, repo_owner, repo_name)
+        Gets a repository by owner and name.
+    get_pandas_data_frame(repo_data_dir, data_dir_name, filename)
+        Returns a pandas data frame stored in file.      
+    get_repo_informations(data_root_dir)
+        Gets a repository data (owner and name).
     """
 
     REPO = "Repo.json"
@@ -42,22 +84,22 @@ class GitHub2Pandas():
         Workflows.DATA_DIR: Workflows.FILES,
     }
 
-    def __init__(self, github_token:str, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
+    def __init__(self, github_token:str, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> NoneType:
         """
-        __init__(self, github_connection, repo, data_root_dir, request_maximum)
+        __init__(self, github_token, data_root_dir, request_maximum = 40000, log_level=logging.INFO)
 
-        Initial pull request object with general information.
+        Initializes Github2Pandas object with general informations.
 
         Parameters
         ----------
-        github_connection : Github
-            Github object from pygithub.
-        repo : GitHubRepository
-            Repository object from pygithub.
+        github_token : str
+            Github access token.
         data_root_dir : Path
             Data root directory for the repository.
         request_maximum : int, default=40000
-            Maxmimum amount of returned informations for a general api call
+            Maxmimum amount of returned informations for a general api call.
+        log_level : int
+            Logging level (CRITICAL, ERROR, WARNING, INFO, DEBUG or NOTSET) .
 
         Notes
         -----
@@ -73,7 +115,20 @@ class GitHub2Pandas():
         self.log_level = log_level
         self.__core = Core(self.github_connection,None,self.data_root_dir,None,log_level=log_level)
 
-    def generate_pandas_tables(self, repo:GitHubRepository, extraction_params:dict = {}):
+    def generate_pandas_tables(self, repo:GitHubRepository, extraction_params:dict = {}) -> NoneType:
+        """
+        generate_pandas_tables(self, repo, extraction_params)
+
+        Generates pandas tables for given Github repository depending on extraction parameters.
+
+        Parameters
+        ----------
+        repo : GitHubRepository
+            Repository object from pygithub.
+        extraction_params : dict
+            Specifies the kind of data to be extracted.
+
+        """
         params = self.__core.copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
         if params["git_releases"]:
             try:
@@ -113,20 +168,20 @@ class GitHub2Pandas():
             except Exception as e:
                 self.__core.logger.error("Error in workflows. Workflows are not extracted!", exc_info=e)
 
-    def define_unknown_user(self, unknown_user_name:str, uuid:str, new_user:bool = False):
+    def define_unknown_user(self, unknown_user_name:str, uuid:str, new_user:bool = False) -> NoneType:
         """
-        define_unknown_user(unknown_user_name, uuid, data_root_dir, new_user=False)
+        define_unknown_user(self, unknown_user_name, uuid, data_root_dir, new_user=False)
 
-        Define unknown user in commits pandas table.
+        Defines unknown user in commits pandas table.
 
         Parameters
         ----------
-        unknown_user_name: str
+        unknown_user_name : str
             Name of unknown user. 
-        uuid: str
+        uuid : str
             Uuid can be the anonym uuid of another user or random uuid for a new user. 
         new_user : bool, default=False
-            A complete new user with uuid will be generated.
+            A complete new user with uuid will be generated if True, otherwise Node_id will be the anonym_uuid.
 
         """
         pd_commits = Version.get_version(self.data_root_dir)
@@ -166,34 +221,30 @@ class GitHub2Pandas():
             self.__core.save_pandas_data_frame(Version.VERSION_COMMITS,pd_commits)
             self.__core.current_dir = self.data_root_dir
 
-    def get_unknown_users(self, data_root_dir):
+    def get_unknown_users(self) -> list:
         """
-        get_unknown_users(data_root_dir)
+        get_unknown_users(self)
 
-        Get all unknown users in from commits.
-
-        Parameters
-        ----------
-        data_root_dir : str
-            Data root directory for the repository.
+        Gets all unknown users from commits.
 
         Returns
         -------
-        List
-            List of unknown user names
+        list
+            List of unknown user names.
         
         """
-        pd_commits = Version.get_version(data_root_dir)
+        pd_commits = Version.get_version(self.data_root_dir)
         if "unknown_user" in pd_commits:
             unknown_user_commits = pd_commits.loc[pd_commits.unknown_user.notna()]
             unknown_users = unknown_user_commits.unknown_user.unique()
             return list(unknown_users)
      
-    def get_repos(self, whitelist_patterns=None, blacklist_patterns=None):
+    def get_repos(self, whitelist_patterns:list = None, blacklist_patterns:list = None) -> list:
         """
-        get_repos(token, data_root_dir, whitelist_patterns=None, blacklist_patterns=None)
+        get_repos(self, whitelist_patterns=None, blacklist_patterns=None)
 
-        Get mutiple repositorys by mutiple pattern and token.
+        Returns a list of repositories whose names correspond with the pattern in the blacklist_patterns list
+        and not correspond with the pattern in the blacklist_patterns list
 
         Parameters
         ----------
@@ -242,11 +293,11 @@ class GitHub2Pandas():
                     relevant_repos.append(repo)
         return relevant_repos
     
-    def get_repo(self, repo_owner:str, repo_name:str):
+    def get_repo(self, repo_owner:str, repo_name:str) -> GitHubRepository:
         """
-        get_repo(repo_owner, repo_name, token, data_root_dir)
+        get_repo(self, repo_owner, repo_name)
 
-        Get a repository by owner, name and token.
+        Gets a repository by owner and name.
 
         Parameters
         ----------
@@ -254,14 +305,10 @@ class GitHub2Pandas():
             the owner of the desired repository.
         repo_name : str
             the name of the desired repository.
-        token : str
-            A valid Github Token.
-        data_root_dir : Path
-            Data root directory for the repository.
         
         Returns
         -------
-        repo
+        GitHubRepository
             Repository object from pygithub.
 
         Notes
@@ -275,15 +322,35 @@ class GitHub2Pandas():
         return self.__core.save_api_call(self.github_connection.get_repo,repo_owner + "/" + repo_name)
 
     @staticmethod
-    def get_pandas_data_frame(repo_data_dir:Path, data_dir_name:str,  filename:str):
+    def get_pandas_data_frame(repo_data_dir:Path, data_dir_name:str,  filename:str) -> pd.DataFrame:
+        """
+        get_pandas_data_frame(repo_data_dir, data_dir_name, filename)
+
+        Returns a pandas data frame stored in file, if necessary creates one.
+
+        Parameters
+        ----------
+        repo_data_dir : Path
+            Path to repository
+        data_dir_name : str
+            Name of a data directory
+        filename : str
+            Filename
+
+        Returns
+        -------
+        pd.DataFrame
+            Returns pandas data frame stored in file if file exist, otherwise a new data frame object.
+
+        """
         return Core.get_pandas_data_frame(Path(repo_data_dir,data_dir_name), filename)
 
     @staticmethod      
-    def get_repo_informations(data_root_dir):
+    def get_repo_informations(data_root_dir:str) -> tuple:
         """
         get_repo_informations(data_root_dir)
 
-        Get a repository data (owner and name).
+        Gets a repository data (owner and name).
 
         Parameters
         ----------
@@ -293,7 +360,7 @@ class GitHub2Pandas():
         Returns
         -------
         tuple
-            Repository Owner and name
+            Returns a tuple of repository owner and repository name or (None,None) if repository path not exist.
 
         """
         repo_file = Path(data_root_dir, GitHub2Pandas.REPO)

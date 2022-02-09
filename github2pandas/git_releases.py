@@ -16,7 +16,7 @@ class GitReleases(Core):
     Attributes
     ----------
     DATA_DIR : str
-        Git releases dir where all files are saved in.
+        Git releases directory where all files are saved in.
     GIT_RELEASES : str
         Pandas table file for git releases data.
     git_releases_df : pd.DataFrame
@@ -25,13 +25,11 @@ class GitReleases(Core):
     Methods
     -------
     __init__(self, github_connection, repo, data_root_dir, request_maximum)
-        Initial git releases object with general information.
-    generate_pandas_tables(check_for_updates=False)
-        Extracting the complete git releases data from a repository.
-    extract_git_releases_data(git_release)
-        Extracting general git release data.
-    get_git_releases(data_root_dir)
-        Get the git releases pandas dataframe.
+        Initializes git releases object with general information.
+    generate_pandas_tables(self, check_for_updates=False)
+        Generates pandas tables for git releases data.
+    extract_git_releases_data(self, git_release)
+        Extracts general git releases data.
     
     """
 
@@ -45,7 +43,7 @@ class GitReleases(Core):
         """
         __init__(self, github_connection, repo, data_root_dir, request_maximum)
 
-        Initial git releases object with general information.
+        Initializes git releases object with general information.
 
         Parameters
         ----------
@@ -56,7 +54,9 @@ class GitReleases(Core):
         data_root_dir : Path
             Data root directory for the repository.
         request_maximum : int, default=40000
-            Maxmimum amount of returned informations for a general api call
+            Maxmimum amount of returned informations for a general api call.
+        log_level : int
+            Logging level (CRITICAL, ERROR, WARNING, INFO, DEBUG or NOTSET), default value is enumaration value logging.INFO    
 
         Notes
         -----
@@ -75,19 +75,20 @@ class GitReleases(Core):
         )
 
     @property
-    def git_releases_df(self):
+    def git_releases_df(self) -> pd.DataFrame:
         return Core.get_pandas_data_frame(self.current_dir,GitReleases.GIT_RELEASES)
 
     def generate_pandas_tables(self, check_for_updates:bool = False):
         """
         generate_pandas_tables(self, check_for_updates=False)
 
-        Extracting the complete git releases data from a repository.
+        Generates pandas tables for git releases data from a repository.
+        Checks first if there are any new git releases information in dependence of parameter value check_for_updates.
 
         Parameters
         ----------
-        check_for_updates : bool, default=True
-            Check first if there are any new git releases information.
+        check_for_updates : bool, default=False
+            Determines whether update is necessary.
         
         """
         git_releases = self.save_api_call(self.repo.get_releases)
@@ -108,11 +109,12 @@ class GitReleases(Core):
         git_releases_df = pd.DataFrame(git_releases_list)
         self.save_pandas_data_frame(GitReleases.GIT_RELEASES, git_releases_df)
     
-    def extract_git_releases_data(self, git_release:GitHubGitRelease):
+    def extract_git_releases_data(self, git_release:GitHubGitRelease) -> dict:
         """
         extract_git_releases_data(git_release)
 
-        Extracting general git release data.
+        Extracts general git releases data from pygithub GitRelease object.
+        Returns dictionary with the extracted data.
 
         Parameters
         ----------
@@ -122,7 +124,7 @@ class GitReleases(Core):
         Returns
         -------
         dict
-            Dictionary with the extracted general git release data.
+            Dictionary with the extracted general git releases data.
 
         Notes
         -----
