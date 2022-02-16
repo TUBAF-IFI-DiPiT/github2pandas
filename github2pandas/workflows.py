@@ -3,6 +3,8 @@ import requests
 from zipfile import ZipFile
 from io import BytesIO
 from pathlib import Path
+from types import NoneType
+from typing import Union
 from pandas import DataFrame
 import pandas as pd
 # github imports
@@ -25,21 +27,27 @@ class Workflows(Core):
         Pandas table file for workflow data.
     WORKFLOWS_RUNS : str
         Pandas table file for run data.
+    EXTRACTION_PARAMS : dict
+        Holds all extraction parameters with a default setting.
+    FILES : dict
+        Mappings from data directories to pandas table files.    
+    workflows_df : DataFrame
+        Pandas DataFrame object with workflows data.
+    runs_df : DataFrame
+        Pandas DataFrame object with runs data.
 
     Methods
     -------
     __init__(self, github_connection, repo, data_root_dir, request_maximum)
-        Initial workflows object with general information.
+        Initializes workflows object with general information.
     generate_pandas_tables(self, check_for_updates=False, extraction_params={})
-        Extracting the complete workflow list and run history from a repository.
-    extract_workflow_data(workflow)
-        Extracting general workflow data.
-    extract_run_data(workflow_run)
-        Extracting general workflow run data.
+        Extracts the complete workflow list and run history from a repository.
+    __extract_workflow_data(workflow)
+        Extracts general data of one workflow.
+    __extract_run_data(workflow_run)
+        Extracts general data of workflow run.
     download_workflow_log_files(repo, github_token, workflow_run_id, data_root_dir)
-        Receive workflow log files from GitHub.
-    get_workflows(data_root_dir, filename=WORKFLOWS)
-        Get a generated pandas tables.
+        Receives workflow log files from GitHub.
     
     """
 
@@ -55,11 +63,11 @@ class Workflows(Core):
         "runs": True
     }
 
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> NoneType:
         """
-        __init__(self, github_connection, repo, data_root_dir, request_maximum)
+        __init__(self, github_connection, repo, data_root_dir, request_maximum, log_level)
 
-        Initial workflows object with general information.
+        Initializes Workflows object with general information.
 
         Parameters
         ----------
@@ -70,7 +78,10 @@ class Workflows(Core):
         data_root_dir : Path
             Data root directory for the repository.
         request_maximum : int, default=40000
-            Maxmimum amount of returned informations for a general api call
+            Maximum amount of returned informations for a general api call.
+        log_level : int
+            Logging level (CRITICAL, ERROR, WARNING, INFO, DEBUG or NOTSET), default value is enumaration value logging.INFO    
+
 
         Notes
         -----
@@ -95,16 +106,17 @@ class Workflows(Core):
     def runs_df(self):
         return Core.get_pandas_data_frame(self.current_dir, Workflows.RUNS)
 
-    def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}):
+    def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}) -> NoneType:
         """
-        generate_pandas_tables(self, check_for_updates=False, extraction_params={})
+        generate_pandas_tables(check_for_updates=False, extraction_params={})
 
-        Extracting the complete workflow list and run history from a repository.
+        Extracts the complete workflows from a repository.
+        Checks first if there are any new workflows information in dependence of parameter check_for_updates.
 
         Parameters
         ----------
         check_for_updates : bool, default=True
-            Check first if there are any new issues information. Does not work when extract_reaction is True.
+            Checks first if there are any new workflows information. Does not work when extract_reaction is True.
         extraction_params : dict, default={}
             Can hold extraction parameters. This defines what will be extracted.
             
@@ -122,7 +134,7 @@ class Workflows(Core):
                 workflow_list = []
                 for i in self.progress_bar(range(total_count), "Workflows: "):
                     workflow = self.get_save_api_data(workflows, i)
-                    workflow_data = self.extract_workflow_data(workflow)
+                    workflow_data = self.__extract_workflow_data(workflow)
                     workflow_list.append(workflow_data)
                 workflows_df = DataFrame(workflow_list)
                 self.save_pandas_data_frame(Workflows.WORKFLOWS, workflows_df)
@@ -138,20 +150,20 @@ class Workflows(Core):
                 run_list = []
                 for i in self.progress_bar(range(total_count), "Workflow Runs: "):
                     run = self.get_save_api_data(runs, i)
-                    run_data = self.extract_run_data(run)
+                    run_data = self.__extract_run_data(run)
                     run_list.append(run_data)
                 runs_df = DataFrame(run_list)
                 self.save_pandas_data_frame(Workflows.RUNS, runs_df)
 
-    def extract_workflow_data(self, workflow:GitHubWorkflow):
+    def __extract_workflow_data(self, workflow:GitHubWorkflow) -> dict:
         """
-        extract_workflow_data(workflow)
+        __extract_workflow_data(workflow)
 
-        Extracting general workflow data.
+        Extracts general data of one workflow.
 
         Parameters
         ----------
-        workflow : Workflow
+        workflow : GitHubWorkflow
             Workflow object from pygithub.
 
         Returns
@@ -172,15 +184,15 @@ class Workflows(Core):
         workflow_data["state"] = workflow.state
         return workflow_data
     
-    def extract_run_data(self, run:GitHubWorkflowRun):
+    def __extract_run_data(self, run:GitHubWorkflowRun) -> dict:
         """
-        extract_run_data(run)
+        __extract_run_data(run)
 
-        Extracting general workflow run data.
+        Extracts general data of one workflow run.
 
         Parameters
         ----------
-        run : WorkflowRun
+        run : GitHubWorkflowRun
             WorkflowRun object from pygithub.
 
         Returns
@@ -206,11 +218,11 @@ class Workflows(Core):
         return run_data
 
     @staticmethod
-    def download_workflow_log_files(repo, github_token, workflow_run_id, data_root_dir):
+    def download_workflow_log_files(repo, github_token, workflow_run_id, data_root_dir) -> Union[int, None]:
         """
         download_workflow_log_files(repo, github_token, workflow_run_id, data_root_dir)
 
-        Receive workflow log files from GitHub.
+        Receives workflow log files from GitHub.
 
         Parameters
         ----------
@@ -225,8 +237,8 @@ class Workflows(Core):
 
         Returns
         -------
-        int
-            Number of downloaded files.
+        Union[int, None]
+            Returns the number of downloaded files or the value None.
 
         Notes
         -------

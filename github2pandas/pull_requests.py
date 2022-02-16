@@ -1,4 +1,5 @@
 import logging
+from types import NoneType
 from pandas import DataFrame
 import pandas as pd
 from pathlib import Path
@@ -31,6 +32,8 @@ class PullRequests(Core):
         Pandas table file for reviews data in pull requests.
     EXTRACTION_PARAMS : dict
         Holds all extraction parameters with a default setting.
+    FILES : dict
+        Mappings from data directories to pandas table files.
     pull_request_df : DataFrame
         Pandas DataFrame object with general pull requests data.
     review_comment_df : DataFrame
@@ -43,21 +46,19 @@ class PullRequests(Core):
     Methods
     -------
     __init__(self, github_connection, repo, data_root_dir, request_maximum)
-        Initial pull request object with general information.
-    generate_pandas_tables(self, check_for_updates=False, extraction_params={})
-        Extracting the complete pull request data from a repository.
-    extract_pull_request(self, pull_request, params)
-        Extracting a pull request.
-    extract_review_comment(self, data, params)
-        Extracting a review comment from pull request.
-    extract_pull_request_data(self, pull_request, additional_information=False)
-        Extracting general pull request data.
-    extract_comment_data(self, review_comment)
-        Extracting review comment data.
-    extract_review_data(self, review, pull_request_id)
-        Extracting general review data from a pull request.
-    get_pull_requests(data_root_dir, filename=PULL_REQUESTS)
-        Get a genearted pandas table.
+        Initializes pull request object with general information.
+    generate_pandas_tables(check_for_updates=False, extraction_params={})
+        Extracts the complete pull request data from a repository.
+    extract_pull_request(pull_request, params)
+        Extracts a pull request.
+    extract_review_comment(data, params)
+        Extracts a review comment from pull request.
+    __extract_pull_request_data(pull_request, additional_information=False)
+        Extracts general data of one pull request.
+    __extract_review_comment_data(review_comment)
+        Extracts data of one review comment.
+    __extract_review_data(review, pull_request_id)
+        Extracts general data of one review from a pull request.
     
     """
     DATA_DIR = "PullRequests"
@@ -82,7 +83,7 @@ class PullRequests(Core):
         "issues": Issues.EXTRACTION_PARAMS # if issues are not extracted
     }
 
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> NoneType:
         """
         __init__(self, github_connection, repo, data_root_dir, request_maximum)
 
@@ -97,7 +98,9 @@ class PullRequests(Core):
         data_root_dir : Path
             Data root directory for the repository.
         request_maximum : int, default=40000
-            Maxmimum amount of returned informations for a general api call
+            Maximum amount of returned informations for a general api call
+        log_level : int
+            Logging level (CRITICAL, ERROR, WARNING, INFO, DEBUG or NOTSET), default value is enumaration value logging.INFO    
 
         Notes
         -----
@@ -128,18 +131,19 @@ class PullRequests(Core):
     def reactions_df(self):
         return Core.get_pandas_data_frame(self.current_dir, PullRequests.PULL_REQUESTS_REACTIONS)
   
-    def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}):
+    def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}) -> NoneType:
         """
-        generate_pandas_tables(self, check_for_updates=False, extraction_params={})
+        generate_pandas_tables(check_for_updates=False, extraction_params={})
 
-        Extracting the complete pull request data from a repository.
+        Extracts the complete pull request data from a repository. 
+        Check first if there are any new pull requests information in dependence of parameter check_for_updates.
 
         Parameters
         ----------
-        check_for_updates : bool, default=True
-            Check first if there are any new issues information. Does not work when extract_reaction is True.
+        check_for_updates : bool, default=False
+            Determines whether update is necessary. Does not work when EXTRACTION_PARAMS "reactions" is True.
         extraction_params : dict, default={}
-            Can hold extraction parameters. This defines what will be extracted.
+            Can hold extraction parameters, that define what will be extracted.
 
         """
         params = self.copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
@@ -217,31 +221,31 @@ class PullRequests(Core):
             reactions_df = DataFrame(self.__reactions_list)
             self.save_pandas_data_frame(PullRequests.PULL_REQUESTS_REACTIONS, reactions_df)
     
-    def extract_pull_request(self, pull_request:GitHubPullRequest, params:dict):
+    def extract_pull_request(self, pull_request:GitHubPullRequest, params:dict) -> NoneType:
         """
-        extract_pull_request(self, pull_request, params)
+        extract_pull_request(pull_request, params)
 
-        Extracting a pull request.
+        Extracts a pull request.
 
         Parameters
         ----------
         pull_request : GitHubPullRequest
             PullRequest object from pygithub.
         params : dict
-            Holds extraction parameters. This defines what will be extracted.
+            Holds extraction parameters, that define what will be extracted.
         
         Notes
         -----
             PyGithub PullRequest object structure: https://pygithub.readthedocs.io/en/latest/github_objects/PullRequest.html
 
         """
-        pull_request_data = self.extract_pull_request_data(pull_request, params["deep_pull_requests"])
+        pull_request_data = self.__extract_pull_request_data(pull_request, params["deep_pull_requests"])
         if params["reviews"]:
             reviews = self.save_api_call(pull_request.get_reviews)
             for i in range(self.request_maximum):
                 try:
                     review = self.get_save_api_data(reviews, i)
-                    review_data = self.save_api_call(self.extract_review_data, review, pull_request.id)
+                    review_data = self.save_api_call(self.__extract_review_data, review, pull_request.id)
                     self.__reviews_list.append(review_data)
                 except IndexError:
                     break
@@ -267,25 +271,25 @@ class PullRequests(Core):
                     break
         self.__pull_request_list.append(pull_request_data)
 
-    def extract_review_comment(self, data:GitHubPullRequestComment, params:dict):
+    def extract_review_comment(self, data:GitHubPullRequestComment, params:dict) -> NoneType:
         """
-        extract_review_comment(self, data, params)
+        extract_review_comment(data, params)
 
-        Extracting a review comment from pull request.
+        Extracts a review comment from pull request.
 
         Parameters
         ----------
         data : GitHubPullRequestComment 
             PullRequestComment object from pygithub.
         params : dict
-            Holds extraction parameters. This defines what will be extracted.
+            Holds extraction parameters, that define what will be extracted.
         
         Notes
         -----
             PyGithub PullRequestComment object structure: https://pygithub.readthedocs.io/en/latest/github_objects/PullRequestComment.html
 
         """
-        review_comment_data = self.save_api_call(self.extract_review_comment_data, data)
+        review_comment_data = self.save_api_call(self.__extract_review_comment_data, data)
         self.__review_comment_list.append(review_comment_data)
         if params["reactions"]:
             self.__reactions_list += self.extract_reactions(
@@ -293,18 +297,18 @@ class PullRequests(Core):
                 data.id,
                 "review_comment")
 
-    def extract_pull_request_data(self, pull_request:GitHubPullRequest, additional_information:bool = False):
+    def __extract_pull_request_data(self, pull_request:GitHubPullRequest, additional_information:bool = False) -> dict:
         """
-        extract_pull_request_data(self, pull_request, additional_information=False)
+        __extract_pull_request_data(pull_request, additional_information=False)
 
-        Extracting general pull request data.
+        Extracts general data of one pull request.
 
         Parameters
         ----------
         pull_request : GitHubPullRequest
             PullRequest object from pygithub.
         additional_information : bool, default=False
-            extracts more information, but it takes 1 additionally api call and more time
+            More information will be extracted if True, but it takes more time because of an additional api call
 
         Returns
         -------
@@ -345,11 +349,11 @@ class PullRequests(Core):
         # state, title, author, assignee, (milestone)
         return pull_request_data
 
-    def extract_review_comment_data(self, review_comment:GitHubPullRequestComment):
+    def __extract_review_comment_data(self, review_comment:GitHubPullRequestComment) -> dict:
         """
-        extract_comment_data(self, review_comment)
+        __extract_review_comment_data(review_comment)
 
-        Extracting review comment data.
+        Extracts data of one review comment.
 
         Parameters
         ----------
@@ -384,11 +388,11 @@ class PullRequests(Core):
             review_comment_data["author"] = self.extract_user_data(review_comment.user)
         return review_comment_data
 
-    def extract_review_data(self, review:GitHubPullRequestReview, pull_request_id:int):
+    def __extract_review_data(self, review:GitHubPullRequestReview, pull_request_id:int) -> dict:
         """
-        extract_review_data(self, review, pull_request_id)
+        __extract_review_data(review, pull_request_id)
 
-        Extracting review data from a pull request.
+        Extracts data of one review from a pull request.
 
         Parameters
         ----------

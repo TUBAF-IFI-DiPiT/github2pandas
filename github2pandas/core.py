@@ -41,7 +41,7 @@ class Core():
     current_dir : Path 
         current data directory.
     request_maximum : int, default=40000
-        Maxmimum amount of returned informations for a general api call.    
+        Maximum amount of returned informations for a general api call.    
     
     log_level : int
         Logging level (CRITICAL, ERROR, WARNING, INFO, DEBUG or NOTSET)    
@@ -55,41 +55,41 @@ class Core():
     -------
     __init__(self, github_connection, repo, repo_data_root_dir, current_dir, request_maximum, log_level)
         Initializes core object with general informations.
-    save_api_call(self, function, *args, **kwargs)
+    save_api_call(function, *args, **kwargs)
         Calls a function or method savely.
-    get_save_total_count(self, paginated_list)
+    get_save_total_count(paginated_list)
         Gets the total count of a paginated list savely. Waits until request limit is restored.
-    get_save_api_data(self, paginated_list, index)
+    get_save_api_data(paginated_list, index)
         Gets one item of the paginated list by index.
-    wait_for_reset(self)
+    wait_for_reset()
         Waits until request limit is refreshed.
-    check_for_updates_paginated(self, new_paginated_list, list_count, old_df)
+    check_for_updates_paginated(new_paginated_list, list_count, old_df)
         Checks if the new_paginated_list has updates.
-    extract_reactions(self, extract_function, parent_id, parent_name)
+    extract_reactions(extract_function, parent_id, parent_name)
         Extracts reactions for element with parent_id by calling of extract_function.
-    extract_reaction_data(self, reaction, parent_id, parent_name)
+    extract_reaction_data(reaction, parent_id, parent_name)
         Extracts general reaction data.
-    extract_user_data(self, user, node_id_to_anonym_uuid=False)
+    extract_user_data(user, node_id_to_anonym_uuid=False)
         Extracts general user data.
-    save_pandas_data_frame(self, file, data_frame)
+    save_pandas_data_frame(file, data_frame)
         Saves the data_frame to a given file.
-    extract_users(self, users)
+    extract_users(users)
         Extracts user data based on parameter users and returns a list of anonym user UUIDs. 
-    extract_author_data_from_commit(self, commit_sha)
+    extract_author_data_from_commit(commit_sha)
         Extracts general author data from a commit.
-    extract_committer_data_from_commit(self, commit_sha)
+    extract_committer_data_from_commit(commit_sha)
         Extracts general committer data from a commit.
-    extract_labels(self, github_labels)
+    extract_labels(github_labels)
         Gets all label names as a list.
-    extract_with_updated_and_since(self, github_method, label, data_extraction_function, *args, initial_data_list=None,initial_total_count=None, state=None,**kwargs)
+    extract_with_updated_and_since(github_method, label, data_extraction_function, *args, initial_data_list=None,initial_total_count=None, state=None,**kwargs)
         Extracts and updates data, calls the method git_method and the function data_extraction_function.
-    progress_bar(self,iterable, prefix="", size=60, file=sys.stdout)
+    progress_bar(iterable, prefix="", size=60, file=sys.stdout)
         Prints out a progress bar.
-    copy_valid_params(self, base_dict ,input_params)
+    copy_valid_params(base_dict ,input_params)
         Appends base_dict with the elements of input_param, returns the new dictionary.
-    file_error_handling(self, function, path, exc_info)
+    file_error_handling(function, path, exc_info)
         Tries to change file permission and call the calling function again.
-    apply_datetime_format(self, pd_table, source_column, destination_column=None)
+    apply_datetime_format(pd_table, source_column, destination_column=None)
         Provides equal date formate for all destination_column timestamps.
     _file_error_handling(function, path)
         Tries to change file permission and call the calling function again.
@@ -116,7 +116,7 @@ class Core():
         current_dir : Path 
             current data directory.
         request_maximum : int, default=40000
-            Maxmimum amount of returned informations for a general api call.        
+            Maximum amount of returned informations for a general api call.        
         log_level : int
             Logging level (CRITICAL, ERROR, WARNING, INFO, DEBUG or NOTSET), default value is enumaration value logging.INFO    
     
@@ -150,7 +150,7 @@ class Core():
     
     def save_api_call(self, function, *args, **kwargs) -> Any: 
         """
-        save_api_call(self, function, *args, **kwargs)
+        save_api_call(function, *args, **kwargs)
 
         Calls a function or method savely.
 
@@ -177,7 +177,7 @@ class Core():
     
     def get_save_total_count(self, paginated_list:PaginatedList) -> int:
         """
-        get_save_total_count(self, paginated_list)
+        get_save_total_count(paginated_list)
 
         Gets the total count of a paginated list savely. Waits until request limit is restored.
 
@@ -200,7 +200,7 @@ class Core():
    
     def get_save_api_data(self, paginated_list:PaginatedList, index:int) -> Any:
         """
-        get_save_api_data(self, paginated_list, index)
+        get_save_api_data(paginated_list, index)
 
         Gets one item of the paginated list by index.
 
@@ -225,7 +225,7 @@ class Core():
 
     def wait_for_reset(self) -> NoneType:
         """
-        wait_for_reset(self)
+        wait_for_reset()
 
         Waits until request limit is refreshed.
 
@@ -248,7 +248,7 @@ class Core():
     
     def check_for_updates_paginated(self, new_paginated_list:PaginatedList, list_count:int, old_df:pd.DataFrame) -> bool:
         """
-        check_for_updates_paginated(self, new_paginated_list, list_count, old_df)
+        check_for_updates_paginated(new_paginated_list, list_count, old_df)
 
         Checks if the new_paginated_list has updates.
 
@@ -284,7 +284,7 @@ class Core():
 
     def extract_reactions(self, extract_function, parent_id:int, parent_name:str) -> list:
         """
-        extract_reactions(self, extract_function, parent_id, parent_name)
+        extract_reactions(extract_function, parent_id, parent_name)
 
         Extracts reactions for element with parent_id by calling of extract_function.
 
@@ -315,7 +315,7 @@ class Core():
 
     def extract_reaction_data(self, reaction:GitHubReaction, parent_id:int, parent_name:str) -> dict:
         """
-        extract_reaction_data(self, reaction, parent_id, parent_name)
+        extract_reaction_data(reaction, parent_id, parent_name)
 
         Extracts general reaction data.
 
@@ -350,7 +350,7 @@ class Core():
     
     def extract_user_data(self, user:GitHubNamedUser, node_id_to_anonym_uuid=False) -> Union[str,None]:
         """
-        extract_user_data(self, user, node_id_to_anonym_uuid=False)
+        extract_user_data(user, node_id_to_anonym_uuid=False)
 
         Extracts general user data.
 
@@ -402,7 +402,7 @@ class Core():
 
     def save_pandas_data_frame(self, file:str, data_frame:pd.DataFrame) -> NoneType:
         """
-        save_pandas_data_frame(self, file, data_frame)
+        save_pandas_data_frame(file, data_frame)
 
         Saves the data_frame to a given file.
 
@@ -421,7 +421,7 @@ class Core():
     
     def extract_users(self, users:PaginatedList) -> list:
         """
-        extract_users(self, users)
+        extract_users(users)
 
         Extracts user data based on parameter users and returns a list of anonym user UUIDs. 
 
@@ -447,7 +447,7 @@ class Core():
 
     def extract_author_data_from_commit(self, commit_sha:str) -> Union[str,None]:
         """
-        extract_author_data_from_commit(self, commit_sha)
+        extract_author_data_from_commit(commit_sha)
 
         Extracts general author data from a commit.
 
@@ -477,7 +477,7 @@ class Core():
 
     def extract_committer_data_from_commit(self, commit_sha:str) -> Union[str,None]:
         """
-        extract_committer_data_from_commit(self, commit_sha)
+        extract_committer_data_from_commit(commit_sha)
 
         Extracts general committer data from a commit.
 
@@ -507,7 +507,7 @@ class Core():
 
     def extract_labels(self, github_labels:PaginatedList) -> list:
         """
-        extract_labels(self, github_labels)
+        extract_labels(github_labels)
 
         Gets all label names as a list.
 
@@ -533,7 +533,7 @@ class Core():
 
     def extract_with_updated_and_since(self, github_method, label:str, data_extraction_function, *args, initial_data_list:PaginatedList=None,initial_total_count:int=None, state:str=None,**kwargs) -> NoneType:
         """
-        extract_with_updated_and_since(self, github_method, label, data_extraction_function, *args, initial_data_list=None,initial_total_count=None, state=None,**kwargs)
+        extract_with_updated_and_since(github_method, label, data_extraction_function, *args, initial_data_list=None,initial_total_count=None, state=None,**kwargs)
 
         Extracts and updates data, calls the method git_method and the function data_extraction_function.
 
@@ -591,7 +591,7 @@ class Core():
          
     def progress_bar(self, iterable:typing.Iterable, prefix:str = "", size:int = 60) -> NoneType:
         """
-        progress_bar(self,iterable, prefix="", size=60, file=sys.stdout)
+        progress_bar(iterable, prefix="", size=60, file=sys.stdout)
 
         Prints out a progress bar.
 
@@ -622,7 +622,7 @@ class Core():
 
     def copy_valid_params(self, base_dict:dict ,input_params:dict) -> dict:
         """
-        copy_valid_params(self, base_dict ,input_params)
+        copy_valid_params(base_dict ,input_params)
 
         Appends base_dict with the elements of input_param, returns the new dictionary.
 
@@ -646,7 +646,7 @@ class Core():
 
     def file_error_handling(self, function, path:str, exc_info:str) -> NoneType:
         """
-        file_error_handling(self, function, path, exc_info)
+        file_error_handling(function, path, exc_info)
 
         Is an error handler function which will try to change file permission and call the calling function again.
 
@@ -667,7 +667,7 @@ class Core():
 
     def apply_datetime_format(self, pd_table:pd.DataFrame, source_column:str, destination_column:str = None) -> pd.DataFrame:
         """
-        apply_datetime_format(self, pd_table, source_column, destination_column=None)
+        apply_datetime_format(pd_table, source_column, destination_column=None)
 
         Provides equal date formate for all destination_column timestamps.
 

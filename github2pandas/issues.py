@@ -2,6 +2,7 @@ import logging
 from pandas import DataFrame
 import pandas as pd
 from pathlib import Path
+from types import NoneType
 # github imports
 from github import GithubObject
 from github.MainClass import Github
@@ -14,12 +15,12 @@ from github2pandas.core import Core
 
 class Issues(Core):
     """
-    Class to aggregate Issues
+    Class to aggregate Issues.
 
     Attributes
     ----------
     DATA_DIR : str
-        Issues dir where all files are saved in.
+        Issues directory where all files are saved in.
     ISSUES : str
         Pandas table file for issues data.
     COMMENTS : str
@@ -27,9 +28,11 @@ class Issues(Core):
     ISSUES_REACTIONS : str
         Pandas table file for reactions data in issues.
     EVENTS : str
-        Pandas table file for reviews data in issues.
+        Pandas table file for events data in issues.
     EXTRACTION_PARAMS : dict
         Holds all extraction parameters with a default setting.
+    FILES : dict
+        Mappings from data directories to pandas table files.
     issues_df : DataFrame
         Pandas DataFrame object with general issues data.
     comments_df : DataFrame
@@ -41,22 +44,20 @@ class Issues(Core):
 
     Methods
     -------
-    __init__(self, github_connection, repo, data_root_dir, request_maximum)
-        Initial Issues object with general information.
-    generate_pandas_tables(self, check_for_updates=False, extraction_params={})
-        Extracting the complete issues from a repository.
-    extract_issue(self, data, params, events_overflow)
-        Extracting the issue.
-    extract_comment(self, data, params)
-        Extracting the comments from issues.
-    extract_issue_data(self, issue)
-        Extracting general issue data.
-    extract_comment_data(self, comment)
-        Extracting issue comment data.
-    extract_event_data(self, event, issue_id=None)
-        Extracting issue event data.
-    get_pandas_table(data_root_dir, filename=ISSUES)
-        Get a genearted pandas table.
+    __init__(self, github_connection, repo, data_root_dir, request_maximum, log_level)
+        Initializes Issues object with general information.
+    generate_pandas_tables(check_for_updates=False, extraction_params={})
+        Extracts the complete issues from a repository.
+    extract_issue(data, params, events_overflow)
+        Extracts the issue.
+    extract_comment(data, params)
+        Extracts the comments from issues.
+    __extract_issue_data(issue)
+        Extracts general data of one issue.
+    __extract_comment_data(comment)
+        Extracts data of one issue comment.
+    __extract_event_data(event, issue_id=None)
+        Extracts data of one issue event.
     
     """
     DATA_DIR = "Issues"
@@ -77,11 +78,11 @@ class Issues(Core):
         "comments": True
     }
 
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> NoneType:
         """
-        __init__(self, github_connection, repo, data_root_dir, request_maximum)
+        __init__(self, github_connection, repo, data_root_dir, request_maximum, log_level)
 
-        Initial Issues object with general information.
+        Initializes Issues object with general information.
 
         Parameters
         ----------
@@ -92,7 +93,10 @@ class Issues(Core):
         data_root_dir : Path
             Data root directory for the repository.
         request_maximum : int, default=40000
-            Maxmimum amount of returned informations for a general api call
+            Maximum amount of returned informations for a general api call.
+        log_level : int
+            Logging level (CRITICAL, ERROR, WARNING, INFO, DEBUG or NOTSET), default value is enumaration value logging.INFO    
+           
 
         Notes
         -----
@@ -111,30 +115,31 @@ class Issues(Core):
         )
     
     @property
-    def issues_df(self):
+    def issues_df(self) -> pd.DataFrame:
         return Core.get_pandas_data_frame(self.current_dir, Issues.ISSUES)
     @property
-    def comments_df(self):
+    def comments_df(self) -> pd.DataFrame:
         return Core.get_pandas_data_frame(self.current_dir, Issues.COMMENTS)
     @property
-    def events_df(self):
+    def events_df(self) -> pd.DataFrame:
         return Core.get_pandas_data_frame(self.current_dir, Issues.EVENTS)
     @property
-    def reactions_df(self):
+    def reactions_df(self) -> pd.DataFrame:
         return Core.get_pandas_data_frame(self.current_dir, Issues.ISSUES_REACTIONS)
 
-    def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}):
+    def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}) -> NoneType:
         """
-        generate_pandas_tables(self, check_for_updates=False, extraction_params={})
+        generate_pandas_tables(check_for_updates=False, extraction_params={})
 
-        Extracting the complete issues from a repository.
+        Extracts the complete issues from a repository.
+        Checks first if there are any new issues information in dependence of parameter check_for_updates.
 
         Parameters
         ----------
-        check_for_updates : bool, default=True
-            Check first if there are any new issues information. Does not work when extract_reaction is True.
+        check_for_updates : bool, default=False
+            Determines whether update is necessary. Does not work when EXTRACTION_PARAMS "reactions" is True.
         extraction_params : dict, default={}
-            Can hold extraction parameters. This defines what will be extracted.
+            Can hold extraction parameters, that define what will be extracted.
         
         """
         params = self.copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
@@ -145,7 +150,7 @@ class Issues(Core):
             total_count = self.get_save_total_count(issues)
             if check_for_updates:
                 if params["reactions"]:
-                    self.logger.warning("Check for update does not work when extract_reactions is True")
+                    self.logger.warning("Check for update does not work when EXTRACTION_PARAMS \"reactions\" is True")
                 else:
                     old_issues = self.issues_df
                     if not self.check_for_updates_paginated(issues, total_count, old_issues):
@@ -180,7 +185,7 @@ class Issues(Core):
             if not events_overflow:
                 for i in self.progress_bar(range(events_total_count), "Issues Events:   "):
                     event = self.get_save_api_data(events, i)
-                    event_data = self.save_api_call(self.extract_event_data, event)
+                    event_data = self.save_api_call(self.__extract_event_data, event)
                     self.__event_list.append(event_data)
         if params["comments"]:
             self.extract_with_updated_and_since(
@@ -202,27 +207,27 @@ class Issues(Core):
             reactions_df = DataFrame(self.__reaction_list)
             self.save_pandas_data_frame(Issues.ISSUES_REACTIONS, reactions_df)
     
-    def extract_issue(self, data:GitHubIssue, params:dict, events_overflow:bool):
+    def extract_issue(self, data:GitHubIssue, params:dict, events_overflow:bool) -> NoneType:
         """
-        extract_issue(self, data, params, events_overflow)
+        extract_issue(data, params, events_overflow)
 
-        Extracting the issue.
+        Extracts the issue.
 
         Parameters
         ----------
         data : GitHubIssue
             Issue object from pygithub.
         params : dict
-            Holds extraction parameters. This defines what will be extracted.
+            Holds extraction parameters, that define what will be extracted.
         events_overflow : bool
-            Download Events in Issues, if events > request_maximum
+            Downloads Events in Issues, if event amount greater than request_maximum
         
         Notes
         -----
             PyGithub Issue object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Issue.html
 
         """
-        issue_data = self.extract_issue_data(data)
+        issue_data = self.__extract_issue_data(data)
         self.__issue_list.append(issue_data)
         # reaction data
         if params["reactions"]:
@@ -237,30 +242,30 @@ class Issues(Core):
                 for i in range(self.request_maximum):
                     try:
                         event = self.get_save_api_data(events, i)
-                        event_data = self.save_api_call(self.extract_event_data, event, issue_id=data.id)
+                        event_data = self.save_api_call(self.__extract_event_data, event, issue_id=data.id)
                         self.__event_list.append(event_data)
                     except IndexError:
                         break
 
-    def extract_comment(self, data:GitHubIssueComment, params:dict):
+    def extract_comment(self, data:GitHubIssueComment, params:dict) -> NoneType:
         """
-        extract_comment(self, data, params)
+        extract_comment(data, params)
 
-        Extracting the comments from issues.
+        Extracts the comments from issues.
 
         Parameters
         ----------
         data : GitHubIssueComment 
             IssueComment object from pygithub.
         params : dict
-            Holds extraction parameters. This defines what will be extracted.
+            Holds extraction parameters, that define what will be extracted.
         
         Notes
         -----
             IssueComment object structure: https://pygithub.readthedocs.io/en/latest/github_objects/IssueComment.html
 
         """
-        comment_data = self.save_api_call(self.extract_comment_data, data)
+        comment_data = self.save_api_call(self.__extract_comment_data, data)
         self.__comment_list.append(comment_data)
         # issue comment reaction data
         if params["reactions"]:
@@ -269,11 +274,11 @@ class Issues(Core):
                 data.id, 
                 "comment")
                 
-    def extract_issue_data(self, issue:GitHubIssue):
+    def __extract_issue_data(self, issue:GitHubIssue) -> dict:
         """
-        extract_issue_data(self, issue)
+        __extract_issue_data(issue)
 
-        Extracting general issue data.
+        Extracts general data of one issue.
 
         Parameters
         ----------
@@ -319,11 +324,11 @@ class Issues(Core):
             issue_data["is_pull_request"] = True
         return issue_data
 
-    def extract_comment_data(self, comment:GitHubIssueComment):
+    def __extract_comment_data(self, comment:GitHubIssueComment) -> dict:
         """
-        extract_comment_data(self, comment)
+        __extract_comment_data(comment)
 
-        Extracting issue comment data.
+        Extracts the data of one issue comment.
 
         Parameters
         ----------
@@ -350,11 +355,11 @@ class Issues(Core):
             comment_data["author"] = self.extract_user_data(comment.user)
         return comment_data  
 
-    def extract_event_data(self, event:GitHubIssueEvent, issue_id:int=None):
+    def __extract_event_data(self, event:GitHubIssueEvent, issue_id:int=None) -> dict:
         """
-        extract_event_data(self, event, issue_id=None)
+        __extract_event_data(event, issue_id=None)
 
-        Extracting issue event data.
+        Extracts the data of one issue event.
 
         Parameters
         ----------

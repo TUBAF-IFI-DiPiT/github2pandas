@@ -7,6 +7,7 @@ import git
 import shutil
 import numpy
 from pathlib import Path
+from types import NoneType
 # github imports
 from github.MainClass import Github
 from github.Repository import Repository as GitHubRepository
@@ -15,7 +16,7 @@ from github2pandas.core import Core
 
 class Version(Core):
     """
-    Class to aggregate Version
+    Class to aggregate Version.
 
     Attributes
     ----------
@@ -31,6 +32,8 @@ class Version(Core):
         Pandas table file for branch names.
     VERSION_DB : str
         MYSQL data base file containing version history.
+    FILES : dict
+        Mappings from data directories to pandas table files.
     no_of_processes : int
         Number of processors used for crawling process.
     COMMIT_DELETEABLE_COLUMNS : list
@@ -39,24 +42,24 @@ class Version(Core):
         Commit Colums from git2net which need to be renamed.
     EDIT_RENAMING_COLUMNS : dict
         Edit Colums from git2net which need to be renamed.
+    
+    commits_df : DataFrame
+        Pandas DataFrame object with git commits data.
+    edits_df : DataFrame
+        Pandas DataFrame object with git edits data.
+    branches_df : DataFrame
+        Pandas DataFrame object with git branches data.
 
     Methods
     -------
-    handleError(func, path, exc_info)
-        Error handler function which will try to change file permission and call the calling function again.
-    clone_repository(repo, data_root_dir, github_token=None, new_clone=False):
-        Cloning repository from git.
-    generate_data_base(data_root_dir)
-        Extracting version data from a local repository and storing them in a mysql data base.
-    generate_version_pandas_tables(repo, data_root_dir, check_for_updates=True)
-        Extracting edits and commits in a pandas table.
-    define_unknown_user(unknown_user_name, uuid, data_root_dir, new_user=False)
-        Define unknown user in commits pandas table.
-    get_unknown_users(data_root_dir)
-        Get all unknown users in from commits.
-    get_version(data_root_dir, filename=COMMITS)
-        Get the generated pandas table.
-
+    clone_repository(github_token=None,new_clone=False)
+        Clones repository from git.
+    __generate_data_base(data_root_dir)
+        Extracts version data from a local repository and stores them in a mysql data base.
+    generate_pandas_tables(check_for_updates=False)
+        Extracts edits, commits and branches in a pandas table.
+    clone_repository(github_token=None,new_clone=False)
+        Clones repository from git.
     """  
 
     DATA_DIR = "Versions"
@@ -78,11 +81,11 @@ class Version(Core):
     EDIT_RENAMING_COLUMNS = {'commit_hash':'commit_sha'}
 
 
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO, number_of_proceses:int = 1) -> None:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO, number_of_proceses:int = 1) -> NoneType:
         """
-        __init__(self, github_connection, repo, data_root_dir, request_maximum)
+        __init__(self, github_connection, repo, data_root_dir, request_maximumlog_level, number_of_proceses)
 
-        Initial pull request object with general information.
+        Initializes pull request object with general information.
 
         Parameters
         ----------
@@ -93,7 +96,11 @@ class Version(Core):
         data_root_dir : Path
             Data root directory for the repository.
         request_maximum : int, default=40000
-            Maxmimum amount of returned informations for a general api call
+            Maximum amount of returned informations for a general api call
+        log_level : int
+            Logging level (CRITICAL, ERROR, WARNING, INFO, DEBUG or NOTSET), default value is enumaration value logging.INFO
+        number_of_proceses : int, default=1
+            Number of processors used for crawling process.
 
         Notes
         -----
@@ -116,29 +123,25 @@ class Version(Core):
 
     
     @property
-    def commits_df(self):
+    def commits_df(self) -> pd.DataFrame:
         return Core.get_pandas_data_frame(self.current_dir, Version.COMMITS)
     @property
-    def edits_df(self):
+    def edits_df(self) -> pd.DataFrame:
         return Core.get_pandas_data_frame(self.current_dir, Version.EDITS)
     @property
-    def branches_df(self):
+    def branches_df(self) -> pd.DataFrame:
         return Core.get_pandas_data_frame(self.current_dir, Version.BRANCHES)
 
-    def generate_pandas_tables(self, check_for_updates=False):
+    def generate_pandas_tables(self, check_for_updates:bool=False) -> NoneType:
         """
-        generate_version_pandas_tables(repo, data_root_dir)
+        generate_pandas_tables(check_for_updates=False)
 
-        Extracting edits and commits in a pandas table.
+        Extracts edits, commits and branches in a pandas table.
 
         Parameters
         ----------
-        repo : Repository
-            Repository object from pygithub.
-        data_root_dir: str
-            Data root directory for the repository.
-        check_for_updates : bool, default=True
-            Check first if there are any new pull requests information.
+        check_for_updates : bool, default=False
+            Determines whether update is necessary (is not evaluated at the moment).
 
         """
 
@@ -150,7 +153,7 @@ class Version(Core):
         #         self.logger.info("No new Commit information!")
         #         return
 
-        self.generate_data_base()
+        self.__generate_data_base()
 
         db = sqlite3.connect(self.sqlite_db_file)
         pd_commits = pd.read_sql_query("SELECT * FROM commits", db)
@@ -255,18 +258,16 @@ class Version(Core):
         self.save_pandas_data_frame(self.EDITS, pd_edits)
         self.save_pandas_data_frame(self.BRANCHES, pd_Branches)      
 
-    def generate_data_base(self, new_extraction=False):
+    def __generate_data_base(self, new_extraction:bool=False) -> NoneType:
         """
-        generate_data_base(data_root_dir)
+        __generate_data_base(new_extraction=False)
 
-        Extracting version data from a local repository and storing them in a mysql data base.
+        Extracts version data from a local repository and stores them in a mysql data base.
 
         Parameters
         ----------
-        data_root_dir : str
-            Data root directory for the repository.
         new_extraction: bool, default = False
-            Start a new complete extraction run
+            Starts a new complete extraction run if True.
         
         Notes
         -----
@@ -304,11 +305,11 @@ class Version(Core):
                                 all_branches=True,
                                 max_modifications=1000)
 
-    def clone_repository(self, github_token=None, new_clone=False):
+    def clone_repository(self, github_token:str=None, new_clone:bool=False) -> NoneType:
         """
-        Clone_repository(repo, data_root_dir, github_token=None)
+        clone_repository(github_token=None,new_clone=False)
 
-        Cloning repository from git.
+        Clones repository from git.
 
         Parameters
         ----------
