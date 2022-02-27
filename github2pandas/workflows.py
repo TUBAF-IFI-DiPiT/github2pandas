@@ -252,7 +252,7 @@ class Workflows(Core):
                                 auth=('username', github_token))
         if 'zip' in response.headers['Content-Type']:
             zip_obj = ZipFile(BytesIO(response.content))
-            data_dir = Path(data_root_dir, Workflows.Files.RUNS, str(workflow_run_id))
+            data_dir = Path(data_root_dir, Workflows.Files.DATA_DIR, str(workflow_run_id))
             zip_obj.extractall(data_dir)
             return len(zip_obj.namelist())
         else:
