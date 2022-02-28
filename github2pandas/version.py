@@ -31,7 +31,7 @@ class Version(Core):
         Pandas table file for branch names.
     VERSION_DB : str
         MYSQL data base file containing version history.
-    no_of_processes : int
+    number_of_proceses : int
         Number of processors used for crawling process.
     COMMIT_DELETEABLE_COLUMNS : list
         Commit colums from git2net which can be deleted.
