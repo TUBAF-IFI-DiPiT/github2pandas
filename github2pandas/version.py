@@ -291,19 +291,18 @@ class Version(Core):
         self.current_dir.mkdir(parents=True, exist_ok=True)
         if new_extraction & os.path.exists(self.sqlite_db_file):
             os.remove(self.sqlite_db_file)
-        # overwrite git2net progress bar
-        import tqdm
-        def version_progress_bar(iterable=None, total:int=None, desc:str="", **kwargs):
-            if iterable is None:
-                if total is not None:
-                    iterable = range(total)
-                else:
-                    logging.error("Error in progressbar for version")
-                    return
-            return self.progress_bar(iterable, f"Version {desc}:")
-
-
-        tqdm.tqdm.__init__ = version_progress_bar
+        if self.number_of_proceses == 1:
+            # overwrite git2net progress bar
+            import tqdm
+            def version_progress_bar(iterable=None, total:int=None, desc:str="", **kwargs):
+                if iterable is None:
+                    if total is not None:
+                        iterable = range(total)
+                    else:
+                        logging.error("Error in progressbar for version")
+                        return
+                return self.progress_bar(iterable, f"Version {desc}:")
+            tqdm.tqdm = version_progress_bar
         import git2net
         git2net.mine_git_repo(self.repo_dir, self.sqlite_db_file,
                                 extract_complexity=True,
