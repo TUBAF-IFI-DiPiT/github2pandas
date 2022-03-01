@@ -293,19 +293,17 @@ class Version(Core):
             os.remove(self.sqlite_db_file)
         # overwrite git2net progress bar
         import tqdm
-        class overwrite_tqdm():
-            core = None
-            def __init__(self, iterable=None, total:int=None, desc:str="", **kwargs):
-                global core
-                if iterable is None:
-                    if total is not None:
-                        iterable = range(total)
-                    else:
-                        logging.error("Error in progressbar for version")
-                        return
-                return core.progress_bar(iterable, f"Version {desc}:")
-        overwrite_tqdm.core = self
-        tqdm.tqdm = overwrite_tqdm
+        def version_progress_bar(iterable=None, total:int=None, desc:str="", **kwargs):
+            if iterable is None:
+                if total is not None:
+                    iterable = range(total)
+                else:
+                    logging.error("Error in progressbar for version")
+                    return
+            return self.progress_bar(iterable, f"Version {desc}:")
+
+
+        tqdm.tqdm.__init__ = version_progress_bar
         import git2net
         git2net.mine_git_repo(self.repo_dir, self.sqlite_db_file,
                                 extract_complexity=True,
