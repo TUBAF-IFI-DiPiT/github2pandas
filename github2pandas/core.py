@@ -398,7 +398,10 @@ class Core():
             return None
         if commit._author == GithubObject.NotSet:
             return None
-        return self.extract_user_data(commit.author)
+        try:
+            return self.extract_user_data(commit.author)
+        except:
+            return None
 
     def extract_committer_data_from_commit(self, commit_sha:str):
         """
@@ -434,7 +437,10 @@ class Core():
             return None
         if commit._committer == GithubObject.NotSet:
             return None
-        return self.extract_user_data(commit.committer)
+        try:
+            return self.extract_user_data(commit.committer)
+        except:
+            return None
 
     def extract_labels(self, github_labels:PaginatedList):
         """
