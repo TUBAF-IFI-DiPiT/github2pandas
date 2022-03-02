@@ -264,6 +264,7 @@ class GitHub2Pandas():
             if unknown_user_name in unknown_users:
                 users = Core.get_pandas_data_frame(repo_data_dir, Core.Files.USERS)
                 p_user = users.loc[users.anonym_uuid == uuid]
+                new_uuid = None
                 if not p_user.empty:
                     alias = []
                     user = p_user.iloc[0]
@@ -286,10 +287,10 @@ class GitHub2Pandas():
                         new_uuid = core.extract_user_data(UserData())
                     else:
                         new_uuid = core.extract_user_data(UserData(), node_id_to_anonym_uuid=True)
-                    if new_uuid is not None:
-                        pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'author'] = new_uuid
-                        pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'committer'] = new_uuid
-                        pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'unknown_user'] = numpy.NaN
+                if new_uuid is not None:
+                    pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'author'] = new_uuid
+                    pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'committer'] = new_uuid
+                    pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'unknown_user'] = numpy.NaN
             core.current_dir = Path(repo_data_dir,Version.Files.DATA_DIR)
             core.save_pandas_data_frame(Version.Files.COMMITS,pd_commits)
 
