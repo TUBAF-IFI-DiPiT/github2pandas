@@ -528,7 +528,8 @@ class Core():
                 sys.stdout.write("%s[%s%s] %i/%i\r" % (prefix, "#"*x, "."*(size-x), j, count))
                 sys.stdout.flush()     
             self.logger_no_print.info("%s[%s%s] %i/%i" % (prefix, "#"*x, "."*(size-x), j, count))
-        show(0)
+        if count > 0:
+            show(0)
         for i, item in enumerate(iterable):
             yield item
             show(i+1)
