@@ -179,29 +179,6 @@ class GitHub2Pandas():
             self.__core.current_dir = version_folder
             self.__core.save_pandas_data_frame(Version.VERSION_COMMITS,pd_commits)
             self.__core.current_dir = self.data_root_dir
-
-    def get_unknown_users(self, data_root_dir):
-        """
-        get_unknown_users(data_root_dir)
-
-        Get all unknown users in from commits.
-
-        Parameters
-        ----------
-        data_root_dir : str
-            Data root directory for the repository.
-
-        Returns
-        -------
-        List
-            List of unknown user names
-        
-        """
-        pd_commits = Version.get_version(data_root_dir)
-        if "unknown_user" in pd_commits:
-            unknown_user_commits = pd_commits.loc[pd_commits.unknown_user.notna()]
-            unknown_users = unknown_user_commits.unknown_user.unique()
-            return list(unknown_users)
      
     def get_repos(self, whitelist_patterns=None, blacklist_patterns=None):
         """
@@ -291,6 +268,30 @@ class GitHub2Pandas():
         with open(repo_file, 'w') as json_file:
             json.dump({GitHub2Pandas.REPOSITORIES_KEY: existing_repos}, json_file)
         return self.__core.save_api_call(self.github_connection.get_repo,repo_owner + "/" + repo_name)
+
+    @staticmethod
+    def get_unknown_users(data_root_dir):
+        """
+        get_unknown_users(data_root_dir)
+
+        Get all unknown users in from commits.
+
+        Parameters
+        ----------
+        data_root_dir : str
+            Data root directory for the repository.
+
+        Returns
+        -------
+        List
+            List of unknown user names
+        
+        """
+        pd_commits = Version.get_pandas_data_frame(data_root_dir, Version.Files.COMMITS)
+        if "unknown_user" in pd_commits:
+            unknown_user_commits = pd_commits.loc[pd_commits.unknown_user.notna()]
+            unknown_users = unknown_user_commits.unknown_user.unique()
+            return list(unknown_users)
 
     @staticmethod
     def get_pandas_data_frame(data_dir:Path, filename:str) -> pd.DataFrame:
