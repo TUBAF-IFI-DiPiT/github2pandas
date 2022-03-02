@@ -29,7 +29,6 @@ setup(
       "datetime>=4.3",
       "pygithub>=1.54.1",
       "argparse>=1.4.0",
-      "pydriller==1.15.2",
       "git2net>=1.4.10",
       "pysqlite3>=0.4.6",
       "selenium>=3.141.0",
