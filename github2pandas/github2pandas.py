@@ -126,59 +126,6 @@ class GitHub2Pandas():
                 workflows.generate_pandas_tables(extraction_params=params["workflows_params"])
             except Exception as e:
                 self.__core.logger.error("Error in workflows. Workflows are not extracted!", exc_info=e)
-
-    def define_unknown_user(self, unknown_user_name:str, uuid:str, new_user:bool = False):
-        """
-        define_unknown_user(unknown_user_name, uuid, data_root_dir, new_user=False)
-
-        Define unknown user in commits pandas table.
-
-        Parameters
-        ----------
-        unknown_user_name: str
-            Name of unknown user. 
-        uuid: str
-            Uuid can be the anonym uuid of another user or random uuid for a new user. 
-        new_user : bool, default=False
-            A complete new user with uuid will be generated.
-
-        """
-        pd_commits = Version.get_version(self.data_root_dir)
-        if "unknown_user" in pd_commits:
-            unknown_users = pd_commits.unknown_user.unique()
-            if unknown_user_name in unknown_users:
-                users = Core.get_pandas_data_frame(self.repo_data_dir, Core.Files.USERS)
-                p_user = users.loc[users.anonym_uuid == uuid]
-                if not p_user.empty:
-                    alias = []
-                    user = p_user.iloc[0]
-                    if "alias" in user:
-                        user_alias = user["alias"]
-                        if not pd.isnull(user_alias) and (user_alias is not None):
-                            alias = user_alias
-                    if not unknown_user_name in alias:
-                        alias.append(unknown_user_name)
-                    users.loc[users.anonym_uuid == uuid, 'alias'] = alias
-                    self.__core.save_pandas_data_frame(Core.Files.USERS, users)
-                    new_uuid = user["anonym_uuid"]
-                else:
-                    class UserData:
-                        node_id = uuid
-                        name = unknown_user_name
-                        email = numpy.NaN
-                        login = numpy.NaN
-                    if new_user:
-                        new_uuid = self.__core.extract_user_data(UserData())
-                    else:
-                        new_uuid = self.__core.extract_user_data(UserData(), node_id_to_anonym_uuid=True)
-                    if new_uuid is not None:
-                        pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'author'] = new_uuid
-                        pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'committer'] = new_uuid
-                        pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'unknown_user'] = numpy.NaN
-            version_folder = Path(self.data_root_dir, Version.VERSION_DIR)
-            self.__core.current_dir = version_folder
-            self.__core.save_pandas_data_frame(Version.VERSION_COMMITS,pd_commits)
-            self.__core.current_dir = self.data_root_dir
      
     def get_repos(self, whitelist_patterns=None, blacklist_patterns=None):
         """
@@ -270,15 +217,15 @@ class GitHub2Pandas():
         return self.__core.save_api_call(self.github_connection.get_repo,repo_owner + "/" + repo_name)
 
     @staticmethod
-    def get_unknown_users(data_root_dir):
+    def get_unknown_users(repo_data_dir):
         """
-        get_unknown_users(data_root_dir)
+        get_unknown_users(repo_data_dir)
 
         Get all unknown users in from commits.
 
         Parameters
         ----------
-        data_root_dir : str
+        repo_data_dir : str
             Data root directory for the repository.
 
         Returns
@@ -287,11 +234,64 @@ class GitHub2Pandas():
             List of unknown user names
         
         """
-        pd_commits = Version.get_pandas_data_frame(data_root_dir, Version.Files.COMMITS)
+        pd_commits = Version.get_pandas_data_frame(Path(repo_data_dir,Version.Files.DATA_DIR), Version.Files.COMMITS)
         if "unknown_user" in pd_commits:
             unknown_user_commits = pd_commits.loc[pd_commits.unknown_user.notna()]
             unknown_users = unknown_user_commits.unknown_user.unique()
             return list(unknown_users)
+    
+    @staticmethod
+    def define_unknown_user(repo_data_dir:str, unknown_user_name:str, uuid:str, new_user:bool = False):
+        """
+        define_unknown_user(unknown_user_name, uuid, data_root_dir, new_user=False)
+
+        Define unknown user in commits pandas table.
+
+        Parameters
+        ----------
+        unknown_user_name: str
+            Name of unknown user. 
+        uuid: str
+            Uuid can be the anonym uuid of another user or random uuid for a new user. 
+        new_user : bool, default=False
+            A complete new user with uuid will be generated.
+
+        """
+        core = Core(None,None,repo_data_dir,None)
+        pd_commits = Version.get_pandas_data_frame(Path(repo_data_dir,Version.Files.DATA_DIR), Version.Files.COMMITS)
+        if "unknown_user" in pd_commits:
+            unknown_users = pd_commits.unknown_user.unique()
+            if unknown_user_name in unknown_users:
+                users = Core.get_pandas_data_frame(repo_data_dir, Core.Files.USERS)
+                p_user = users.loc[users.anonym_uuid == uuid]
+                if not p_user.empty:
+                    alias = []
+                    user = p_user.iloc[0]
+                    if "alias" in user:
+                        user_alias = user["alias"]
+                        if not pd.isnull(user_alias) and (user_alias is not None):
+                            alias = user_alias
+                    if not unknown_user_name in alias:
+                        alias.append(unknown_user_name)
+                    users.loc[users.anonym_uuid == uuid, 'alias'] = alias
+                    core.save_pandas_data_frame(Core.Files.USERS, users)
+                    new_uuid = user["anonym_uuid"]
+                else:
+                    class UserData:
+                        node_id = uuid
+                        name = unknown_user_name
+                        email = numpy.NaN
+                        login = numpy.NaN
+                    if new_user:
+                        new_uuid = core.extract_user_data(UserData())
+                    else:
+                        new_uuid = core.extract_user_data(UserData(), node_id_to_anonym_uuid=True)
+                    if new_uuid is not None:
+                        pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'author'] = new_uuid
+                        pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'committer'] = new_uuid
+                        pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'unknown_user'] = numpy.NaN
+            core.current_dir = Path(repo_data_dir,Version.Files.DATA_DIR)
+            core.save_pandas_data_frame(Version.Files.COMMITS,pd_commits)
 
     @staticmethod
     def get_pandas_data_frame(data_dir:Path, filename:str) -> pd.DataFrame:
