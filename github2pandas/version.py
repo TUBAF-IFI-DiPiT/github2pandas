@@ -344,7 +344,7 @@ class Version(Core):
         #    os.chdir(old_path)
         #    return
         if self.repo_dir.exists ():
-            shutil.rmtree(self.repo_dir.resolve(), onerror=self.file_error_handling)
+            shutil.rmtree(self.repo_dir.resolve(), onerror=Core.file_error_handling)
         callbacks = None
         if github_token:
             callbacks = git2.RemoteCallbacks(
@@ -362,4 +362,4 @@ class Version(Core):
                     r.git.branch('--track', branch_name,
                                 'remotes/origin/'+branch_name)
                 except Exception:
-                    self.logger.debug(" -> An exception occurred")
+                    self.logger.debug(f" -> Branch {branch_name} can not be tracked!")

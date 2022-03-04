@@ -544,27 +544,6 @@ class Core():
                 params[param] = input_params[param]
         return params
 
-    def file_error_handling(self, func, path:str, exc_info:str):
-        """
-        handleError(func, path, exc_info)
-
-        Error handler function which will try to change file permission and call the calling function again.
-
-        Parameters
-        ----------
-        func : Function
-            Calling function.
-        path : str
-            Path of the file which causes the Error.
-        exc_info : str
-            Execution information.
-        
-        """
-        
-        self.logger.debug('Handling Error for file ' + path)
-        self.logger.debug("Catched Error Message:", exc_info=exc_info)
-        Core._file_error_handling(func, path, exc_info)
-
     def apply_datetime_format(self, pd_table:pd.DataFrame, source_column:str, destination_column:str = None):
         """
         apply_datetime_format(pd_table, source_column, destination_column=None)
@@ -599,7 +578,7 @@ class Core():
         self.logger.debug(f"{string}: {requests_remaning}")
 
     @staticmethod
-    def _file_error_handling(func, path:str, exc_info:str):
+    def file_error_handling(func, path:str, exc_info:str):
         """
         handleError(func, path, exc_info)
 
