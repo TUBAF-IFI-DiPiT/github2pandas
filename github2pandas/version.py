@@ -306,7 +306,6 @@ class Version(Core):
         import git2net
         git2net.mine_git_repo(self.repo_dir, self.sqlite_db_file,
                                 # extract_complexity=True,
-                                timeout=5,
                                 # extract_text=True,
                                 # no_of_processes=self.number_of_proceses,
                                 all_branches=True,
