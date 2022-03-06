@@ -308,9 +308,10 @@ class Version(Core):
                                 # extract_complexity=True,
                                 timeout=5,
                                 # extract_text=True,
-                                no_of_processes=self.number_of_proceses,
+                                # no_of_processes=self.number_of_proceses,
                                 all_branches=True,
                                 max_modifications=1000)
+        print("I am a test message")
 
     def clone_repository(self, github_token=None, new_clone=False):
         """
