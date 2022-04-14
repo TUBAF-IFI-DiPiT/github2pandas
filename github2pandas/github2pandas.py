@@ -23,8 +23,6 @@ class GitHub2Pandas():
 
     Attributes
     ----------
-    REPO : str
-        Json file for general repository informations.
     EXTRACTION_PARAMS : dict
         Extraction Parameter.
     FILES : dict
@@ -61,9 +59,6 @@ class GitHub2Pandas():
     get_repo_informations(data_root_dir)
         Gets a repository data (owner and name).
     """
-
-    REPO = "Repo.json"
-    
     EXTRACTION_PARAMS = {
         "git_releases": True,
         "issues": True,
@@ -75,14 +70,35 @@ class GitHub2Pandas():
         "workflows": True,
         "workflows_params": Workflows.EXTRACTION_PARAMS
     }
-    FILES = {
-        GitReleases.DATA_DIR: GitReleases.FILES,
-        Issues.DATA_DIR: Issues.FILES,
-        PullRequests.DATA_DIR: PullRequests.FILES,
-        Repository.DATA_DIR: Repository.FILES,
-        Version.DATA_DIR: Version.FILES,
-        Workflows.DATA_DIR: Workflows.FILES,
-    }
+    REPOSITORIES_KEY = "repos"
+    class Files():
+        REPOS = "Repos.json"
+        GIT_RELEASES = GitReleases.Files
+        ISSUES = Issues.Files
+        PULL_REQUESTS = PullRequests.Files
+        REPOSITORY = Repository.Files
+        VERSION = Version.Files
+        WORKFLOWS = Workflows.Files
+        CORE = Core.Files
+
+        @staticmethod
+        def to_list() -> list:
+            return [
+                GitHub2Pandas.Files.GIT_RELEASES,
+                GitHub2Pandas.Files.ISSUES,
+                GitHub2Pandas.Files.PULL_REQUESTS,
+                GitHub2Pandas.Files.REPOSITORY,
+                GitHub2Pandas.Files.VERSION,
+                GitHub2Pandas.Files.WORKFLOWS,
+                GitHub2Pandas.Files.CORE
+            ]
+
+        @staticmethod
+        def to_dict() -> dict:
+            d = {}
+            for files in GitHub2Pandas.Files.to_list():
+                d.update(files.to_dict())
+            return d
 
     def __init__(self, github_token:str, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> NoneType:
         """
@@ -167,77 +183,6 @@ class GitHub2Pandas():
                 workflows.generate_pandas_tables(extraction_params=params["workflows_params"])
             except Exception as e:
                 self.__core.logger.error("Error in workflows. Workflows are not extracted!", exc_info=e)
-
-    def define_unknown_user(self, unknown_user_name:str, uuid:str, new_user:bool = False) -> NoneType:
-        """
-        define_unknown_user(self, unknown_user_name, uuid, data_root_dir, new_user=False)
-
-        Defines unknown user in commits pandas table.
-
-        Parameters
-        ----------
-        unknown_user_name : str
-            Name of unknown user. 
-        uuid : str
-            Uuid can be the anonym uuid of another user or random uuid for a new user. 
-        new_user : bool, default=False
-            A complete new user with uuid will be generated if True, otherwise Node_id will be the anonym_uuid.
-
-        """
-        pd_commits = Version.get_version(self.data_root_dir)
-        if "unknown_user" in pd_commits:
-            unknown_users = pd_commits.unknown_user.unique()
-            if unknown_user_name in unknown_users:
-                users = Core.get_pandas_data_frame(self.repo_data_dir, Core.USERS)
-                p_user = users.loc[users.anonym_uuid == uuid]
-                if not p_user.empty:
-                    alias = []
-                    user = p_user.iloc[0]
-                    if "alias" in user:
-                        user_alias = user["alias"]
-                        if not pd.isnull(user_alias) and (user_alias is not None):
-                            alias = user_alias
-                    if not unknown_user_name in alias:
-                        alias.append(unknown_user_name)
-                    users.loc[users.anonym_uuid == uuid, 'alias'] = alias
-                    self.__core.save_pandas_data_frame(Core.USERS, users)
-                    new_uuid = user["anonym_uuid"]
-                else:
-                    class UserData:
-                        node_id = uuid
-                        name = unknown_user_name
-                        email = numpy.NaN
-                        login = numpy.NaN
-                    if new_user:
-                        new_uuid = self.__core.extract_user_data(UserData())
-                    else:
-                        new_uuid = self.__core.extract_user_data(UserData(), node_id_to_anonym_uuid=True)
-                    if new_uuid is not None:
-                        pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'author'] = new_uuid
-                        pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'committer'] = new_uuid
-                        pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'unknown_user'] = numpy.NaN
-            version_folder = Path(self.data_root_dir, Version.VERSION_DIR)
-            self.__core.current_dir = version_folder
-            self.__core.save_pandas_data_frame(Version.VERSION_COMMITS,pd_commits)
-            self.__core.current_dir = self.data_root_dir
-
-    def get_unknown_users(self) -> list:
-        """
-        get_unknown_users(self)
-
-        Gets all unknown users from commits.
-
-        Returns
-        -------
-        list
-            List of unknown user names.
-        
-        """
-        pd_commits = Version.get_version(self.data_root_dir)
-        if "unknown_user" in pd_commits:
-            unknown_user_commits = pd_commits.loc[pd_commits.unknown_user.notna()]
-            unknown_users = unknown_user_commits.unknown_user.unique()
-            return list(unknown_users)
      
     def get_repos(self, whitelist_patterns:list = None, blacklist_patterns:list = None) -> list:
         """
@@ -285,11 +230,13 @@ class GitHub2Pandas():
                             blacklist_pass = False
                             break
                 if blacklist_pass:
-                    repo_dir = Path(self.data_root_dir, repo.owner.login + "/" + repo.name)
+                    repo_dir = Path(self.data_root_dir, repo.full_name)
                     repo_dir.mkdir(parents=True, exist_ok=True)
-                    repo_file = Path(repo_dir, self.REPO)
+                    repo_file = Path(self.data_root_dir, GitHub2Pandas.Files.REPOS)
+                    existing_repos = GitHub2Pandas.get_full_names_of_repositories(self.data_root_dir)
+                    existing_repos.append(repo.full_name)
                     with open(repo_file, 'w') as json_file:
-                        json.dump({"repo_owner": repo.owner.login,"repo_name":repo.name}, json_file)
+                        json.dump({GitHub2Pandas.REPOSITORIES_KEY: existing_repos}, json_file)
                     relevant_repos.append(repo)
         return relevant_repos
     
@@ -316,9 +263,11 @@ class GitHub2Pandas():
             PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
 
         """
-        repo_file = Path(self.data_root_dir, self.REPO)
+        repo_file = Path(self.data_root_dir, GitHub2Pandas.Files.REPOS)
+        existing_repos = GitHub2Pandas.get_full_names_of_repositories(self.data_root_dir)
+        existing_repos.append(repo_owner + "/" + repo_name)
         with open(repo_file, 'w') as json_file:
-            json.dump({"repo_owner": repo_owner,"repo_name":repo_name}, json_file)
+            json.dump({GitHub2Pandas.REPOSITORIES_KEY: existing_repos}, json_file)
         return self.__core.save_api_call(self.github_connection.get_repo,repo_owner + "/" + repo_name)
 
     @staticmethod
@@ -344,9 +293,88 @@ class GitHub2Pandas():
 
         """
         return Core.get_pandas_data_frame(Path(repo_data_dir,data_dir_name), filename)
+    
+    @staticmethod
+    def get_unknown_users(repo_data_dir):
+        """
+        get_unknown_users(repo_data_dir)
+
+        Get all unknown users in from commits.
+
+        Parameters
+        ----------
+        repo_data_dir : str
+            Data root directory for the repository.
+
+        Returns
+        -------
+        List
+            List of unknown user names
+        
+        """
+        pd_commits = Version.get_pandas_data_frame(Path(repo_data_dir,Version.Files.DATA_DIR), Version.Files.COMMITS)
+        if "unknown_user" in pd_commits:
+            unknown_user_commits = pd_commits.loc[pd_commits.unknown_user.notna()]
+            unknown_users = unknown_user_commits.unknown_user.unique()
+            return list(unknown_users)
+    
+    @staticmethod
+    def define_unknown_user(repo_data_dir:str, unknown_user_name:str, uuid:str, new_user:bool = False):
+        """
+        define_unknown_user(unknown_user_name, uuid, data_root_dir, new_user=False)
+
+        Define unknown user in commits pandas table.
+
+        Parameters
+        ----------
+        unknown_user_name: str
+            Name of unknown user. 
+        uuid: str
+            Uuid can be the anonym uuid of another user or random uuid for a new user. 
+        new_user : bool, default=False
+            A complete new user with uuid will be generated.
+
+        """
+        core = Core(None,None,repo_data_dir,None)
+        pd_commits = Version.get_pandas_data_frame(Path(repo_data_dir,Version.Files.DATA_DIR), Version.Files.COMMITS)
+        if "unknown_user" in pd_commits:
+            unknown_users = pd_commits.unknown_user.unique()
+            if unknown_user_name in unknown_users:
+                users = Core.get_pandas_data_frame(repo_data_dir, Core.Files.USERS)
+                p_user = users.loc[users.anonym_uuid == uuid]
+                new_uuid = None
+                if not p_user.empty:
+                    alias = []
+                    user = p_user.iloc[0]
+                    if "alias" in user:
+                        user_alias = user["alias"]
+                        if not pd.isnull(user_alias) and (user_alias is not None):
+                            alias = user_alias
+                    if not unknown_user_name in alias:
+                        alias.append(unknown_user_name)
+                    users.loc[users.anonym_uuid == uuid, 'alias'] = alias
+                    core.save_pandas_data_frame(Core.Files.USERS, users)
+                    new_uuid = user["anonym_uuid"]
+                else:
+                    class UserData:
+                        node_id = uuid
+                        name = unknown_user_name
+                        email = numpy.NaN
+                        login = numpy.NaN
+                    if new_user:
+                        new_uuid = core.extract_user_data(UserData())
+                    else:
+                        new_uuid = core.extract_user_data(UserData(), node_id_to_anonym_uuid=True)
+                if new_uuid is not None:
+                    pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'author'] = new_uuid
+                    pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'committer'] = new_uuid
+                    pd_commits.loc[pd_commits.unknown_user == unknown_user_name, 'unknown_user'] = numpy.NaN
+            core.current_dir = Path(repo_data_dir,Version.Files.DATA_DIR)
+            core.save_pandas_data_frame(Version.Files.COMMITS,pd_commits)
+
 
     @staticmethod      
-    def get_repo_informations(data_root_dir:str) -> tuple:
+    def get_full_names_of_repositories(data_root_dir) -> list:
         """
         get_repo_informations(data_root_dir)
 
@@ -363,9 +391,9 @@ class GitHub2Pandas():
             Returns a tuple of repository owner and repository name or (None,None) if repository path not exist.
 
         """
-        repo_file = Path(data_root_dir, GitHub2Pandas.REPO)
+        repo_file = Path(data_root_dir, GitHub2Pandas.Files.REPOS)
         if repo_file.is_file():
             with open(repo_file, 'r') as json_file:
                 repo_data = json.load(json_file)
-                return (repo_data["repo_owner"], repo_data["repo_name"])
-        return None, None
+                return repo_data[GitHub2Pandas.REPOSITORIES_KEY]
+        return []

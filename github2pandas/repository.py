@@ -22,27 +22,51 @@ class Repository(Core):
         Repository dir where all files are saved in.
     REPOSITORY : str
         Pandas table file for basic repository data.
-    FILES : dict
-        Mappings from data directories to pandas table files.
-    
-    repository_df: DataFrame
-        Pandas DataFrame object with repository data.
-
+    TEMPLATES : str
+        Names of relevant templates in Github repositories
+ 
     Methods
     -------
     generate_pandas_tables(contributor_companies_included = False)
-        Extracts the basic repository data.
-    __extract_repository_data(contributor_companies_included = False)
-        Extracts general data of repository.
-
+        Extracting the basic repository data.
+    extract_repository_data(contributor_companies_included)
+        Extracting general repository data.
+    get_repository_keyparameter(data_root_dir)
+        Get a generated pandas tables.
+        
     """
+    REPOSITORY_DIR = "Repository"
+    REPOSITORY = "pdRepository.p"
+    TEMPLATES_TO_CHECK = {
+        'file_readme': "README.md",
+        'file_code_of_conduct': "CODE_OF_CONDUCT.md", # .... defines standards for how to engage in a community.
+        'file_contributing': "CONTRIBUTING.md", # ... communicates how people should contribute to your project
+        'file_funding': "FUNDING.yml", # ... displays a sponsor button in your repository ... 
+        'file_IssuePR_templates': ".github/ISSUE_TEMPLATE/config.yml", # ... Issue and pull request templates customize and standardize the information you’d like contributors 
+        'file_security': "SECURITY.md", # ... gives instructions for how to report a security vulnerability in your project. 
+        'file_support': "SUPPORT.md", # ... lets people know about ways to get help with your project.
+    }
+    class Files():
+        DATA_DIR = "Repository"
+        REPOSITORY = "Repository.p"
 
-    DATA_DIR = "Repository"
-    REPOSITORY = "Repository.p"
-    FILES = [
-        REPOSITORY
-    ]
+        @staticmethod
+        def to_list() -> list:
+            return [Repository.Files.REPOSITORY]
+      
+        @staticmethod
+        def to_dict() -> dict:
+            return {Repository.Files.DATA_DIR: Repository.Files.to_list()}
 
+    @staticmethod    
+    def getFirstAppearance(repo, templates_to_check):
+        try:
+            commits = repo.get_commits(path=templates_to_check)
+            first_commit = commits[commits.totalCount - 1]
+            return first_commit.commit.author.date
+        except IndexError:
+            return np.nan
+          
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> NoneType:
         """
         __init__(self, github_connection, repo, data_root_dir, request_maximum)
@@ -72,14 +96,14 @@ class Repository(Core):
             github_connection,
             repo,
             data_root_dir,
-            Repository.DATA_DIR,
+            Repository.Files.DATA_DIR,
             request_maximum=request_maximum,
             log_level=log_level
         )
 
     @property
     def repository_df(self) -> pd.DataFrame:
-        return Core.get_pandas_data_frame(self.current_dir, Repository.REPOSITORY)
+        return Core.get_pandas_data_frame(self.current_dir, Repository.Files.REPOSITORY)
 
     def generate_pandas_tables(self, contributor_companies_included:bool = False) -> NoneType:
         """
@@ -97,7 +121,7 @@ class Repository(Core):
         repository_data = self.__extract_repository_data(contributor_companies_included)
         repository_data_list.append(repository_data)
         repository_df = DataFrame(repository_data_list)
-        self.save_pandas_data_frame(Repository.REPOSITORY, repository_df)
+        self.save_pandas_data_frame(Repository.Files.REPOSITORY, repository_df)
 
     def __extract_repository_data(self, contributor_companies_included:bool = False) -> dict:
         """
@@ -140,7 +164,7 @@ class Repository(Core):
         #     last_commit_date = numpy.nan
         #     print("No commits found!")  
          
-        contributors = self.save_api_call(self.repo.get_contributors,"all")
+        contributors = self.save_api_call(self.repo.get_contributors,"True")
         contributors_count = self.get_save_total_count(contributors)
         # contributor = self.repo.get_contributors( 'all')
         # try:
@@ -283,6 +307,20 @@ class Repository(Core):
             'has_downloads': bool(self.repo.has_downloads),
             'watchers_count': bool(self.repo.watchers_count),
             'is_fork': self.repo.fork,
-            'prog_language': self.repo.language
+            'prog_language': self.repo.language,
+            'file_readme': Repository.getFirstAppearance(self.repo, 
+                                                         Repository.TEMPLATES_TO_CHECK['file_readme']),
+            'file_code_of_conduct': Repository.getFirstAppearance(self.repo, 
+                                                         Repository.TEMPLATES_TO_CHECK['file_code_of_conduct']),
+            'file_contributing': Repository.getFirstAppearance(self.repo, 
+                                                         Repository.TEMPLATES_TO_CHECK['file_contributing']),
+            'file_funding': Repository.getFirstAppearance(self.repo, 
+                                                         Repository.TEMPLATES_TO_CHECK['file_funding']),
+            'file_IssuePR_templates': Repository.getFirstAppearance(self.repo, 
+                                                         Repository.TEMPLATES_TO_CHECK['file_IssuePR_templates']),
+            'file_security': Repository.getFirstAppearance(self.repo, 
+                                                         Repository.TEMPLATES_TO_CHECK['file_security']),
+            'file_support': Repository.getFirstAppearance(self.repo, 
+                                                         Repository.TEMPLATES_TO_CHECK['file_support'])
         }
         return repository_data

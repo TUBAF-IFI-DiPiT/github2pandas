@@ -50,18 +50,26 @@ class Workflows(Core):
         Receives workflow log files from GitHub.
     
     """
-
-    DATA_DIR = "Workflows"
-    WORKFLOWS = "Workflows.p"
-    RUNS =  "Runs.p"
-    FILES = [
-        WORKFLOWS,
-        RUNS
-    ]
     EXTRACTION_PARAMS = {
         "workflows": True,
         "runs": True
     }
+    
+    class Files():
+        DATA_DIR = "Workflows"
+        WORKFLOWS = "Workflows.p"
+        RUNS =  "Runs.p"
+
+        @staticmethod
+        def to_list() -> list:
+            return [
+                Workflows.Files.WORKFLOWS,
+                Workflows.Files.RUNS
+            ]
+
+        @staticmethod
+        def to_dict() -> dict:
+            return {Workflows.Files.DATA_DIR: Workflows.Files.to_list()}
 
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> NoneType:
         """
@@ -94,17 +102,17 @@ class Workflows(Core):
             github_connection,
             repo,
             data_root_dir,
-            Workflows.DATA_DIR,
+            Workflows.Files.DATA_DIR,
             request_maximum=request_maximum,
             log_level=log_level
         )
 
     @property
     def workflows_df(self):
-        return Core.get_pandas_data_frame(self.current_dir, Workflows.WORKFLOWS)
+        return Core.get_pandas_data_frame(self.current_dir, Workflows.Files.WORKFLOWS)
     @property
     def runs_df(self):
-        return Core.get_pandas_data_frame(self.current_dir, Workflows.RUNS)
+        return Core.get_pandas_data_frame(self.current_dir, Workflows.Files.RUNS)
 
     def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}) -> NoneType:
         """
@@ -137,7 +145,7 @@ class Workflows(Core):
                     workflow_data = self.__extract_workflow_data(workflow)
                     workflow_list.append(workflow_data)
                 workflows_df = DataFrame(workflow_list)
-                self.save_pandas_data_frame(Workflows.WORKFLOWS, workflows_df)
+                self.save_pandas_data_frame(Workflows.Files.WORKFLOWS, workflows_df)
         if params["runs"]:
             runs = self.save_api_call(self.repo.get_workflow_runs)
             total_count = self.get_save_total_count(runs)
@@ -153,7 +161,7 @@ class Workflows(Core):
                     run_data = self.__extract_run_data(run)
                     run_list.append(run_data)
                 runs_df = DataFrame(run_list)
-                self.save_pandas_data_frame(Workflows.RUNS, runs_df)
+                self.save_pandas_data_frame(Workflows.Files.RUNS, runs_df)
 
     def __extract_workflow_data(self, workflow:GitHubWorkflow) -> dict:
         """
@@ -256,7 +264,7 @@ class Workflows(Core):
                                 auth=('username', github_token))
         if 'zip' in response.headers['Content-Type']:
             zip_obj = ZipFile(BytesIO(response.content))
-            data_dir = Path(data_root_dir, Workflows.DATA_DIR, str(workflow_run_id))
+            data_dir = Path(data_root_dir, Workflows.Files.DATA_DIR, str(workflow_run_id))
             zip_obj.extractall(data_dir)
             return len(zip_obj.namelist())
         else:

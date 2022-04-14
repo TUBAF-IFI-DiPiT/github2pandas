@@ -97,7 +97,18 @@ class Core():
         Returns a pandas data frame stored in file.
 
     """
-    USERS = "Users.p"
+    
+    class Files():
+        DATA_DIR = ""
+        USERS = "Users.p"
+
+        @staticmethod
+        def to_list() -> list:
+            return [Core.Files.USERS]
+
+        @staticmethod
+        def to_dict() -> dict:
+            return {Core.Files.DATA_DIR: Core.Files.to_list()}
     
     def __init__(self, github_connection:Github, repo:GitHubRepository, repo_data_root_dir:Path, current_dir:str, request_maximum:int = 40000, log_level:int=logging.INFO) -> NoneType:
         """
@@ -135,7 +146,7 @@ class Core():
         if repo is not None:
             self.repo_data_dir = Path(self.repo_data_root_dir,repo.full_name)
             self.repo_data_dir.mkdir(parents=True, exist_ok=True)
-            df_users = Core.get_pandas_data_frame(self.repo_data_dir, Core.USERS)
+            df_users = Core.get_pandas_data_frame(self.repo_data_dir, Core.Files.USERS)
             self.users_ids = {}
             for index, row in df_users.iterrows():
                 self.users_ids[row["id"]] = row["anonym_uuid"]
@@ -375,7 +386,7 @@ class Core():
             return None
         if user.node_id in self.users_ids:
             return self.users_ids[user.node_id]
-        users_file = Path(self.repo_data_dir, self.USERS)
+        users_file = Path(self.repo_data_dir, Core.Files.USERS)
         users_df = pd.DataFrame()
         if users_file.is_file():
             users_df = pd.read_pickle(users_file)
@@ -473,7 +484,10 @@ class Core():
             return None
         if commit._author == GithubObject.NotSet:
             return None
-        return self.extract_user_data(commit.author)
+        try:
+            return self.extract_user_data(commit.author)
+        except:
+            return None
 
     def extract_committer_data_from_commit(self, commit_sha:str) -> Union[str,None]:
         """
@@ -503,7 +517,10 @@ class Core():
             return None
         if commit._committer == GithubObject.NotSet:
             return None
-        return self.extract_user_data(commit.committer)
+        try:
+            return self.extract_user_data(commit.committer)
+        except:
+            return None
 
     def extract_labels(self, github_labels:PaginatedList) -> list:
         """
@@ -557,7 +574,10 @@ class Core():
             Optional input for data_extraction_function
         """
         if initial_data_list is None:
-            data_list = self.save_api_call(github_method, sort="updated", direction="asc")
+            if state is None:
+                data_list = self.save_api_call(github_method, sort="updated", direction="asc")
+            else:
+                data_list = self.save_api_call(github_method, state=state, sort="updated", direction="asc")
         else:
             data_list = initial_data_list
         if initial_total_count is None:
@@ -612,7 +632,8 @@ class Core():
                 sys.stdout.write("%s[%s%s] %i/%i\r" % (prefix, "#"*x, "."*(size-x), j, count))
                 sys.stdout.flush()     
             self.logger_no_print.info("%s[%s%s] %i/%i" % (prefix, "#"*x, "."*(size-x), j, count))
-        show(0)
+        if count > 0:
+            show(0)
         for i, item in enumerate(iterable):
             yield item
             show(i+1)
@@ -643,27 +664,6 @@ class Core():
             if param in params:
                 params[param] = input_params[param]
         return params
-
-    def file_error_handling(self, function, path:str, exc_info:str) -> NoneType:
-        """
-        file_error_handling(function, path, exc_info)
-
-        Is an error handler function which will try to change file permission and call the calling function again.
-
-        Parameters
-        ----------
-        function : Function
-            Calling function.
-        path : str
-            Path of the file which causes the Error.
-        exc_info : str
-            Execution information.
-        
-        """
-        
-        self.logger.debug('Handling Error for file ' + path)
-        self.logger.debug("Catched Error Message:", exc_info=exc_info)
-        Core._file_error_handling(function, path)
 
     def apply_datetime_format(self, pd_table:pd.DataFrame, source_column:str, destination_column:str = None) -> pd.DataFrame:
         """
@@ -699,9 +699,9 @@ class Core():
         self.logger.debug(f"{string}: {requests_remaning}")
 
     @staticmethod
-    def _file_error_handling(function, path:str) -> NoneType:
+    def file_error_handling(function, path:str) -> NoneType:
         """
-        _file_error_handling(function, path)
+        file_error_handling(function, path, exc_info)
 
         Is an error handler function which will try to change file permission and call the calling function again.
 
@@ -711,7 +711,7 @@ class Core():
             Calling function.
         path : str
             Path of the file which causes the Error.
-
+    
         
         """
         # Check if file access issue

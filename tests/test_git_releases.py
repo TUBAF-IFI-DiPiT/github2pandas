@@ -21,7 +21,7 @@ class TestGitReleases(unittest.TestCase):
     def __init__(self, methodName: str = ...) -> None:
         super().__init__(methodName)
         if self.data_root_dir.exists() and self.data_root_dir.is_dir():
-            shutil.rmtree(self.data_root_dir, onerror=Core._file_error_handling)
+            shutil.rmtree(self.data_root_dir, onerror=Core.file_error_handling)
         self.data_root_dir.mkdir(parents=True, exist_ok=True)
 
     def test_generate_pandas_tables(self):
@@ -34,8 +34,8 @@ class TestGitReleases(unittest.TestCase):
         git_releases.print_calls("End git releases")
 
     def test_get_data_frames(self):
-        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,GitReleases.DATA_DIR)
-        git_releases = Core.get_pandas_data_frame(data_dir, GitReleases.GIT_RELEASES)
+        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,GitReleases.Files.DATA_DIR)
+        git_releases = Core.get_pandas_data_frame(data_dir, GitReleases.Files.GIT_RELEASES)
         pass
 
 if __name__ == "__main__":

@@ -61,17 +61,6 @@ class PullRequests(Core):
         Extracts general data of one review from a pull request.
     
     """
-    DATA_DIR = "PullRequests"
-    PULL_REQUESTS = "PullRequests.p"
-    REVIEWS_COMMENTS = "ReviewsComments.p"
-    PULL_REQUESTS_REACTIONS = "PullRequestsReactions.p"
-    REVIEWS = "Reviews.p"
-    FILES = [
-        PULL_REQUESTS,
-        REVIEWS_COMMENTS,
-        REVIEWS,
-        PULL_REQUESTS_REACTIONS
-    ]
     EXTRACTION_PARAMS = {
         "pull_requests": True,
         "deep_pull_requests": False, # requires pull_requests
@@ -82,6 +71,26 @@ class PullRequests(Core):
         "reviews": False,
         "issues": Issues.EXTRACTION_PARAMS # if issues are not extracted
     }
+
+    class Files():
+        DATA_DIR = "PullRequests"
+        PULL_REQUESTS = "PullRequests.p"
+        REVIEWS_COMMENTS = "ReviewsComments.p"
+        PULL_REQUESTS_REACTIONS = "PullRequestsReactions.p"
+        REVIEWS = "Reviews.p"
+
+        @staticmethod
+        def to_list() -> list:
+            return [
+                PullRequests.Files.PULL_REQUESTS,
+                PullRequests.Files.REVIEWS_COMMENTS,
+                PullRequests.Files.PULL_REQUESTS_REACTIONS,
+                PullRequests.Files.REVIEWS
+            ]
+
+        @staticmethod
+        def to_dict() -> dict:
+            return {PullRequests.Files.DATA_DIR: PullRequests.Files.to_list()}
 
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> NoneType:
         """
@@ -113,23 +122,23 @@ class PullRequests(Core):
             github_connection,
             repo,
             data_root_dir,
-            PullRequests.DATA_DIR,
+            PullRequests.Files.DATA_DIR,
             request_maximum=request_maximum,
             log_level=log_level
         )
     
     @property
     def pull_request_df(self):
-        return Core.get_pandas_data_frame(self.current_dir, PullRequests.PULL_REQUESTS)
+        return Core.get_pandas_data_frame(self.current_dir, PullRequests.Files.PULL_REQUESTS)
     @property
     def review_comment_df(self):
-        return Core.get_pandas_data_frame(self.current_dir, PullRequests.REVIEWS_COMMENTS)
+        return Core.get_pandas_data_frame(self.current_dir, PullRequests.Files.REVIEWS_COMMENTS)
     @property
     def reviews_df(self):
-        return Core.get_pandas_data_frame(self.current_dir, PullRequests.REVIEWS)
+        return Core.get_pandas_data_frame(self.current_dir, PullRequests.Files.REVIEWS)
     @property
     def reactions_df(self):
-        return Core.get_pandas_data_frame(self.current_dir, PullRequests.PULL_REQUESTS_REACTIONS)
+        return Core.get_pandas_data_frame(self.current_dir, PullRequests.Files.PULL_REQUESTS_REACTIONS)
   
     def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}) -> NoneType:
         """
@@ -176,7 +185,7 @@ class PullRequests(Core):
         self.__reactions_list = []
         if extract_pull_requests:
             # check if issues(with pull request data) are extracted
-            issues_df = Core.get_pandas_data_frame(Path(self.repo_data_dir,Issues.DATA_DIR), Issues.ISSUES)
+            issues_df = Core.get_pandas_data_frame(Path(self.repo_data_dir,Issues.Files.DATA_DIR), Issues.Files.ISSUES)
             if issues_df.empty or issues_df[issues_df["is_pull_request"] == True]["is_pull_request"].count() < total_count:
                 self.logger.info("Issues are missing. Extracting Issues now!")
                 issues = Issues(
@@ -210,16 +219,16 @@ class PullRequests(Core):
                 params)
         if extract_pull_requests:
             pull_request_df = DataFrame(self.__pull_request_list)
-            self.save_pandas_data_frame(PullRequests.PULL_REQUESTS, pull_request_df)
+            self.save_pandas_data_frame(PullRequests.Files.PULL_REQUESTS, pull_request_df)
         if params["review_comment"]:
             review_comment_df = DataFrame(self.__review_comment_list)
-            self.save_pandas_data_frame(PullRequests.REVIEWS_COMMENTS, review_comment_df)
+            self.save_pandas_data_frame(PullRequests.Files.REVIEWS_COMMENTS, review_comment_df)
         if params["reviews"]:
             reviews_df = DataFrame(self.__reviews_list)
-            self.save_pandas_data_frame(PullRequests.REVIEWS, reviews_df)
+            self.save_pandas_data_frame(PullRequests.Files.REVIEWS, reviews_df)
         if params["reactions"]:
             reactions_df = DataFrame(self.__reactions_list)
-            self.save_pandas_data_frame(PullRequests.PULL_REQUESTS_REACTIONS, reactions_df)
+            self.save_pandas_data_frame(PullRequests.Files.PULL_REQUESTS_REACTIONS, reactions_df)
     
     def extract_pull_request(self, pull_request:GitHubPullRequest, params:dict) -> NoneType:
         """

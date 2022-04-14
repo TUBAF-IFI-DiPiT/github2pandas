@@ -22,7 +22,7 @@ class TestWorkflows(unittest.TestCase):
     def __init__(self, methodName: str = ...) -> None:
         super().__init__(methodName)
         if self.data_root_dir.exists() and self.data_root_dir.is_dir():
-            shutil.rmtree(self.data_root_dir, onerror=Core._file_error_handling)
+            shutil.rmtree(self.data_root_dir, onerror=Core.file_error_handling)
         self.data_root_dir.mkdir(parents=True, exist_ok=True)
 
     def test_generate_pandas_tables(self):
@@ -35,9 +35,9 @@ class TestWorkflows(unittest.TestCase):
         workflows.print_calls("End workflows")
         
     def test_get_data_frames(self):
-        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,Workflows.DATA_DIR)
-        workflows = Core.get_pandas_data_frame(data_dir, Workflows.WORKFLOWS)
-        runs = Core.get_pandas_data_frame(data_dir, Workflows.RUNS)
+        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,Workflows.Files.DATA_DIR)
+        workflows = Core.get_pandas_data_frame(data_dir, Workflows.Files.WORKFLOWS)
+        runs = Core.get_pandas_data_frame(data_dir, Workflows.Files.RUNS)
         pass
 
     # def test_download_workflow_log_files(self):

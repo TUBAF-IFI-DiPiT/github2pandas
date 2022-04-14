@@ -32,9 +32,7 @@ class Version(Core):
         Pandas table file for branch names.
     VERSION_DB : str
         MYSQL data base file containing version history.
-    FILES : dict
-        Mappings from data directories to pandas table files.
-    no_of_processes : int
+    number_of_proceses : int
         Number of processors used for crawling process.
     COMMIT_DELETEABLE_COLUMNS : list
         Commit colums from git2net which can be deleted.
@@ -61,25 +59,32 @@ class Version(Core):
     clone_repository(github_token=None,new_clone=False)
         Clones repository from git.
     """  
-
-    DATA_DIR = "Versions"
-    COMMITS = "Commits.p"
-    EDITS = "Edits.p"
-    BRANCHES = "Brances.p"
-    FILES = [
-        COMMITS,
-        EDITS,
-        BRANCHES
-    ]
-    REPOSITORY_DIR = "repo"
-    VERSION_DB = "Versions.db"
-
     COMMIT_DELETEABLE_COLUMNS = ['author_email', 'author_name', 'committer_email', 'author_date', 'author_timezone', 'commit_message_len', 'project_name', 'merge']
 
     COMMIT_RENAMING_COLUMNS = {'hash':'commit_sha', 'committer_date': 'commited_at', 'parents': 'parent_sha'}
 
     EDIT_RENAMING_COLUMNS = {'commit_hash':'commit_sha'}
 
+    class Files():
+        DATA_DIR = "Versions"
+        COMMITS = "Commits.p"
+        EDITS = "Edits.p"
+        BRANCHES = "Branches.p"
+        REPOSITORY_DIR = "repo"
+        VERSION_DB = "Versions.db"
+
+        @staticmethod
+        def to_list() -> list:
+            return [
+                Version.Files.COMMITS,
+                Version.Files.EDITS,
+                Version.Files.BRANCHES,
+                {Version.Files.REPOSITORY_DIR:[Version.Files.VERSION_DB]}
+            ]
+
+        @staticmethod
+        def to_dict() -> dict:
+            return {Version.Files.DATA_DIR: Version.Files.to_list()}
 
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO, number_of_proceses:int = 1) -> NoneType:
         """
@@ -113,24 +118,23 @@ class Version(Core):
             github_connection,
             repo,
             data_root_dir,
-            Version.DATA_DIR,
+            Version.Files.DATA_DIR,
             request_maximum=request_maximum,
             log_level=log_level
         )
         self.number_of_proceses = number_of_proceses
-        self.repo_dir = self.current_dir.joinpath(self.REPOSITORY_DIR)
-        self.sqlite_db_file = self.current_dir.joinpath(self.VERSION_DB)
+        self.repo_dir = self.current_dir.joinpath(Version.Files.REPOSITORY_DIR)
+        self.sqlite_db_file = self.current_dir.joinpath(Version.Files.VERSION_DB)
 
-    
     @property
     def commits_df(self) -> pd.DataFrame:
-        return Core.get_pandas_data_frame(self.current_dir, Version.COMMITS)
+        return Core.get_pandas_data_frame(self.current_dir, Version.Files.COMMITS)
     @property
     def edits_df(self) -> pd.DataFrame:
-        return Core.get_pandas_data_frame(self.current_dir, Version.EDITS)
+        return Core.get_pandas_data_frame(self.current_dir, Version.Files.EDITS)
     @property
     def branches_df(self) -> pd.DataFrame:
-        return Core.get_pandas_data_frame(self.current_dir, Version.BRANCHES)
+        return Core.get_pandas_data_frame(self.current_dir, Version.Files.BRANCHES)
 
     def generate_pandas_tables(self, check_for_updates:bool=False) -> NoneType:
         """
@@ -178,7 +182,7 @@ class Version(Core):
                     pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'author'] = author_id   
                     pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'committer'] = committer_id 
                     if (author_id is None) and (committer_id is None):
-                        users = Core.get_pandas_data_frame(self.repo_data_dir, Core.USERS)
+                        users = Core.get_pandas_data_frame(self.repo_data_dir, Core.Files.USERS)
                         found = False
                         if "alias" in users:
                             users = users[users["alias"].notna()]
@@ -202,7 +206,7 @@ class Version(Core):
                 pd_commits.loc[pd_commits.committer_name == commiter_name, 'author'] = author_id   
                 pd_commits.loc[pd_commits.committer_name == commiter_name, 'committer'] = committer_id 
                 if (author_id is None) and (committer_id is None):
-                    users = Core.get_pandas_data_frame(self.repo_data_dir, Core.USERS)
+                    users = Core.get_pandas_data_frame(self.repo_data_dir, Core.Files.USERS)
                     found = False
                     if "alias" in users:
                         users = users[users["alias"].notna()]
@@ -221,7 +225,7 @@ class Version(Core):
                         pd_commits.loc[pd_commits.committer_name == commiter_name, 'unknown_user'] = commiter_name 
         pd_commits.drop(['committer_name'], axis=1, inplace=True)  
 
-        users = Core.get_pandas_data_frame(self.repo_data_dir, Core.USERS)
+        users = Core.get_pandas_data_frame(self.repo_data_dir, Core.Files.USERS)
         if "unknown_user" in pd_commits:
             unknown_user_commits = pd_commits.loc[pd_commits.unknown_user.notna()]
             unknown_users = unknown_user_commits.unknown_user.unique()
@@ -254,9 +258,9 @@ class Version(Core):
         pd_commits['branch_ids'] = branch_ids
         pd_commits.drop(['branches'], axis = 1, inplace=True)
         
-        self.save_pandas_data_frame(self.COMMITS, pd_commits)
-        self.save_pandas_data_frame(self.EDITS, pd_edits)
-        self.save_pandas_data_frame(self.BRANCHES, pd_Branches)      
+        self.save_pandas_data_frame(Version.Files.COMMITS, pd_commits)
+        self.save_pandas_data_frame(Version.Files.EDITS, pd_edits)
+        self.save_pandas_data_frame(Version.Files.BRANCHES, pd_Branches)      
 
     def __generate_data_base(self, new_extraction:bool=False) -> NoneType:
         """
@@ -286,24 +290,26 @@ class Version(Core):
         self.current_dir.mkdir(parents=True, exist_ok=True)
         if new_extraction & os.path.exists(self.sqlite_db_file):
             os.remove(self.sqlite_db_file)
-        # overwrite git2net progress bar
-        import tqdm
-        def version_progress_bar(iterable=None, total:int=None, desc:str="", **kwargs):
-            if iterable is None:
-                if total is not None:
-                    iterable = range(total)
-                else:
-                    logging.error("Error in progressbar for version")
-                    return
-            return self.progress_bar(iterable, f"Version {desc}:")
-        tqdm.tqdm = version_progress_bar
+        if self.number_of_proceses == 1:
+            # overwrite git2net progress bar
+            import tqdm
+            def version_progress_bar(iterable=None, total:int=None, desc:str="", **kwargs):
+                if iterable is None:
+                    if total is not None:
+                        iterable = range(total)
+                    else:
+                        logging.error("Error in progressbar for version")
+                        return
+                return self.progress_bar(iterable, f"Version {desc}:")
+            tqdm.tqdm = version_progress_bar
         import git2net
         git2net.mine_git_repo(self.repo_dir, self.sqlite_db_file,
-                                extract_complexity=True,
-                                extract_text=True,
-                                no_of_processes=self.number_of_proceses,
+                                # extract_complexity=True,
+                                # extract_text=True,
+                                # no_of_processes=self.number_of_proceses,
                                 all_branches=True,
                                 max_modifications=1000)
+        print("I am a test message")
 
     def clone_repository(self, github_token:str=None, new_clone:bool=False) -> NoneType:
         """
@@ -338,7 +344,7 @@ class Version(Core):
         #    os.chdir(old_path)
         #    return
         if self.repo_dir.exists ():
-            shutil.rmtree(self.repo_dir.resolve(), onerror=self.file_error_handling)
+            shutil.rmtree(self.repo_dir.resolve(), onerror=Core.file_error_handling)
         callbacks = None
         if github_token:
             callbacks = git2.RemoteCallbacks(
@@ -356,4 +362,4 @@ class Version(Core):
                     r.git.branch('--track', branch_name,
                                 'remotes/origin/'+branch_name)
                 except Exception:
-                    self.logger.debug(" -> An exception occurred")
+                    self.logger.debug(f" -> Branch {branch_name} can not be tracked!")
