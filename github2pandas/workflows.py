@@ -3,7 +3,6 @@ import requests
 from zipfile import ZipFile
 from io import BytesIO
 from pathlib import Path
-from types import NoneType
 from typing import Union
 from pandas import DataFrame
 import pandas as pd
@@ -71,7 +70,7 @@ class Workflows(Core):
         def to_dict() -> dict:
             return {Workflows.Files.DATA_DIR: Workflows.Files.to_list()}
 
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> NoneType:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
         __init__(self, github_connection, repo, data_root_dir, request_maximum, log_level)
 
@@ -114,7 +113,7 @@ class Workflows(Core):
     def runs_df(self):
         return Core.get_pandas_data_frame(self.current_dir, Workflows.Files.RUNS)
 
-    def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}) -> NoneType:
+    def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}) -> None:
         """
         generate_pandas_tables(check_for_updates=False, extraction_params={})
 

@@ -1,6 +1,5 @@
 import json
 import logging
-from types import NoneType
 from pathlib import Path
 import numpy
 import pandas as pd
@@ -100,7 +99,7 @@ class GitHub2Pandas():
                 d.update(files.to_dict())
             return d
 
-    def __init__(self, github_token:str, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> NoneType:
+    def __init__(self, github_token:str, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
         __init__(self, github_token, data_root_dir, request_maximum = 40000, log_level=logging.INFO)
 
@@ -131,7 +130,7 @@ class GitHub2Pandas():
         self.log_level = log_level
         self.__core = Core(self.github_connection,None,self.data_root_dir,None,log_level=log_level)
 
-    def generate_pandas_tables(self, repo:GitHubRepository, extraction_params:dict = {}) -> NoneType:
+    def generate_pandas_tables(self, repo:GitHubRepository, extraction_params:dict = {}) -> None:
         """
         generate_pandas_tables(self, repo, extraction_params)
 
@@ -276,10 +275,9 @@ class GitHub2Pandas():
         for folder, files in GitHub2Pandas.Files.to_dict().items():
             for file in files:
                 if not isinstance(file,dict):
-                    df = GitHub2Pandas.get_pandas_data_frame(Path(repo_data_dir,folder),file)
+                    df = GitHub2Pandas.get_pandas_data_frame(repo_data_dir,folder,file)
                     df.to_excel(writer, sheet_name=file[:-2])
         writer.save()
-        writer.close()
 
     def get_pandas_data_frame(repo_data_dir:Path, data_dir_name:str,  filename:str) -> pd.DataFrame:
         """

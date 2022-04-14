@@ -1,6 +1,5 @@
 import logging
 from pathlib import Path
-from types import NoneType
 import pandas as pd
 # github imports
 from github import GithubObject
@@ -49,7 +48,7 @@ class GitReleases(Core):
             return {GitReleases.Files.DATA_DIR: GitReleases.Files.to_list()}
 
 
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> NoneType:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
         __init__(self, github_connection, repo, data_root_dir, request_maximum)
 
@@ -88,7 +87,7 @@ class GitReleases(Core):
     def git_releases_df(self) -> pd.DataFrame:
         return Core.get_pandas_data_frame(self.current_dir,GitReleases.Files.GIT_RELEASES)
 
-    def generate_pandas_tables(self, check_for_updates:bool = False) -> NoneType:
+    def generate_pandas_tables(self, check_for_updates:bool = False) -> None:
         """
         generate_pandas_tables(check_for_updates=False)
 

@@ -1,5 +1,4 @@
 import logging
-from types import NoneType
 from pandas import DataFrame
 import pandas as pd
 from pathlib import Path
@@ -92,7 +91,7 @@ class PullRequests(Core):
         def to_dict() -> dict:
             return {PullRequests.Files.DATA_DIR: PullRequests.Files.to_list()}
 
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> NoneType:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
         __init__(self, github_connection, repo, data_root_dir, request_maximum)
 
@@ -140,7 +139,7 @@ class PullRequests(Core):
     def reactions_df(self):
         return Core.get_pandas_data_frame(self.current_dir, PullRequests.Files.PULL_REQUESTS_REACTIONS)
   
-    def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}) -> NoneType:
+    def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}) -> None:
         """
         generate_pandas_tables(check_for_updates=False, extraction_params={})
 
@@ -191,7 +190,7 @@ class PullRequests(Core):
                 issues = Issues(
                     self.github_connection,
                     self.repo,
-                    self.data_root_dir,
+                    self.repo_data_root_dir,
                     self.request_maximum
                     )
                 issues.generate_pandas_tables(extraction_params=params["issues"])
@@ -230,7 +229,7 @@ class PullRequests(Core):
             reactions_df = DataFrame(self.__reactions_list)
             self.save_pandas_data_frame(PullRequests.Files.PULL_REQUESTS_REACTIONS, reactions_df)
     
-    def extract_pull_request(self, pull_request:GitHubPullRequest, params:dict) -> NoneType:
+    def extract_pull_request(self, pull_request:GitHubPullRequest, params:dict) -> None:
         """
         extract_pull_request(pull_request, params)
 
@@ -280,7 +279,7 @@ class PullRequests(Core):
                     break
         self.__pull_request_list.append(pull_request_data)
 
-    def extract_review_comment(self, data:GitHubPullRequestComment, params:dict) -> NoneType:
+    def extract_review_comment(self, data:GitHubPullRequestComment, params:dict) -> None:
         """
         extract_review_comment(data, params)
 

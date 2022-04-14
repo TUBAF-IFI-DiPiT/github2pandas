@@ -1,7 +1,6 @@
 from asyncio.log import logger
 import os
 import stat
-from types import NoneType
 import typing
 import sys
 from pathlib import Path
@@ -110,7 +109,7 @@ class Core():
         def to_dict() -> dict:
             return {Core.Files.DATA_DIR: Core.Files.to_list()}
     
-    def __init__(self, github_connection:Github, repo:GitHubRepository, repo_data_root_dir:Path, current_dir:str, request_maximum:int = 40000, log_level:int=logging.INFO) -> NoneType:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, repo_data_root_dir:Path, current_dir:str, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
         __init__(self, github_connection, repo, repo_data_root_dir, current_dir, request_maximum, log_level)
 
@@ -234,7 +233,7 @@ class Core():
             self.wait_for_reset()
             return paginated_list[index]
 
-    def wait_for_reset(self) -> NoneType:
+    def wait_for_reset(self) -> None:
         """
         wait_for_reset()
 
@@ -411,7 +410,7 @@ class Core():
             pickle.dump(users_df, f)
         return user_data["anonym_uuid"]
 
-    def save_pandas_data_frame(self, file:str, data_frame:pd.DataFrame) -> NoneType:
+    def save_pandas_data_frame(self, file:str, data_frame:pd.DataFrame) -> None:
         """
         save_pandas_data_frame(file, data_frame)
 
@@ -548,7 +547,7 @@ class Core():
             label_list.append(label.name)
         return label_list
 
-    def extract_with_updated_and_since(self, github_method, label:str, data_extraction_function, *args, initial_data_list:PaginatedList=None,initial_total_count:int=None, state:str=None,**kwargs) -> NoneType:
+    def extract_with_updated_and_since(self, github_method, label:str, data_extraction_function, *args, initial_data_list:PaginatedList=None,initial_total_count:int=None, state:str=None,**kwargs) -> None:
         """
         extract_with_updated_and_since(github_method, label, data_extraction_function, *args, initial_data_list=None,initial_total_count=None, state=None,**kwargs)
 
@@ -609,7 +608,7 @@ class Core():
             else:
                 break
          
-    def progress_bar(self, iterable:typing.Iterable, prefix:str = "", size:int = 60) -> NoneType:
+    def progress_bar(self, iterable:typing.Iterable, prefix:str = "", size:int = 60) -> None:
         """
         progress_bar(iterable, prefix="", size=60, file=sys.stdout)
 
@@ -699,7 +698,7 @@ class Core():
         self.logger.debug(f"{string}: {requests_remaning}")
 
     @staticmethod
-    def file_error_handling(function, path:str) -> NoneType:
+    def file_error_handling(function, path:str, exc_info=None) -> None:
         """
         file_error_handling(function, path, exc_info)
 

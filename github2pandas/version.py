@@ -7,7 +7,6 @@ import git
 import shutil
 import numpy
 from pathlib import Path
-from types import NoneType
 # github imports
 from github.MainClass import Github
 from github.Repository import Repository as GitHubRepository
@@ -86,7 +85,7 @@ class Version(Core):
         def to_dict() -> dict:
             return {Version.Files.DATA_DIR: Version.Files.to_list()}
 
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO, number_of_proceses:int = 1) -> NoneType:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO, number_of_proceses:int = 1) -> None:
         """
         __init__(self, github_connection, repo, data_root_dir, request_maximumlog_level, number_of_proceses)
 
@@ -136,7 +135,7 @@ class Version(Core):
     def branches_df(self) -> pd.DataFrame:
         return Core.get_pandas_data_frame(self.current_dir, Version.Files.BRANCHES)
 
-    def generate_pandas_tables(self, check_for_updates:bool=False) -> NoneType:
+    def generate_pandas_tables(self, check_for_updates:bool=False) -> None:
         """
         generate_pandas_tables(check_for_updates=False)
 
@@ -262,7 +261,7 @@ class Version(Core):
         self.save_pandas_data_frame(Version.Files.EDITS, pd_edits)
         self.save_pandas_data_frame(Version.Files.BRANCHES, pd_Branches)      
 
-    def __generate_data_base(self, new_extraction:bool=False) -> NoneType:
+    def __generate_data_base(self, new_extraction:bool=False) -> None:
         """
         __generate_data_base(new_extraction=False)
 
@@ -309,9 +308,8 @@ class Version(Core):
                                 # no_of_processes=self.number_of_proceses,
                                 all_branches=True,
                                 max_modifications=1000)
-        print("I am a test message")
 
-    def clone_repository(self, github_token:str=None, new_clone:bool=False) -> NoneType:
+    def clone_repository(self, github_token:str=None, new_clone:bool=False) -> None:
         """
         clone_repository(github_token=None,new_clone=False)
 
