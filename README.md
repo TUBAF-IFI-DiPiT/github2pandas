@@ -82,27 +82,30 @@ An short example of a python script:
 
 ```
 import os
-
-from github2pandas.issues import Issues
-from github2pandas.utility import Utility
 from pathlib import Path
+# github2pandas imports
+from github2pandas.core import Core
+from github2pandas.github2pandas import GitHub2Pandas
 
 git_repo_name = "github2pandas"
 git_repo_owner = "TUBAF-IFI-DiPiT"
     
-default_data_folder = Path("data", git_repo_name)
+data_root_dir = Path("data")
+data_root_dir.mkdir(parents=True, exist_ok=True)
 github_token = os.environ['TOKEN']
 
-repo = Utility.get_repo(git_repo_owner, git_repo_name, github_token, default_data_folder)
-Issues.generate_issue_pandas_tables(repo, default_data_folder)
-issues = Issues.get_issues(default_data_folder,Issues.ISSUES)
+github2pandas = GitHub2Pandas(github_token,data_root_dir)
+repo = github2pandas.get_repo(git_repo_owner, git_repo_name)
+# extract complete repository
+github2pandas.generate_pandas_tables(repo)
 
-# List the last 14 issue entries
-issues.head(14)
+# exports pandas files to one excel file
+GitHub2Pandas.save_tables_to_excel(Path(data_root_dir,git_repo_owner,git_repo_name))
 ```
 
 ## Notebook examples
 
+Currently not updated for github2pandas version 2.0.0!!
 The corresponding [github2pandas_notebooks](https://github.com/TUBAF-IFI-DiPiT/github2pandas_notebooks/blob/main/README.md) repository illustrates the usage with examplary investigations.
 
 The documentation of the module is available at [https://github2pandas.readthedocs.io/](https://github2pandas.readthedocs.io/).

@@ -127,3 +127,13 @@ Version 1.1.18 (November 11, 2021)
 * change README intructions
 * Excrption handling for release count
 * replace git pull by generation of a new clone
+
+
+Version 2.0.0 (April 14, 2022)
+-----------------------------------
+* restructuring github2pandas
+* easier to use
+* main class github2pandas was added
+* tests were reworked and extended
+* github2pandas is now a lot faster!!!
+* a good api call handling was implemented to save api calls
