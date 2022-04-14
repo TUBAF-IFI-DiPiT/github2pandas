@@ -33,11 +33,12 @@ class TestPullRequests(unittest.TestCase):
         pass
     
     def test_generate_pandas_tables(self):
-        self.skipTest("")
         github2pandas = GitHub2Pandas(self.github_token,self.data_root_dir,log_level=self.log_level)
         repo = github2pandas.get_repo(self.git_repo_owner, self.git_repo_name)
         github2pandas.generate_pandas_tables(repo)
-    
+        GitHub2Pandas.save_tables_to_excel(Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name))
+
+
     def test_files_to_list(self):
         files = GitHub2Pandas.Files.to_list()
         pass
@@ -54,4 +55,5 @@ class TestPullRequests(unittest.TestCase):
                     df = GitHub2Pandas.get_pandas_data_frame(Path(repo_data_dir, files.DATA_DIR), file)
 
 if __name__ == "__main__":
-    unittest.main()
+    GitHub2Pandas.save_tables_to_excel(Path("test_data","TUBAF-IFI-DiPiT","github2pandas"))
+    #unittest.main()

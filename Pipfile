@@ -23,6 +23,7 @@ human-id = "*"
 psutil = "*"
 sphinx-rtd-theme = "*"
 cffi="*"
+xlsxwriter = "*"
 
 [dev-packages]
 github2pandas = {editable = true, path = "."}

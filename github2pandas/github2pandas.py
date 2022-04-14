@@ -217,6 +217,17 @@ class GitHub2Pandas():
         return self.__core.save_api_call(self.github_connection.get_repo,repo_owner + "/" + repo_name)
 
     @staticmethod
+    def save_tables_to_excel(repo_data_dir, filename = "GitHub2Pandas"):
+        writer = pd.ExcelWriter(f'{filename}.xlsx', engine='xlsxwriter')
+        for folder, files in GitHub2Pandas.Files.to_dict().items():
+            for file in files:
+                if not isinstance(file,dict):
+                    df = GitHub2Pandas.get_pandas_data_frame(Path(repo_data_dir,folder),file)
+                    df.to_excel(writer, sheet_name=file[:-2])
+        writer.save()
+        writer.close()
+
+    @staticmethod
     def get_unknown_users(repo_data_dir):
         """
         get_unknown_users(repo_data_dir)
