@@ -1,10 +1,11 @@
 from asyncio.log import logger
 import os
 import stat
+from types import NoneType
 import typing
 import sys
 from pathlib import Path
-from typing import Union
+from typing import Any, Union
 import pickle
 import human_id
 import time
@@ -22,14 +23,78 @@ from github.GithubException import RateLimitExceededException
 
 class Core():
     """
-    Class which contains methods for mutiple modules.
+    A base class for other classes, contains methods for mutiple modules.
 
     Attributes
     ----------
     USERS : str
-        Pandas table file for user data.
-    REPO : str
-       Json file for general repository informations.
+        Name of pandas table file for user data.
+
+    github_connection : Github
+        Github object from pygithub.
+    repo : GitHubRepository
+        Repository object from pygithub.
+    repo_data_root_dir : Path
+        Data root directory for the repository.
+    repo_data_dir : Path
+        data directory for the repository.   
+    current_dir : Path 
+        current data directory.
+    request_maximum : int, default=40000
+        Maximum amount of returned informations for a general api call.    
+    
+    log_level : int
+        Logging level (CRITICAL, ERROR, WARNING, INFO, DEBUG or NOTSET)    
+    logger : logging.Logger
+        Referenz to a logger object
+
+    users_ids : dict
+        Dictionary of User Ids as Keys and anonym Ids as Value.
+
+    Methods
+    -------
+    __init__(self, github_connection, repo, repo_data_root_dir, current_dir, request_maximum, log_level)
+        Initializes core object with general informations.
+    save_api_call(function, *args, **kwargs)
+        Calls a function or method savely.
+    get_save_total_count(paginated_list)
+        Gets the total count of a paginated list savely. Waits until request limit is restored.
+    get_save_api_data(paginated_list, index)
+        Gets one item of the paginated list by index.
+    wait_for_reset()
+        Waits until request limit is refreshed.
+    check_for_updates_paginated(new_paginated_list, list_count, old_df)
+        Checks if the new_paginated_list has updates.
+    extract_reactions(extract_function, parent_id, parent_name)
+        Extracts reactions for element with parent_id by calling of extract_function.
+    extract_reaction_data(reaction, parent_id, parent_name)
+        Extracts general reaction data.
+    extract_user_data(user, node_id_to_anonym_uuid=False)
+        Extracts general user data.
+    save_pandas_data_frame(file, data_frame)
+        Saves the data_frame to a given file.
+    extract_users(users)
+        Extracts user data based on parameter users and returns a list of anonym user UUIDs. 
+    extract_author_data_from_commit(commit_sha)
+        Extracts general author data from a commit.
+    extract_committer_data_from_commit(commit_sha)
+        Extracts general committer data from a commit.
+    extract_labels(github_labels)
+        Gets all label names as a list.
+    extract_with_updated_and_since(github_method, label, data_extraction_function, *args, initial_data_list=None,initial_total_count=None, state=None,**kwargs)
+        Extracts and updates data, calls the method git_method and the function data_extraction_function.
+    progress_bar(iterable, prefix="", size=60, file=sys.stdout)
+        Prints out a progress bar.
+    copy_valid_params(base_dict ,input_params)
+        Appends base_dict with the elements of input_param, returns the new dictionary.
+    file_error_handling(function, path, exc_info)
+        Tries to change file permission and call the calling function again.
+    apply_datetime_format(pd_table, source_column, destination_column=None)
+        Provides equal date formate for all destination_column timestamps.
+    _file_error_handling(function, path)
+        Tries to change file permission and call the calling function again.
+    get_pandas_data_frame(data_dir, filename)
+        Returns a pandas data frame stored in file.
 
     """
     
@@ -45,7 +110,28 @@ class Core():
         def to_dict() -> dict:
             return {Core.Files.DATA_DIR: Core.Files.to_list()}
     
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, current_dir:str, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, repo_data_root_dir:Path, current_dir:str, request_maximum:int = 40000, log_level:int=logging.INFO) -> NoneType:
+        """
+        __init__(self, github_connection, repo, repo_data_root_dir, current_dir, request_maximum, log_level)
+
+        Initializes core object with general informations.
+
+        Parameters
+        ----------
+        github_connection : Github
+            Github object from pygithub.
+        repo : GitHubRepository
+            Repository object from pygithub.
+        repo_data_root_dir : Path
+            Data root directory for the repository.
+        current_dir : Path 
+            current data directory.
+        request_maximum : int, default=40000
+            Maximum amount of returned informations for a general api call.        
+        log_level : int
+            Logging level (CRITICAL, ERROR, WARNING, INFO, DEBUG or NOTSET), default value is enumaration value logging.INFO    
+    
+        """
         self.log_level = log_level
         self.logger = logging.getLogger("github2pandas")
         self.logger.setLevel(log_level)
@@ -53,12 +139,12 @@ class Core():
             self.logger.addHandler(logging.StreamHandler())
         self.logger_no_print = logging.getLogger("github2pandas_no_print")
         self.logger_no_print.setLevel(log_level)
-        logging.basicConfig(format='%(levelname)s;%(asctime)s;%(message)s', filename=Path(data_root_dir,"github2pandas.log"))
+        logging.basicConfig(format='%(levelname)s;%(asctime)s;%(message)s', filename=Path(repo_data_root_dir,"github2pandas.log"))
         self.github_connection = github_connection
         self.repo = repo
-        self.data_root_dir = data_root_dir
+        self.repo_data_root_dir = repo_data_root_dir
         if repo is not None:
-            self.repo_data_dir = Path(self.data_root_dir,repo.full_name)
+            self.repo_data_dir = Path(self.repo_data_root_dir,repo.full_name)
             self.repo_data_dir.mkdir(parents=True, exist_ok=True)
             df_users = Core.get_pandas_data_frame(self.repo_data_dir, Core.Files.USERS)
             self.users_ids = {}
@@ -66,22 +152,22 @@ class Core():
                 self.users_ids[row["id"]] = row["anonym_uuid"]
         if current_dir is None or current_dir == "":
             if repo is None:
-                self.current_dir = self.data_root_dir
+                self.current_dir = self.repo_data_root_dir
             else:
                 self.current_dir = self.repo_data_dir
         else:
             self.current_dir = Path(self.repo_data_dir,current_dir)
         self.request_maximum = request_maximum
     
-    def save_api_call(self, function, *args, **kwargs):
+    def save_api_call(self, function, *args, **kwargs) -> Any: 
         """
         save_api_call(function, *args, **kwargs)
 
-        Call a function or method savely.
+        Calls a function or method savely.
 
         Parameters
         ----------
-        function : Any
+        function
             A function/method to call savely.
         *args
             Input for the function/method.
@@ -91,7 +177,7 @@ class Core():
         Returns
         -------
         Any
-            Returns the result of the function/method.
+            Returns the result of the called function/method.
 
         """
         try:
@@ -104,7 +190,7 @@ class Core():
         """
         get_save_total_count(paginated_list)
 
-        Get the total count of a paginated list savely. Waits until request limit is restored.
+        Gets the total count of a paginated list savely. Waits until request limit is restored.
 
         Parameters
         ----------
@@ -123,11 +209,11 @@ class Core():
             self.wait_for_reset()
             return self.get_save_total_count(paginated_list)
    
-    def get_save_api_data(self, paginated_list:PaginatedList, index:int):
+    def get_save_api_data(self, paginated_list:PaginatedList, index:int) -> Any:
         """
         get_save_api_data(paginated_list, index)
 
-        Get one item of the paginated list by index.
+        Gets one item of the paginated list by index.
 
         Parameters
         ----------
@@ -148,11 +234,11 @@ class Core():
             self.wait_for_reset()
             return paginated_list[index]
 
-    def wait_for_reset(self):
+    def wait_for_reset(self) -> NoneType:
         """
-        wait_for_reset(self)
+        wait_for_reset()
 
-        Wait until request limit is refreshed.
+        Waits until request limit is refreshed.
 
         """
         self.logger.debug("Waiting for request limit refresh ...")
@@ -171,16 +257,16 @@ class Core():
             self.github_connection.get_rate_limit()
             requests_remaning, requests_limit = self.github_connection.rate_limiting
     
-    def check_for_updates_paginated(self, new_paginated_list:PaginatedList, list_count:int, old_df:pd.DataFrame):
+    def check_for_updates_paginated(self, new_paginated_list:PaginatedList, list_count:int, old_df:pd.DataFrame) -> bool:
         """
         check_for_updates_paginated(new_paginated_list, list_count, old_df)
 
-        Check if if the new paginiated list has updates.
+        Checks if the new_paginated_list has updates.
 
         Parameters
         ----------
         new_paginated_list : PaginatedList
-            new paginated list with updated_at and sorted by updated.
+            paginated list with updated_at and sorted by updated.
         list_count: int
             Length of the paginated List.
         old_df : pd.DataFrame
@@ -189,7 +275,7 @@ class Core():
         Returns
         -------
         bool
-            True if it need to be updated. False the List is uptodate.
+            True if it need to be updated, False if the List is uptodate.
 
         """
         if old_df.empty:
@@ -207,18 +293,24 @@ class Core():
             return True
         return False
 
-    def extract_reactions(self, extract_function, parent_id:int, parent_name:str):
+    def extract_reactions(self, extract_function, parent_id:int, parent_name:str) -> list:
         """
-        extract_issue_reactions(extract_function, parent_id)
+        extract_reactions(extract_function, parent_id, parent_name)
 
-        Extracting issue reactions.
+        Extracts reactions for element with parent_id by calling of extract_function.
 
         Parameters
         ----------
-        extract_function : function
-            A function to call issue reactions.
-        issue_id : int
-            Id from issue as foreign key.
+        extract_function
+            A function to call reactions.
+        parent_id : int
+            Id from reaction parent element as foreign key.
+        parent_name:str
+            Name of reaction parent element
+
+        Returns:
+        list
+            Returns a list of reactions
 
         """
         reactions = self.save_api_call(extract_function)
@@ -232,11 +324,11 @@ class Core():
                 break 
         return reaction_list
 
-    def extract_reaction_data(self, reaction:GitHubReaction, parent_id:int, parent_name:str):
+    def extract_reaction_data(self, reaction:GitHubReaction, parent_id:int, parent_name:str) -> dict:
         """
         extract_reaction_data(reaction, parent_id, parent_name)
 
-        Extracting general reaction data.
+        Extracts general reaction data.
 
         Parameters
         ----------
@@ -249,8 +341,8 @@ class Core():
 
         Returns
         -------
-        ReactionData
-            Dictionary with the extracted data.
+        dict
+            reaction_data dictionary with the extracted data.
 
         Notes
         -----
@@ -269,21 +361,21 @@ class Core():
     
     def extract_user_data(self, user:GitHubNamedUser, node_id_to_anonym_uuid=False) -> Union[str,None]:
         """
-        extract_user_data(user, users_ids, data_root_dir, node_id_to_anonym_uuid=False)
+        extract_user_data(user, node_id_to_anonym_uuid=False)
 
-        Extracting general user data.
+        Extracts general user data.
 
         Parameters
         ----------
         user : GitHubNamedUser
             NamedUser object from pygithub.
-        node_id_to_anonym_uuid : bool, default=False
-            Node_id will be the anonym_uuid
+        node_id_to_anonym_uuid : bool
+            Node_id will be the anonym_uuid if True, otherwise anonym_uuid is to generate, default=False
         
         Returns
         -------
-        str
-            Anonym uuid of user.
+        Union[str,None]
+            Anonym uuid of user as a string or None if the user is a None value.
 
         Notes
         -----
@@ -319,18 +411,18 @@ class Core():
             pickle.dump(users_df, f)
         return user_data["anonym_uuid"]
 
-    def save_pandas_data_frame(self, file:str, data_frame:pd.DataFrame):
+    def save_pandas_data_frame(self, file:str, data_frame:pd.DataFrame) -> NoneType:
         """
-        save_list_to_pandas_table(dir, file, data_list)
+        save_pandas_data_frame(file, data_frame)
 
-        Save a data list to a pandas table.
+        Saves the data_frame to a given file.
 
         Parameters
         ----------
         file : str
             Name of the file.
-        data_list : list
-            list of data dictionarys
+        data_frame : pd.DataFrame
+            DataFrame to save.
 
         """
         self.current_dir.mkdir(parents=True, exist_ok=True)
@@ -338,21 +430,21 @@ class Core():
         with open(pd_file, "wb") as f:
             pickle.dump(data_frame, f)
     
-    def extract_users(self, users:PaginatedList):
+    def extract_users(self, users:PaginatedList) -> list:
         """
-        extract_assignees(github_assignees)
+        extract_users(users)
 
-        Get all assignees as one string. 
+        Extracts user data based on parameter users and returns a list of anonym user UUIDs. 
 
         Parameters
         ----------
-        github_assignees : list
-            List of NamedUser.
+        users:PaginatedList
+            List of NamedUser (GitHubNamedUser).
 
         Returns
         -------
-        str
-            String which contains all assignees and are connected with the char &.
+        list
+            contains anonym user UUIDs.
 
         Notes
         -----
@@ -364,27 +456,21 @@ class Core():
             user_list.append(self.extract_user_data(user))
         return user_list
 
-    def extract_author_data_from_commit(self, commit_sha:str):
+    def extract_author_data_from_commit(self, commit_sha:str) -> Union[str,None]:
         """
-        extract_author_data_from_commit(repo, sha, users_ids, data_root_dir)
+        extract_author_data_from_commit(commit_sha)
 
-        Extracting general author data from a commit.
+        Extracts general author data from a commit.
 
         Parameters
         ----------
-        repo : Repository
-            Repository object from pygithub.
-        sha : str
+        commit_sha : str
             sha from the commit.
-        users_ids : dict
-            Dict of User Ids as Keys and anonym Ids as Value.
-        data_root_dir : str
-            Data root directory for the repository.
 
         Returns
         -------
-        str
-            Anonym uuid of user.
+        Union[str,None]
+            Returns anonym uuid as a string of user or the value None.
 
         Notes
         -----
@@ -403,27 +489,21 @@ class Core():
         except:
             return None
 
-    def extract_committer_data_from_commit(self, commit_sha:str):
+    def extract_committer_data_from_commit(self, commit_sha:str) -> Union[str,None]:
         """
-        extract_committer_data_from_commit(repo, sha, users_ids, data_root_dir)
+        extract_committer_data_from_commit(commit_sha)
 
-        Extracting general committer data from a commit.
+        Extracts general committer data from a commit.
 
         Parameters
         ----------
-        repo : Repository
-            Repository object from pygithub.
-        sha : str
+        commit_sha : str
             sha from the commit.
-        users_ids : dict
-            Dict of User Ids as Keys and anonym Ids as Value.
-        data_root_dir : str
-            Data root directory for the repository.
 
         Returns
         -------
-        str
-            Anonym uuid of user.
+        Union[str,None]
+            Returns anonym uuid as a string of user or the value None.
 
         Notes
         -----
@@ -442,11 +522,11 @@ class Core():
         except:
             return None
 
-    def extract_labels(self, github_labels:PaginatedList):
+    def extract_labels(self, github_labels:PaginatedList) -> list:
         """
         extract_labels(github_labels)
 
-        Get all labels as one string.
+        Gets all label names as a list.
 
         Parameters
         ----------
@@ -455,8 +535,8 @@ class Core():
 
         Returns
         -------
-        str
-            String which contains all labels and are connected with the char &.
+        list
+            List which contains all label names.
 
         Notes
         -----
@@ -468,7 +548,31 @@ class Core():
             label_list.append(label.name)
         return label_list
 
-    def extract_with_updated_and_since(self, github_method, label:str, data_extraction_function, *args, initial_data_list:PaginatedList=None,initial_total_count:int=None, state:str=None,**kwargs):
+    def extract_with_updated_and_since(self, github_method, label:str, data_extraction_function, *args, initial_data_list:PaginatedList=None,initial_total_count:int=None, state:str=None,**kwargs) -> NoneType:
+        """
+        extract_with_updated_and_since(github_method, label, data_extraction_function, *args, initial_data_list=None,initial_total_count=None, state=None,**kwargs)
+
+        Extracts and updates data, calls the method git_method and the function data_extraction_function.
+
+        Parameters
+        ----------
+        github_method
+            A github method to call
+        label
+            label of data type to extract
+        data_extraction_function
+            An extraction function to call
+        *args
+            Input for the data_extraction_function
+        initial_data_list
+            List of initial data
+        initial_total_count
+            Initial count of requests
+        state
+            corresponds to the github state of data, allows extracting with state consideration
+        **kwargs
+            Optional input for data_extraction_function
+        """
         if initial_data_list is None:
             if state is None:
                 data_list = self.save_api_call(github_method, sort="updated", direction="asc")
@@ -505,7 +609,7 @@ class Core():
             else:
                 break
          
-    def progress_bar(self, iterable:typing.Iterable, prefix:str = "", size:int = 60):
+    def progress_bar(self, iterable:typing.Iterable, prefix:str = "", size:int = 60) -> NoneType:
         """
         progress_bar(iterable, prefix="", size=60, file=sys.stdout)
 
@@ -537,32 +641,49 @@ class Core():
             sys.stdout.write("\n")
             sys.stdout.flush()
 
-    def copy_valid_params(self, base_dict:dict ,input_params:dict):
+    def copy_valid_params(self, base_dict:dict ,input_params:dict) -> dict:
+        """
+        copy_valid_params(base_dict ,input_params)
+
+        Appends base_dict with the elements of input_param, returns the new dictionary.
+
+        Parameters
+        ----------
+        base_dict : dict
+            A base dictionary
+        input_params : dict
+            Dictionary with additial input parameters
+
+        Returns
+        -------
+        dict
+            The appended dictionary
+        """
         params = base_dict
         for param in input_params:
             if param in params:
                 params[param] = input_params[param]
         return params
 
-    def apply_datetime_format(self, pd_table:pd.DataFrame, source_column:str, destination_column:str = None):
+    def apply_datetime_format(self, pd_table:pd.DataFrame, source_column:str, destination_column:str = None) -> pd.DataFrame:
         """
         apply_datetime_format(pd_table, source_column, destination_column=None)
 
-        Provide equal date formate for all timestamps
+        Provides equal date formate for all destination_column timestamps.
 
         Parameters
         ----------
-        pd_table : pandas Dataframe
-            List of NamedUser
+        pd_table : pd.DataFrame
+            DataFrame to change 
         source_column : str
             Source column name.
         destination_column : str, default=None
-            Destination column name. Saves to Source if None.
+            Destination column name. Saves to Source if destination_column is None.
 
         Returns
         -------
-        str
-            String which contains all assignees.
+        pd.DataFrame
+            DataFrame with changed timestamps.
         
         """
         if not destination_column:
@@ -578,20 +699,19 @@ class Core():
         self.logger.debug(f"{string}: {requests_remaning}")
 
     @staticmethod
-    def file_error_handling(func, path:str, exc_info:str):
+    def file_error_handling(function, path:str) -> NoneType:
         """
-        handleError(func, path, exc_info)
+        file_error_handling(function, path, exc_info)
 
-        Error handler function which will try to change file permission and call the calling function again.
+        Is an error handler function which will try to change file permission and call the calling function again.
 
         Parameters
         ----------
-        func : Function
+        function : Function
             Calling function.
         path : str
             Path of the file which causes the Error.
-        exc_info : str
-            Execution information.
+    
         
         """
         # Check if file access issue
@@ -599,10 +719,28 @@ class Core():
             # Try to change the permision of file
             os.chmod(path, stat.S_IWUSR)
             # call the calling function again
-            func(path)
+            function(path)
 
     @staticmethod
     def get_pandas_data_frame(data_dir:Path, filename:str) -> pd.DataFrame:
+        """
+        get_pandas_data_frame(data_dir, filename)
+
+        Returns a pandas data frame stored in file, if necessary creates one.
+
+        Parameters
+        ----------
+        data_dir:Path
+            Path to pandas file.
+        filename:str
+            Filename.
+
+        Returns
+        -------
+        pd.DataFrame
+            Returns pandas data frame stored in file if file exist, otherwise a new data frame object.
+
+        """        
         pd_file = Path(data_dir, filename)
         if pd_file.is_file():
             return pd.read_pickle(pd_file)

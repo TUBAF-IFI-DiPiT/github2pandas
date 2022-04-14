@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
-import numpy
+from types import NoneType
+#import numpy
 from pandas import DataFrame
 import pandas as pd
 # github imports
@@ -18,7 +19,7 @@ class Repository(Core):
     Attributes
     ----------
     DATA_DIR : str
-        repository dir where all files are saved in.
+        Repository dir where all files are saved in.
     REPOSITORY : str
         Pandas table file for basic repository data.
     TEMPLATES : str
@@ -66,11 +67,11 @@ class Repository(Core):
         except IndexError:
             return np.nan
           
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> NoneType:
         """
         __init__(self, github_connection, repo, data_root_dir, request_maximum)
 
-        Initial git releases object with general information.
+        Initializes git repository object with general information.
 
         Parameters
         ----------
@@ -81,8 +82,9 @@ class Repository(Core):
         data_root_dir : Path
             Data root directory for the repository.
         request_maximum : int, default=40000
-            Maxmimum amount of returned informations for a general api call
-
+            Maximum amount of returned informations for a general api call
+        log_level : int
+            Logging level (CRITICAL, ERROR, WARNING, INFO, DEBUG or NOTSET), default value is enumaration value logging.INFO
         Notes
         -----
             PyGithub Github object structure: https://pygithub.readthedocs.io/en/latest/github.html
@@ -100,37 +102,37 @@ class Repository(Core):
         )
 
     @property
-    def repository_df(self):
+    def repository_df(self) -> pd.DataFrame:
         return Core.get_pandas_data_frame(self.current_dir, Repository.Files.REPOSITORY)
 
-    def generate_pandas_tables(self, contributor_companies_included:bool = False):
+    def generate_pandas_tables(self, contributor_companies_included:bool = False) -> NoneType:
         """
         generate_pandas_tables(contributor_companies_included = False)
 
-        Extracting the basic repository data.
+        Extracts the basic repository data.
 
         Parameters
         ----------
-        contributor_companies_included: bool default False
-            Starts evaluation of contributor affiliations (huge effort in large projects).
+        contributor_companies_included: bool, default=False
+            Regulates evaluation of contributor affiliations (huge effort in large projects).
             
         """
         repository_data_list = []
-        repository_data = self.extract_repository_data(contributor_companies_included)
+        repository_data = self.__extract_repository_data(contributor_companies_included)
         repository_data_list.append(repository_data)
         repository_df = DataFrame(repository_data_list)
         self.save_pandas_data_frame(Repository.Files.REPOSITORY, repository_df)
 
-    def extract_repository_data(self, contributor_companies_included:bool = False):
+    def __extract_repository_data(self, contributor_companies_included:bool = False) -> dict:
         """
-        extract_repository_data(contributor_companies_included)
+        __extract_repository_data(contributor_companies_included)
 
-        Extracting general repository data.
+        Extracts general data of repository.
 
         Parameters
         ----------
-        contributor_companies_included: bool default False
-            Starts evaluation of contributor affiliations (huge effort in large projects).
+        contributor_companies_included: bool, default=False
+            Regulates evaluation of contributor affiliations (huge effort in large projects).
 
         Returns
         -------
