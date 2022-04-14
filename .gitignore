@@ -21,3 +21,4 @@ secret.yml
 /build/
 .pypirc
 .venv
+test_data/

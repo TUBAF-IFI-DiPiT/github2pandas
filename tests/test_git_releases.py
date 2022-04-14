@@ -1,71 +1,42 @@
+import logging
 import unittest
 import os
 from pathlib import Path
-import github
-import datetime
 import shutil
-
-from github2pandas.utility import Utility
+# github2pandas imports
+from github2pandas.core import Core
+from github2pandas.github2pandas import GitHub2Pandas
 from github2pandas.git_releases import GitReleases
 
 class TestGitReleases(unittest.TestCase):
     """
     Test case for GitReleases class.
     """
-    
     github_token = os.environ['TOKEN']
-
     git_repo_name = "github2pandas"
     git_repo_owner = "TUBAF-IFI-DiPiT"
+    data_root_dir = Path("test_data")
+    log_level = logging.DEBUG
 
-    default_data_folder = Path("test_data", git_repo_name)
-    repo = Utility.get_repo(git_repo_owner, git_repo_name, github_token, default_data_folder)
-    users_ids = Utility.get_users_ids(default_data_folder)
+    def __init__(self, methodName: str = ...) -> None:
+        super().__init__(methodName)
+        if self.data_root_dir.exists() and self.data_root_dir.is_dir():
+            shutil.rmtree(self.data_root_dir, onerror=Core.file_error_handling)
+        self.data_root_dir.mkdir(parents=True, exist_ok=True)
 
-    def test_generate_git_releases_pandas_tables(self):
-        GitReleases.generate_git_releases_pandas_tables(self.repo, self.default_data_folder, check_for_updates=False)
-        GitReleases.generate_git_releases_pandas_tables(self.repo, self.default_data_folder)
+    def test_generate_pandas_tables(self):
+        github2pandas = GitHub2Pandas(self.github_token,self.data_root_dir, log_level=self.log_level)
+        repo = github2pandas.get_repo(self.git_repo_owner, self.git_repo_name)
 
-    def test_get_git_releases(self):
-        git_releases = GitReleases.get_git_releases(self.default_data_folder)
+        git_releases = GitReleases(github2pandas.github_connection, repo, self.data_root_dir, log_level=self.log_level)
+        git_releases.print_calls("Start git releases")
+        git_releases.generate_pandas_tables()
+        git_releases.print_calls("End git releases")
 
-    def test_extract_git_releases_data(self):
-        git_releases = self.repo.get_releases()
-        for git_release in git_releases:
-            git_release_data = GitReleases.extract_git_releases_data(git_release, self.users_ids, self.default_data_folder)
-            break
-        class User:
-             node_id = "test_extract_git_releases_data"
-             name = "test_extract_git_releases_data"
-             email = "test_extract_git_releases_data@test.de"
-             login = "test_extract_git_releases_data"
-        class GitRelease:
-            id = 0
-            body = "test_extract_git_releases_data"
-            title = "test_extract_git_releases_data"
-            tag_name = "test_extract_git_releases_data"
-            target_commitish = "test_extract_git_releases_data"
-            draft = "test_extract_git_releases_data"
-            prerelease = "test_extract_git_releases_data"
-            _author = User()
-            author = User()
-            created_at = datetime.datetime.now()
-            published_at = datetime.datetime.now()
-        
-        git_release_data = GitReleases.extract_git_releases_data(GitRelease(), self.users_ids, self.default_data_folder)
-        self.assertIsNotNone(git_release_data)
-        git_release = GitRelease()
-        git_release._author = github.GithubObject.NotSet
-        git_release_data = GitReleases.extract_git_releases_data(git_release, self.users_ids, self.default_data_folder)
-        self.assertIsNotNone(git_release_data)
-        self.assertFalse("author" in git_release_data.keys())
-    
-    def setUp(self):
-        self.default_data_folder.mkdir(parents=True, exist_ok=True)
+    def test_get_data_frames(self):
+        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,GitReleases.Files.DATA_DIR)
+        git_releases = Core.get_pandas_data_frame(data_dir, GitReleases.Files.GIT_RELEASES)
+        pass
 
-    def tearDown(self):
-        shutil.rmtree("test_data")
-        self.users_ids = {}
-        
 if __name__ == "__main__":
     unittest.main()

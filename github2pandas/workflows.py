@@ -1,17 +1,25 @@
+import logging
 import requests
-import zipfile
-import io
-import pandas as pd
+from zipfile import ZipFile
+from io import BytesIO
 from pathlib import Path
-from .utility import Utility
+from pandas import DataFrame
+import pandas as pd
+# github imports
+from github.MainClass import Github
+from github.Repository import Repository as GitHubRepository
+from github.Workflow import Workflow as GitHubWorkflow
+from github.WorkflowRun import WorkflowRun as GitHubWorkflowRun
+# github2pandas imports
+from github2pandas.core import Core
 
-class Workflows(object):
+class Workflows(Core):
     """
     Class to aggregate Workflows
 
     Attributes
     ----------
-    WORKFLOWS_DIR : str
+    DATA_DIR : str
         workflow dir where all files are saved in.
     WORKFLOWS : str
         Pandas table file for workflow data.
@@ -20,25 +28,130 @@ class Workflows(object):
 
     Methods
     -------
+    __init__(self, github_connection, repo, data_root_dir, request_maximum)
+        Initial workflows object with general information.
+    generate_pandas_tables(self, check_for_updates=False, extraction_params={})
+        Extracting the complete workflow list and run history from a repository.
     extract_workflow_data(workflow)
         Extracting general workflow data.
-    extract_workflow_run_data(workflow_run)
+    extract_run_data(workflow_run)
         Extracting general workflow run data.
-    generate_workflow_pandas_tables(repo, data_root_dir, check_for_updates=True)
-        Extracting the complete workflow list and run history from a repository.
     download_workflow_log_files(repo, github_token, workflow_run_id, data_root_dir)
         Receive workflow log files from GitHub.
     get_workflows(data_root_dir, filename=WORKFLOWS)
         Get a generated pandas tables.
     
     """
+    EXTRACTION_PARAMS = {
+        "workflows": True,
+        "runs": True
+    }
+    
+    class Files():
+        DATA_DIR = "Workflows"
+        WORKFLOWS = "Workflows.p"
+        RUNS =  "Runs.p"
 
-    WORKFLOWS_DIR = "Workflows"
-    WORKFLOWS = "pdWorkflows.p"
-    WORKFLOWS_RUNS =  "pdWorkflowsRuns.p"
+        @staticmethod
+        def to_list() -> list:
+            return [
+                Workflows.Files.WORKFLOWS,
+                Workflows.Files.RUNS
+            ]
 
-    @staticmethod
-    def extract_workflow_data(workflow):
+        @staticmethod
+        def to_dict() -> dict:
+            return {Workflows.Files.DATA_DIR: Workflows.Files.to_list()}
+
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
+        """
+        __init__(self, github_connection, repo, data_root_dir, request_maximum)
+
+        Initial workflows object with general information.
+
+        Parameters
+        ----------
+        github_connection : Github
+            Github object from pygithub.
+        repo : GitHubRepository
+            Repository object from pygithub.
+        data_root_dir : Path
+            Data root directory for the repository.
+        request_maximum : int, default=40000
+            Maxmimum amount of returned informations for a general api call
+
+        Notes
+        -----
+            PyGithub Github object structure: https://pygithub.readthedocs.io/en/latest/github.html
+            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
+
+        """
+        Core.__init__(
+            self,
+            github_connection,
+            repo,
+            data_root_dir,
+            Workflows.Files.DATA_DIR,
+            request_maximum=request_maximum,
+            log_level=log_level
+        )
+
+    @property
+    def workflows_df(self):
+        return Core.get_pandas_data_frame(self.current_dir, Workflows.Files.WORKFLOWS)
+    @property
+    def runs_df(self):
+        return Core.get_pandas_data_frame(self.current_dir, Workflows.Files.RUNS)
+
+    def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}):
+        """
+        generate_pandas_tables(self, check_for_updates=False, extraction_params={})
+
+        Extracting the complete workflow list and run history from a repository.
+
+        Parameters
+        ----------
+        check_for_updates : bool, default=True
+            Check first if there are any new issues information. Does not work when extract_reaction is True.
+        extraction_params : dict, default={}
+            Can hold extraction parameters. This defines what will be extracted.
+            
+        """
+        params = self.copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
+        if params["workflows"]:
+            workflows = self.save_api_call(self.repo.get_workflows)
+            total_count = self.get_save_total_count(workflows)
+            extract = True
+            if check_for_updates:
+                if not self.check_for_updates_paginated(workflows, total_count, self.workflows_df):
+                    self.logger.info("No new workflow information!")
+                    extract = False
+            if extract:
+                workflow_list = []
+                for i in self.progress_bar(range(total_count), "Workflows: "):
+                    workflow = self.get_save_api_data(workflows, i)
+                    workflow_data = self.extract_workflow_data(workflow)
+                    workflow_list.append(workflow_data)
+                workflows_df = DataFrame(workflow_list)
+                self.save_pandas_data_frame(Workflows.Files.WORKFLOWS, workflows_df)
+        if params["runs"]:
+            runs = self.save_api_call(self.repo.get_workflow_runs)
+            total_count = self.get_save_total_count(runs)
+            extract = True
+            if check_for_updates:
+                if not self.check_for_updates_paginated(runs, total_count, self.runs_df):
+                    self.logger.info("No new workflow run information!")
+                    extract = False
+            if extract:
+                run_list = []
+                for i in self.progress_bar(range(total_count), "Workflow Runs: "):
+                    run = self.get_save_api_data(runs, i)
+                    run_data = self.extract_run_data(run)
+                    run_list.append(run_data)
+                runs_df = DataFrame(run_list)
+                self.save_pandas_data_frame(Workflows.Files.RUNS, runs_df)
+
+    def extract_workflow_data(self, workflow:GitHubWorkflow):
         """
         extract_workflow_data(workflow)
 
@@ -67,16 +180,15 @@ class Workflows(object):
         workflow_data["state"] = workflow.state
         return workflow_data
     
-    @staticmethod
-    def extract_workflow_run_data(workflow_run):
+    def extract_run_data(self, run:GitHubWorkflowRun):
         """
-        extract_workflow_run_data(workflow_run)
+        extract_run_data(run)
 
         Extracting general workflow run data.
 
         Parameters
         ----------
-        workflow_run : WorkflowRun
+        run : WorkflowRun
             WorkflowRun object from pygithub.
 
         Returns
@@ -89,67 +201,17 @@ class Workflows(object):
             PyGithub WorkflowRun object structure: https://pygithub.readthedocs.io/en/latest/github_objects/WorkflowRun.html
 
         """
-        workflow_run_data = dict()
-        workflow_run_data["workflow_id"] = workflow_run.workflow_id
-        workflow_run_data['id'] = workflow_run.id
-        workflow_run_data['commit_sha'] = workflow_run.head_sha
-        workflow_run_data['pull_requests'] = [pr.id for pr in workflow_run.pull_requests]
-        workflow_run_data['state'] = workflow_run.status
-        workflow_run_data['event'] = workflow_run.event
-        workflow_run_data['conclusion'] = workflow_run.conclusion
-        workflow_run_data['created_at'] = workflow_run.created_at
-        workflow_run_data['updated_at'] = workflow_run.updated_at
-        return workflow_run_data
-
-    @staticmethod
-    def generate_workflow_pandas_tables(repo, data_root_dir, check_for_updates=True):
-        """
-        generate_workflow_pandas_tables(repo, data_root_dir, check_for_updates=True)
-
-        Extracting the complete workflow list and run history from a repository.
-
-        Parameters
-        ----------
-        repo : Repository
-            Repository object from pygithub.
-        data_root_dir : str
-            Data root directory for the repository.
-        check_for_updates : bool, default=True
-            Check first if there are any new workflows or workflow_runs information.
-            
-        Notes
-        -----
-            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
-        
-        """
-
-        workflow_dir = Path(data_root_dir, Workflows.WORKFLOWS_DIR)
-        workflow_dir.mkdir(parents=True, exist_ok=True)
-        users_ids = Utility.get_users_ids(data_root_dir)
-
-        workflows = repo.get_workflows()
-        workflow_runs = repo.get_workflow_runs()
-
-        if check_for_updates:
-            old_workflows = Workflows.get_workflows(data_root_dir)
-            check_workflows = Utility.check_for_updates_paginated(workflows, old_workflows)
-            old_workflow_runs = Workflows.get_workflows(data_root_dir,Workflows.WORKFLOWS_RUNS)
-            check_workflow_runs = Utility.check_for_updates_paginated(workflow_runs, old_workflow_runs)
-            if not check_workflows and not check_workflow_runs:
-                return
-        
-        workflow_list = []
-        for workflow in workflows:
-            workflow_data = Workflows.extract_workflow_data(workflow)
-            workflow_list.append(workflow_data)
-        Utility.save_list_to_pandas_table(workflow_dir, Workflows.WORKFLOWS, workflow_list)
-
-        workflow_run_list = []
-        for workflow_run in workflow_runs:
-            workflow_run_data = Workflows.extract_workflow_run_data(workflow_run)
-            workflow_run_data['author'] = Utility.extract_committer_data_from_commit(repo, workflow_run_data['commit_sha'], users_ids, data_root_dir)
-            workflow_run_list.append(workflow_run_data)
-        Utility.save_list_to_pandas_table(workflow_dir, Workflows.WORKFLOWS_RUNS, workflow_run_list)
+        run_data = {}
+        run_data["workflow_id"] = run.workflow_id
+        run_data['id'] = run.id
+        run_data['commit_sha'] = run.head_sha
+        run_data['pull_requests'] = [pr.id for pr in run.pull_requests]
+        run_data['state'] = run.status
+        run_data['event'] = run.event
+        run_data['conclusion'] = run.conclusion
+        run_data['created_at'] = run.created_at
+        run_data['updated_at'] = run.updated_at
+        return run_data
 
     @staticmethod
     def download_workflow_log_files(repo, github_token, workflow_run_id, data_root_dir):
@@ -189,36 +251,9 @@ class Workflows(object):
         response = requests.get(query_url, headers=headers,
                                 auth=('username', github_token))
         if 'zip' in response.headers['Content-Type']:
-            zip_obj = zipfile.ZipFile(io.BytesIO(response.content))
-            data_dir = Path(data_root_dir, Workflows.WORKFLOWS_DIR, str(workflow_run_id))
+            zip_obj = ZipFile(BytesIO(response.content))
+            data_dir = Path(data_root_dir, Workflows.Files.DATA_DIR, str(workflow_run_id))
             zip_obj.extractall(data_dir)
             return len(zip_obj.namelist())
         else:
             return None
-
-    @staticmethod
-    def get_workflows(data_root_dir, filename=WORKFLOWS):
-        """
-        get_workflows(data_root_dir, filename=WORKFLOWS)
-
-        Get a generated pandas tables.
-
-        Parameters
-        ----------
-        data_root_dir : str
-            Data root directory for the repository.
-        filename : str, default=WORKFLOWS
-            Pandas table file for workflows or workflows runs data.
-
-        Returns
-        -------
-        DataFrame
-            Pandas DataFrame which can include the desired data.
-
-        """
-        workflow_dir = Path(data_root_dir, Workflows.WORKFLOWS_DIR)
-        pd_workflows_file = Path(workflow_dir, filename)
-        if pd_workflows_file.is_file():
-            return pd.read_pickle(pd_workflows_file)
-        else:
-            return pd.DataFrame()

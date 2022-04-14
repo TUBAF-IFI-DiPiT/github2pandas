@@ -10,7 +10,6 @@ requests = "*"
 datetime = "*"
 pygithub = "*"
 argparse = "*"
-pydriller = "<=1.15.2"
 git2net = "*"
 pysqlite3 = "*"
 selenium = "*"
@@ -19,9 +18,11 @@ pandas = "*"
 sphinx = "*"
 m2r2 = "*"
 pypiwin32 = {sys_platform = "== 'win32'"}
+pywin32 = {sys_platform = "== 'win32'"}
 human-id = "*"
 psutil = "*"
 sphinx-rtd-theme = "*"
+cffi="*"
 
 [dev-packages]
 github2pandas = {editable = true, path = "."}
