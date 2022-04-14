@@ -156,7 +156,9 @@ class Version(Core):
         #         self.logger.info("No new Commit information!")
         #         return
 
-        self.__generate_data_base()
+        if self.__generate_data_base() == False:
+            print("There are no commits to extract")
+            return
 
         db = sqlite3.connect(self.sqlite_db_file)
         pd_commits = pd.read_sql_query("SELECT * FROM commits", db)
@@ -261,7 +263,7 @@ class Version(Core):
         self.save_pandas_data_frame(Version.Files.EDITS, pd_edits)
         self.save_pandas_data_frame(Version.Files.BRANCHES, pd_Branches)      
 
-    def __generate_data_base(self, new_extraction:bool=False) -> None:
+    def __generate_data_base(self, new_extraction:bool=False) -> bool:
         """
         __generate_data_base(new_extraction=False)
 
@@ -289,6 +291,10 @@ class Version(Core):
         self.current_dir.mkdir(parents=True, exist_ok=True)
         if new_extraction & os.path.exists(self.sqlite_db_file):
             os.remove(self.sqlite_db_file)
+        commits = self.save_api_call(self.repo.get_commits)
+        commit_count = self.get_save_total_count(commits)
+        if commit_count == 0:
+            return False
         import tqdm
         # exclude for now
         if self.number_of_proceses == 0:
@@ -309,6 +315,7 @@ class Version(Core):
                                 # no_of_processes=self.number_of_proceses,
                                 all_branches=True,
                                 max_modifications=1000)
+        return True
 
     def clone_repository(self, github_token:str=None, new_clone:bool=False) -> None:
         """

@@ -34,9 +34,6 @@ class TestRepositories(unittest.TestCase):
         repo = github2pandas.get_repo(self.git_repo_owner, self.git_repo_name)
 
         repository = Repository(github2pandas.github_connection, repo, self.data_root_dir, log_level=self.log_level)
-        repository.print_calls("Start repository")
-        repository.generate_pandas_tables()
-        repository.print_calls("End repository")
         repository.print_calls("Start repository with companies")
         repository.generate_pandas_tables(contributor_companies_included=True)
         repository.print_calls("End repository with companies")

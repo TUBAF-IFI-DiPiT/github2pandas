@@ -33,16 +33,9 @@ class TestPullRequests(unittest.TestCase):
         repo = github2pandas.get_repo(self.git_repo_owner, self.git_repo_name)
 
         pull_requests = PullRequests(github2pandas.github_connection, repo, self.data_root_dir, log_level=self.log_level)
-        pull_requests.print_calls("Start pr (No Issues)")
-        pull_requests.generate_pandas_tables()
-        pull_requests.print_calls("End pr (No Issues)")
         pull_requests.print_calls("Start pr")
         pull_requests.generate_pandas_tables()
         pull_requests.print_calls("End pr")
-        pull_requests = PullRequests(github2pandas.github_connection, repo, self.data_root_dir,10, log_level=self.log_level)
-        pull_requests.print_calls("Start rate limit pr")
-        pull_requests.generate_pandas_tables()
-        pull_requests.print_calls("End rate limit pr")
 
     def test_get_data_frames(self):
         data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,PullRequests.Files.DATA_DIR)

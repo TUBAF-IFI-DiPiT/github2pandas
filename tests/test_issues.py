@@ -36,11 +36,6 @@ class TestIssues(unittest.TestCase):
         issues.print_calls("Start issues")
         issues.generate_pandas_tables()
         issues.print_calls("End issues")
-        # check max request limit
-        issues = Issues(github2pandas.github_connection, repo, self.data_root_dir, 20, log_level=self.log_level)
-        issues.print_calls("Start rate limit issues")
-        issues.generate_pandas_tables()
-        issues.print_calls("End rate limit issues")
 
     def test_get_data_frames(self):
         data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,Issues.Files.DATA_DIR)

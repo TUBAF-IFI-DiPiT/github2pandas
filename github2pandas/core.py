@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 from typing import Any, Union
 import pickle
+import github
 import human_id
 import time
 import math
@@ -207,6 +208,11 @@ class Core():
         except RateLimitExceededException:
             self.wait_for_reset()
             return self.get_save_total_count(paginated_list)
+        except github.GithubException as e:
+            if e.message == "Git Repository is empty.":
+                return 0
+            else:
+                raise e
    
     def get_save_api_data(self, paginated_list:PaginatedList, index:int) -> Any:
         """
