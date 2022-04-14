@@ -12,10 +12,12 @@ class TestPullRequests(unittest.TestCase):
     Test case for GitHub2Pandas class.
     """
     github_token = os.environ['TOKEN']
-    #git_repo_name = "fluentui"
-    #git_repo_owner = "microsoft"
-    git_repo_name = "github2pandas"
-    git_repo_owner = "TUBAF-IFI-DiPiT"
+    if "NAME" in os.environ:
+        git_repo_name = os.environ['NAME']
+        git_repo_owner = os.environ['OWNER']
+    else:
+        git_repo_name = "github2pandas"
+        git_repo_owner = "TUBAF-IFI-DiPiT"
     data_root_dir = Path("test_data")
     log_level = logging.DEBUG
 
