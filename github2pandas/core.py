@@ -185,6 +185,11 @@ class Core():
         except RateLimitExceededException:
             self.wait_for_reset()
             return self.save_api_call(function,*args, **kwargs) 
+        except github.GithubException as e:
+            if e.data["message"] == "Not Found":
+                return None
+            else:
+                raise e
     
     def get_save_total_count(self, paginated_list:PaginatedList) -> int:
         """
@@ -209,7 +214,7 @@ class Core():
             self.wait_for_reset()
             return self.get_save_total_count(paginated_list)
         except github.GithubException as e:
-            if e.message == "Git Repository is empty.":
+            if e.data["message"] == "Git Repository is empty.":
                 return 0
             else:
                 raise e

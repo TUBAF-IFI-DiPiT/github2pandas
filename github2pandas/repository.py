@@ -57,15 +57,14 @@ class Repository(Core):
         @staticmethod
         def to_dict() -> dict:
             return {Repository.Files.DATA_DIR: Repository.Files.to_list()}
-
-    @staticmethod    
-    def getFirstAppearance(repo, templates_to_check):
-        try:
-            commits = repo.get_commits(path=templates_to_check)
-            first_commit = commits[commits.totalCount - 1]
-            return first_commit.commit.author.date
-        except IndexError:
+   
+    def getFirstAppearance(self, templates_to_check):
+        commits = self.save_api_call(self.repo.get_commits, path=templates_to_check)
+        commit_count = self.get_save_total_count(commits)
+        if commit_count == 0:
             return np.nan
+        first_commit = self.get_save_api_data(commits,commit_count - 1)
+        return first_commit.commit.author.date
           
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
@@ -148,7 +147,8 @@ class Repository(Core):
         commits = self.save_api_call(self.repo.get_commits)
         commit_count = self.get_save_total_count(commits)
         if commit_count == 0:
-            print("No commits found!")  
+            print("No commits found!") 
+            last_commit_date = None 
         else:
             last_commit = self.get_save_api_data(commits,0)
             last_commit_date = pd.to_datetime(last_commit.commit.committer.date , format="%Y-%m-%d M:%S")
@@ -196,7 +196,7 @@ class Repository(Core):
         # filtered_companies = list(filter(None.__ne__, companies))
         
         read_me = self.save_api_call(self.repo.get_readme)
-        if read_me._content == GithubObject.NotSet:
+        if read_me is None or read_me._content == GithubObject.NotSet:
             readme_content = ""
             print("Readme does not exist")
         else:
@@ -308,19 +308,12 @@ class Repository(Core):
             'watchers_count': bool(self.repo.watchers_count),
             'is_fork': self.repo.fork,
             'prog_language': self.repo.language,
-            'file_readme': Repository.getFirstAppearance(self.repo, 
-                                                         Repository.TEMPLATES_TO_CHECK['file_readme']),
-            'file_code_of_conduct': Repository.getFirstAppearance(self.repo, 
-                                                         Repository.TEMPLATES_TO_CHECK['file_code_of_conduct']),
-            'file_contributing': Repository.getFirstAppearance(self.repo, 
-                                                         Repository.TEMPLATES_TO_CHECK['file_contributing']),
-            'file_funding': Repository.getFirstAppearance(self.repo, 
-                                                         Repository.TEMPLATES_TO_CHECK['file_funding']),
-            'file_IssuePR_templates': Repository.getFirstAppearance(self.repo, 
-                                                         Repository.TEMPLATES_TO_CHECK['file_IssuePR_templates']),
-            'file_security': Repository.getFirstAppearance(self.repo, 
-                                                         Repository.TEMPLATES_TO_CHECK['file_security']),
-            'file_support': Repository.getFirstAppearance(self.repo, 
-                                                         Repository.TEMPLATES_TO_CHECK['file_support'])
+            'file_readme': self.getFirstAppearance(Repository.TEMPLATES_TO_CHECK['file_readme']),
+            'file_code_of_conduct': self.getFirstAppearance(Repository.TEMPLATES_TO_CHECK['file_code_of_conduct']),
+            'file_contributing': self.getFirstAppearance(Repository.TEMPLATES_TO_CHECK['file_contributing']),
+            'file_funding': self.getFirstAppearance(Repository.TEMPLATES_TO_CHECK['file_funding']),
+            'file_IssuePR_templates': self.getFirstAppearance(Repository.TEMPLATES_TO_CHECK['file_IssuePR_templates']),
+            'file_security': self.getFirstAppearance(Repository.TEMPLATES_TO_CHECK['file_security']),
+            'file_support': self.getFirstAppearance(Repository.TEMPLATES_TO_CHECK['file_support'])
         }
         return repository_data
