@@ -289,9 +289,10 @@ class Version(Core):
         self.current_dir.mkdir(parents=True, exist_ok=True)
         if new_extraction & os.path.exists(self.sqlite_db_file):
             os.remove(self.sqlite_db_file)
-        if self.number_of_proceses == 1:
+        import tqdm
+        # exclude for now
+        if self.number_of_proceses == 0:
             # overwrite git2net progress bar
-            import tqdm
             def version_progress_bar(iterable=None, total:int=None, desc:str="", **kwargs):
                 if iterable is None:
                     if total is not None:

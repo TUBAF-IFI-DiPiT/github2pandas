@@ -54,7 +54,7 @@ class TestPullRequests(unittest.TestCase):
         for files in GitHub2Pandas.Files.to_list():
             for file in files.to_list():
                 if isinstance(file, str):
-                    df = GitHub2Pandas.get_pandas_data_frame(Path(repo_data_dir, files.DATA_DIR), file)
+                    df = GitHub2Pandas.get_pandas_data_frame(repo_data_dir, files.DATA_DIR, file)
 
 if __name__ == "__main__":
     GitHub2Pandas.save_tables_to_excel(Path("test_data","TUBAF-IFI-DiPiT","github2pandas"))
