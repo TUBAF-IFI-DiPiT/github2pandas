@@ -1,6 +1,7 @@
 name: Test large repo
 
 on:
+  push:
   workflow_dispatch:
 
 jobs:
@@ -24,11 +25,11 @@ jobs:
       run: |
         cd src
         pipenv install
-    - name: Run tests
+    - name: Run Repository extraction
       env:
         TOKEN: ${{ secrets.GITHUB_TOKEN }}
         OWNER: microsoft
-        NAME: fluentui
+        NAME: vscode
       run: |
         cd src
-        pipenv run python -m unittest
+        pipenv run python -m unittest discover -p 'test_repository.py'

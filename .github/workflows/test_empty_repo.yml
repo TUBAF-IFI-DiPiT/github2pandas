@@ -2,8 +2,6 @@ name: Test empty repo
 
 on:
   push:
-    branches: [ main, bug-fix/tests, github2pandas-v2.0.0]
-
   workflow_dispatch:
 
 jobs:
