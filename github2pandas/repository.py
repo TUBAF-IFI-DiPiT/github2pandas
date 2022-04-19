@@ -70,17 +70,20 @@ class Repository(Core):
             """
             self.contributor_companies = contributor_companies
 
-    class Files():
+    class Files(Core.Files):
+        """
+        A file class that holds all file names and the folder name.
+
+        Attributes
+        ----------
+        DATA_DIR : str
+            Folder name for this module.
+        REPOSITORY : str
+            Filename of the repository pandas table.
+
+        """
         DATA_DIR = "Repository"
         REPOSITORY = "Repository.p"
-
-        @staticmethod
-        def to_list() -> list:
-            return [Repository.Files.REPOSITORY]
-      
-        @staticmethod
-        def to_dict() -> dict:
-            return {Repository.Files.DATA_DIR: Repository.Files.to_list()}
    
     def getFirstAppearance(self, templates_to_check):
         commits = self.save_api_call(self.repo.get_commits, path=templates_to_check)

@@ -76,21 +76,23 @@ class Workflows(Core):
             self.workflows = workflows
             self.runs = runs
     
-    class Files():
+    class Files(Core.Files):
+        """
+        A file class that holds all file names and the folder name.
+
+        Attributes
+        ----------
+        DATA_DIR : str
+            Folder name for this module.
+        WORKFLOWS : str
+            Filename of the workflows pandas table.
+        RUNS : str
+            Filename of the runs pandas table.
+
+        """
         DATA_DIR = "Workflows"
         WORKFLOWS = "Workflows.p"
         RUNS =  "Runs.p"
-
-        @staticmethod
-        def to_list() -> list:
-            return [
-                Workflows.Files.WORKFLOWS,
-                Workflows.Files.RUNS
-            ]
-
-        @staticmethod
-        def to_dict() -> dict:
-            return {Workflows.Files.DATA_DIR: Workflows.Files.to_list()}
 
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """

@@ -105,7 +105,24 @@ class PullRequests(Core):
             self.reviews = reviews
             self.issues_params = issues_params
 
-    class Files():
+    class Files(Core.Files):
+        """
+        A file class that holds all file names and the folder name.
+
+        Attributes
+        ----------
+        DATA_DIR : str
+            Folder name for this module.
+        PULL_REQUESTS : str
+            Filename of the pull requests pandas table.
+        REVIEWS_COMMENTS : str
+            Filename of the pull requests review comments pandas table.
+        PULL_REQUESTS_REACTIONS : str
+            Filename of the pull requests reactions pandas table.
+        REVIEWS : str
+            Filename of the pull requests reviews pandas table.
+
+        """
         DATA_DIR = "PullRequests"
         PULL_REQUESTS = "PullRequests.p"
         REVIEWS_COMMENTS = "ReviewsComments.p"

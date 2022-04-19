@@ -93,25 +93,29 @@ class Issues(Core):
             self.events = events
             self.comments = comments
     
-    class Files():
+    class Files(Core.Files):
+        """
+        A file class that holds all file names and the folder name.
+
+        Attributes
+        ----------
+        DATA_DIR : str
+            Folder name for this module.
+        ISSUES : str
+            Filename of the issues pandas table.
+        COMMENTS : str
+            Filename of the issues comments pandas table.
+        ISSUES_REACTIONS : str
+            Filename of the issues reactions pandas table.
+        EVENTS : str
+            Filename of the issues events pandas table.
+
+        """
         DATA_DIR = "Issues"
         ISSUES = "Issues.p"
         COMMENTS = "Comments.p"
         ISSUES_REACTIONS = "IssuesReactions.p"
         EVENTS = "Events.p"
-
-        @staticmethod
-        def to_list() -> list:
-            return [
-                Issues.Files.ISSUES,
-                Issues.Files.COMMENTS,
-                Issues.Files.ISSUES_REACTIONS,
-                Issues.Files.EVENTS
-            ]
-
-        @staticmethod
-        def to_dict() -> dict:
-            return {Issues.Files.DATA_DIR: Issues.Files.to_list()}
 
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """

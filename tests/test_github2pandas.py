@@ -26,6 +26,9 @@ class TestPullRequests(unittest.TestCase):
         if self.data_root_dir.exists() and self.data_root_dir.is_dir():
             shutil.rmtree(self.data_root_dir, onerror=Core.file_error_handling)
         self.data_root_dir.mkdir(parents=True, exist_ok=True)
+        print(Core.UserFiles.to_list())
+        print(Core.UserFiles.to_dict())
+        pass
 
     def test_get_repository_information(self):
         github2pandas = GitHub2Pandas(self.github_token,self.data_root_dir,log_level=self.log_level)

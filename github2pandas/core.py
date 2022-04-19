@@ -223,16 +223,70 @@ class Core():
             return False
 
     class Files():
+        """
+        A base class that holds methods for Files classes.
+
+        Attributes
+        ----------
+        DATA_DIR : str
+            Base folder name.
+
+        Methods
+        -------
+        to_list()
+            Returns a list of all filenames.
+        to_dict()
+            Returns a dict with the folder as key and the list of all filenames as value.
+        
+        """
         DATA_DIR = ""
+
+        @classmethod
+        def to_list(cls) -> list:
+            """
+            to_list(cls)
+
+            Returns a list of all filenames.
+            
+            Returns
+            -------
+            list
+                List of all filenames.
+
+            """
+            filenames = []
+            for var, value in vars(cls).items():
+                if isinstance(value,str) and var != "DATA_DIR" and not var.startswith("__"):
+                    filenames.append(value)
+            return filenames
+
+        @classmethod
+        def to_dict(cls) -> dict:
+            """
+            to_dict(cls)
+            
+            Returns a dict with the folder as key and the list of all filenames as value.
+            
+            Returns
+            -------
+            dict
+                Dictionary with the folder as key and the list of all filenames as value.
+
+            """
+            return {cls.DATA_DIR: cls.to_list()}
+    
+    class UserFiles(Files):
+        """
+        A file class that holds the user filename.
+
+        Attributes
+        ----------
+        USERS : str
+            Filename of the users pandas table.
+
+        """
         USERS = "Users.p"
 
-        @staticmethod
-        def to_list() -> list:
-            return [Core.Files.USERS]
-
-        @staticmethod
-        def to_dict() -> dict:
-            return {Core.Files.DATA_DIR: Core.Files.to_list()}
     
     def __init__(self, github_connection:Github, repo:GitHubRepository, repo_data_root_dir:Path, current_dir:str, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """
@@ -270,7 +324,7 @@ class Core():
         if repo is not None:
             self.repo_data_dir = Path(self.repo_data_root_dir,repo.full_name)
             self.repo_data_dir.mkdir(parents=True, exist_ok=True)
-            df_users = Core.get_pandas_data_frame(self.repo_data_dir, Core.Files.USERS)
+            df_users = Core.get_pandas_data_frame(self.repo_data_dir, Core.UserFiles.USERS)
             self.users_ids = {}
             for index, row in df_users.iterrows():
                 self.users_ids[row["id"]] = row["anonym_uuid"]
@@ -520,7 +574,7 @@ class Core():
             return None
         if user.node_id in self.users_ids:
             return self.users_ids[user.node_id]
-        users_file = Path(self.repo_data_dir, Core.Files.USERS)
+        users_file = Path(self.repo_data_dir, Core.UserFiles.USERS)
         users_df = pd.DataFrame()
         if users_file.is_file():
             users_df = pd.read_pickle(users_file)

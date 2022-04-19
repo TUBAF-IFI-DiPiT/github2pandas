@@ -35,18 +35,20 @@ class GitReleases(Core):
     
     """
 
-    class Files():
+    class Files(Core.Files):
+        """
+        A file class that holds all file names and the folder name.
+
+        Attributes
+        ----------
+        DATA_DIR : str
+            Folder name for this module.
+        GIT_RELEASES : str
+            Filename of the git releases pandas table.
+
+        """
         DATA_DIR = "Releases"
         GIT_RELEASES = "Releases.p"
-
-        @staticmethod
-        def to_list() -> list:
-            return [GitReleases.Files.GIT_RELEASES]
-
-        @staticmethod
-        def to_dict() -> dict:
-            return {GitReleases.Files.DATA_DIR: GitReleases.Files.to_list()}
-
 
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
         """

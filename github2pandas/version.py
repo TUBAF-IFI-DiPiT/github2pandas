@@ -64,7 +64,26 @@ class Version(Core):
 
     EDIT_RENAMING_COLUMNS = {'commit_hash':'commit_sha'}
 
-    class Files():
+    class Files(Core.Files):
+        """
+        A file class that holds all file names and the folder name.
+
+        Attributes
+        ----------
+        DATA_DIR : str
+            Folder name for this module.
+        COMMITS : str
+            Filename of the commits pandas table.
+        EDITS : str
+            Filename of the edits pandas table.
+        BRANCHES : str
+            Filename of the branches pandas table.
+        REPOSITORY_DIR : str
+            Folder name for the repository clone.
+        VERSION_DB : str
+            Filename of the version db for git2net.
+
+        """
         DATA_DIR = "Versions"
         COMMITS = "Commits.p"
         EDITS = "Edits.p"
@@ -72,8 +91,19 @@ class Version(Core):
         REPOSITORY_DIR = "repo"
         VERSION_DB = "Versions.db"
 
-        @staticmethod
-        def to_list() -> list:
+        @classmethod
+        def to_list(cls) -> list:
+            """
+            to_list(cls)
+
+            Returns a list of all filenames.
+            
+            Returns
+            -------
+            list
+                List of all filenames.
+
+            """
             return [
                 Version.Files.COMMITS,
                 Version.Files.EDITS,
@@ -81,9 +111,6 @@ class Version(Core):
                 {Version.Files.REPOSITORY_DIR:[Version.Files.VERSION_DB]}
             ]
 
-        @staticmethod
-        def to_dict() -> dict:
-            return {Version.Files.DATA_DIR: Version.Files.to_list()}
 
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO, number_of_proceses:int= os.cpu_count()) -> None:
         """
@@ -183,7 +210,7 @@ class Version(Core):
                     pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'author'] = author_id   
                     pd_commits.loc[pd_commits.commit_sha == row.commit_sha, 'committer'] = committer_id 
                     if (author_id is None) and (committer_id is None):
-                        users = Core.get_pandas_data_frame(self.repo_data_dir, Core.Files.USERS)
+                        users = Core.get_pandas_data_frame(self.repo_data_dir, Core.UserFiles.USERS)
                         found = False
                         if "alias" in users:
                             users = users[users["alias"].notna()]
@@ -207,7 +234,7 @@ class Version(Core):
                 pd_commits.loc[pd_commits.committer_name == commiter_name, 'author'] = author_id   
                 pd_commits.loc[pd_commits.committer_name == commiter_name, 'committer'] = committer_id 
                 if (author_id is None) and (committer_id is None):
-                    users = Core.get_pandas_data_frame(self.repo_data_dir, Core.Files.USERS)
+                    users = Core.get_pandas_data_frame(self.repo_data_dir, Core.UserFiles.USERS)
                     found = False
                     if "alias" in users:
                         users = users[users["alias"].notna()]
@@ -226,7 +253,7 @@ class Version(Core):
                         pd_commits.loc[pd_commits.committer_name == commiter_name, 'unknown_user'] = commiter_name 
         pd_commits.drop(['committer_name'], axis=1, inplace=True)  
 
-        users = Core.get_pandas_data_frame(self.repo_data_dir, Core.Files.USERS)
+        users = Core.get_pandas_data_frame(self.repo_data_dir, Core.UserFiles.USERS)
         if "unknown_user" in pd_commits:
             unknown_user_commits = pd_commits.loc[pd_commits.unknown_user.notna()]
             unknown_users = unknown_user_commits.unknown_user.unique()

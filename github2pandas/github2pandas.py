@@ -59,6 +59,8 @@ class GitHub2Pandas():
     get_repo_informations(data_root_dir)
         Gets a repository data (owner and name).
     """
+    REPOSITORIES_KEY = "repos"
+
     class Params(Core.Params):
         """
         A parameter class that holds all possible parameters for the data extraction.
@@ -100,8 +102,39 @@ class GitHub2Pandas():
             self.version = version
             self.workflows_params = workflows_params
 
-    REPOSITORIES_KEY = "repos"
     class Files():
+        """
+        A file class that holds all file names and the folder name.
+
+        Attributes
+        ----------
+        DATA_DIR : str
+            Folder name for this module.
+        REPOS : str
+            Filename of the repos json file.
+        GIT_RELEASES : GitReleases.Files
+            Folder and files for git releases.
+        ISSUES : Issues.Files
+            Folder and files for issues.
+        PULL_REQUESTS : PullRequests.Files
+            Folder and files for pull requests.
+        REPOSITORY : Repository.Files
+            Folder and files for repository.
+        VERSION : Version.Files
+            Folder and files for version.
+        WORKFLOWS : Workflows.Files
+            Folder and files for workflows.
+        CORE : Core.Files
+            Folder and files for core.
+
+        Methods
+        -------
+        to_list()
+            Returns a list of all filenames.
+        to_dict()
+            Returns a dict with the folder as key and the list of all filenames as value.
+        
+        """
         REPOS = "Repos.json"
         GIT_RELEASES = GitReleases.Files
         ISSUES = Issues.Files
@@ -113,6 +146,17 @@ class GitHub2Pandas():
 
         @staticmethod
         def to_list() -> list:
+            """
+            to_list()
+
+            Returns a list of all filenames.
+            
+            Returns
+            -------
+            list
+                List of all filenames.
+
+            """
             return [
                 GitHub2Pandas.Files.GIT_RELEASES,
                 GitHub2Pandas.Files.ISSUES,
@@ -125,6 +169,17 @@ class GitHub2Pandas():
 
         @staticmethod
         def to_dict() -> dict:
+            """
+            to_dict()
+            
+            Returns a dict with the folder as key and the list of all filenames as value.
+            
+            Returns
+            -------
+            dict
+                Dictionary with the folder as key and the list of all filenames as value.
+
+            """
             d = {}
             for files in GitHub2Pandas.Files.to_list():
                 d.update(files.to_dict())
@@ -402,7 +457,7 @@ class GitHub2Pandas():
         if "unknown_user" in pd_commits:
             unknown_users = pd_commits.unknown_user.unique()
             if unknown_user_name in unknown_users:
-                users = Core.get_pandas_data_frame(repo_data_dir, Core.Files.USERS)
+                users = Core.get_pandas_data_frame(repo_data_dir, Core.UserFiles.USERS)
                 p_user = users.loc[users.anonym_uuid == uuid]
                 new_uuid = None
                 if not p_user.empty:
@@ -415,7 +470,7 @@ class GitHub2Pandas():
                     if not unknown_user_name in alias:
                         alias.append(unknown_user_name)
                     users.loc[users.anonym_uuid == uuid, 'alias'] = alias
-                    core.save_pandas_data_frame(Core.Files.USERS, users)
+                    core.save_pandas_data_frame(Core.UserFiles.USERS, users)
                     new_uuid = user["anonym_uuid"]
                 else:
                     class UserData:
