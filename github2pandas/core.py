@@ -256,7 +256,7 @@ class Core():
             """
             filenames = []
             for var, value in vars(cls).items():
-                if isinstance(value,str) and var != "DATA_DIR" and not var.startswith("__"):
+                if isinstance(value,str) and not "DIR" in var and not var.startswith("__"):
                     filenames.append(value)
             return filenames
 

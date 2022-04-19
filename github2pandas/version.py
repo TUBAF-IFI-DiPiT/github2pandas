@@ -19,18 +19,6 @@ class Version(Core):
 
     Attributes
     ----------
-    DATA_DIR : str
-        Version dir where all files are saved in.
-    REPOSITORY_DIR : str
-        Folder of cloned repository.
-    COMMITS : str
-        Pandas table file for commits.
-    EDITS : str
-        Pandas table file for edit data per commit.
-    BRANCHES : str
-        Pandas table file for branch names.
-    VERSION_DB : str
-        MYSQL data base file containing version history.
     number_of_proceses : int
         Number of processors used for crawling process.
     COMMIT_DELETEABLE_COLUMNS : list
@@ -90,27 +78,6 @@ class Version(Core):
         BRANCHES = "Branches.p"
         REPOSITORY_DIR = "repo"
         VERSION_DB = "Versions.db"
-
-        @classmethod
-        def to_list(cls) -> list:
-            """
-            to_list(cls)
-
-            Returns a list of all filenames.
-            
-            Returns
-            -------
-            list
-                List of all filenames.
-
-            """
-            return [
-                Version.Files.COMMITS,
-                Version.Files.EDITS,
-                Version.Files.BRANCHES,
-                {Version.Files.REPOSITORY_DIR:[Version.Files.VERSION_DB]}
-            ]
-
 
     def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO, number_of_proceses:int= os.cpu_count()) -> None:
         """
