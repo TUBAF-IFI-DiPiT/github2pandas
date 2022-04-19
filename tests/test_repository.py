@@ -32,11 +32,7 @@ class TestRepositories(unittest.TestCase):
     def test_generate_pandas_tables(self):
         github2pandas = GitHub2Pandas(self.github_token,self.data_root_dir, log_level=self.log_level)
         repo = github2pandas.get_repo(self.git_repo_owner, self.git_repo_name)
-
-        repository = Repository(github2pandas.github_connection, repo, self.data_root_dir, log_level=self.log_level)
-        repository.print_calls("Start repository with companies")
-        repository.generate_pandas_tables(contributor_companies_included=True)
-        repository.print_calls("End repository with companies")
+        repository = github2pandas.generate_repository_pandas_tables(repo)
         
     def test_get_workflows(self):
         data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,Repository.Files.DATA_DIR)

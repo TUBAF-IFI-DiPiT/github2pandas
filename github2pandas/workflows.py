@@ -49,10 +49,32 @@ class Workflows(Core):
         Receives workflow log files from GitHub.
     
     """
-    EXTRACTION_PARAMS = {
-        "workflows": True,
-        "runs": True
-    }
+    class Params(Core.Params):
+        """
+        A parameter class that holds all possible parameters for the data extraction.
+
+        Methods
+        -------
+        __init__(self, workflows, runs)
+            Initializes all parameters with a default.
+        
+        """
+        def __init__(self, workflows: bool = True, runs: bool = True) -> None:
+            """
+            __init__(self, workflows, runs)
+       
+            Initializes all parameters with a default.
+
+            Parameters
+            ----------
+            workflows : bool, default=True
+                Extract workflows?
+            runs : bool, default=True
+                Extract runs?
+            
+            """
+            self.workflows = workflows
+            self.runs = runs
     
     class Files():
         DATA_DIR = "Workflows"
@@ -109,11 +131,12 @@ class Workflows(Core):
     @property
     def workflows_df(self):
         return Core.get_pandas_data_frame(self.current_dir, Workflows.Files.WORKFLOWS)
+    
     @property
     def runs_df(self):
         return Core.get_pandas_data_frame(self.current_dir, Workflows.Files.RUNS)
 
-    def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}) -> None:
+    def generate_pandas_tables(self, check_for_updates:bool = False, params:Params = Params()) -> None:
         """
         generate_pandas_tables(check_for_updates=False, extraction_params={})
 
@@ -128,8 +151,7 @@ class Workflows(Core):
             Can hold extraction parameters. This defines what will be extracted.
             
         """
-        params = self.copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
-        if params["workflows"]:
+        if params.workflows:
             workflows = self.save_api_call(self.repo.get_workflows)
             total_count = self.get_save_total_count(workflows)
             extract = True
@@ -145,7 +167,7 @@ class Workflows(Core):
                     workflow_list.append(workflow_data)
                 workflows_df = DataFrame(workflow_list)
                 self.save_pandas_data_frame(Workflows.Files.WORKFLOWS, workflows_df)
-        if params["runs"]:
+        if params.runs:
             runs = self.save_api_call(self.repo.get_workflow_runs)
             total_count = self.get_save_total_count(runs)
             extract = True

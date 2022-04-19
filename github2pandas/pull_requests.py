@@ -60,16 +60,50 @@ class PullRequests(Core):
         Extracts general data of one review from a pull request.
     
     """
-    EXTRACTION_PARAMS = {
-        "pull_requests": True,
-        "deep_pull_requests": False, # requires pull_requests
-        "commits": False, # requires pull_requests
-        "review_requested": False, # requires pull_requests
-        "review_comment": True,
-        "reactions": False,
-        "reviews": False,
-        "issues": Issues.EXTRACTION_PARAMS # if issues are not extracted
-    }
+    class Params(Core.Params):
+        """
+        A parameter class that holds all possible parameters for the data extraction.
+
+        Methods
+        -------
+        __init__(self, pull_requests, deep_pull_requests, commits, review_requests, review_comments, reactions, reviews)
+            Initializes all parameters with a default.
+        
+        """
+        def __init__(self, pull_requests: bool = True, deep_pull_requests: bool = False, commits: bool = False, review_requests: bool = False, review_comments: bool = True, reactions: bool = False, reviews: bool = False, issues_params: Issues.Params = Issues.Params()) -> None:
+            """
+            __init__(self, pull_requests, deep_pull_requests, commits, review_requests, review_comments, reactions, reviews)
+            
+            Initializes all parameters with a default.
+
+            Parameters
+            ----------
+            pull_requests : bool, default=True
+                Extract pull requests?
+            deep_pull_requests : bool, default=True
+                Extract deep pull requests?
+            commits : bool, default=True
+                Extract commits of pull requests?
+            review_requests : bool, default=True
+                Extract review requests of pull requests?
+            review_comments : bool, default=True
+                Extract review comments of pull requests?
+            reactions : bool, default=True
+                Extract reactions of pull requests?
+            reviews : bool, default=True
+                Extract reviews of pull requests?
+            issues_params : Issues.Params, default=Issues.Params()
+                Issue Parameters are only used if there are not extracted Issues.
+
+            """
+            self.pull_requests = pull_requests
+            self.deep_pull_requests = deep_pull_requests
+            self.commits = commits
+            self.review_requests = review_requests
+            self.review_comments = review_comments
+            self.reactions = reactions
+            self.reviews = reviews
+            self.issues_params = issues_params
 
     class Files():
         DATA_DIR = "PullRequests"
@@ -129,17 +163,20 @@ class PullRequests(Core):
     @property
     def pull_request_df(self):
         return Core.get_pandas_data_frame(self.current_dir, PullRequests.Files.PULL_REQUESTS)
+    
     @property
     def review_comment_df(self):
         return Core.get_pandas_data_frame(self.current_dir, PullRequests.Files.REVIEWS_COMMENTS)
+    
     @property
     def reviews_df(self):
         return Core.get_pandas_data_frame(self.current_dir, PullRequests.Files.REVIEWS)
+    
     @property
     def reactions_df(self):
         return Core.get_pandas_data_frame(self.current_dir, PullRequests.Files.PULL_REQUESTS_REACTIONS)
   
-    def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}) -> None:
+    def generate_pandas_tables(self, check_for_updates:bool = False, params:Params = Params()) -> None:
         """
         generate_pandas_tables(check_for_updates=False, extraction_params={})
 
@@ -154,24 +191,23 @@ class PullRequests(Core):
             Can hold extraction parameters, that define what will be extracted.
 
         """
-        params = self.copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
         extract_pull_requests = False
-        if params["deep_pull_requests"]:
-            params["pull_requests"] = True
-        if params["review_requested"]:
-            params["pull_requests"] = True
-        if params["commits"]:
-            params["pull_requests"] = True
-        if params["pull_requests"] or params["reactions"] or params["reviews"]:
+        if params.deep_pull_requests:
+            params.pull_requests = True
+        if params.review_requested:
+            params.pull_requests = True
+        if params.commits:
+            params.pull_requests = True
+        if params.pull_requests or params.reactions or params.reviews:
             extract_pull_requests = True
             pull_requests = self.save_api_call(self.repo.get_pulls, state='all', sort="updated")
             total_count = self.get_save_total_count(pull_requests)
             if total_count == 0:
                 return
             if check_for_updates:
-                if params["reactions"]:
+                if params.reactions:
                     self.logger.warning("Check for update does not work when param reactions is True")
-                elif params["reviews"]:
+                elif params.reviews:
                     self.logger.warning("Check for update does not work when param reviews is True")
                 else:
                     old_pull_requests = self.pull_request_df
@@ -193,7 +229,7 @@ class PullRequests(Core):
                     self.repo_data_root_dir,
                     self.request_maximum
                     )
-                issues.generate_pandas_tables(extraction_params=params["issues"])
+                issues.generate_pandas_tables(params=params.issues_params)
                 issues_df = issues.issues_df
             if total_count < self.request_maximum:
                 for i in self.progress_bar(range(total_count), "Pull Requests:   "):
@@ -209,7 +245,7 @@ class PullRequests(Core):
                     number = int(issues_df.loc[count,"number"])
                     pull_request = self.save_api_call(self.repo.get_pull, number)
                     self.extract_pull_request(pull_request, params)
-        if params["review_comment"]:
+        if params.review_comment:
             # extract comments
             self.extract_with_updated_and_since(
                 self.repo.get_pulls_comments,
@@ -219,17 +255,17 @@ class PullRequests(Core):
         if extract_pull_requests:
             pull_request_df = DataFrame(self.__pull_request_list)
             self.save_pandas_data_frame(PullRequests.Files.PULL_REQUESTS, pull_request_df)
-        if params["review_comment"]:
+        if params.review_comment:
             review_comment_df = DataFrame(self.__review_comment_list)
             self.save_pandas_data_frame(PullRequests.Files.REVIEWS_COMMENTS, review_comment_df)
-        if params["reviews"]:
+        if params.reviews:
             reviews_df = DataFrame(self.__reviews_list)
             self.save_pandas_data_frame(PullRequests.Files.REVIEWS, reviews_df)
-        if params["reactions"]:
+        if params.reactions:
             reactions_df = DataFrame(self.__reactions_list)
             self.save_pandas_data_frame(PullRequests.Files.PULL_REQUESTS_REACTIONS, reactions_df)
     
-    def extract_pull_request(self, pull_request:GitHubPullRequest, params:dict) -> None:
+    def extract_pull_request(self, pull_request:GitHubPullRequest, params:Params) -> None:
         """
         extract_pull_request(pull_request, params)
 
@@ -247,8 +283,8 @@ class PullRequests(Core):
             PyGithub PullRequest object structure: https://pygithub.readthedocs.io/en/latest/github_objects/PullRequest.html
 
         """
-        pull_request_data = self.__extract_pull_request_data(pull_request, params["deep_pull_requests"])
-        if params["reviews"]:
+        pull_request_data = self.__extract_pull_request_data(pull_request, params.deep_pull_requests)
+        if params.reviews:
             reviews = self.save_api_call(pull_request.get_reviews)
             for i in range(self.request_maximum):
                 try:
@@ -257,7 +293,7 @@ class PullRequests(Core):
                     self.__reviews_list.append(review_data)
                 except IndexError:
                     break
-        if params["review_requested"]:
+        if params.review_requested:
             pull_request_data["review_requested_users"] = []
             review_requests_users, review_requests_teams = self.save_api_call(pull_request.get_review_requests)
             for i in range(self.request_maximum):
@@ -267,7 +303,7 @@ class PullRequests(Core):
                 except IndexError:
                     break
         
-        if params["commits"]:
+        if params.commits:
             # Maximum of 250 Commits
             pull_request_data["commits"] = []
             commits = self.save_api_call(pull_request.get_commits)
@@ -279,7 +315,7 @@ class PullRequests(Core):
                     break
         self.__pull_request_list.append(pull_request_data)
 
-    def extract_review_comment(self, data:GitHubPullRequestComment, params:dict) -> None:
+    def extract_review_comment(self, data:GitHubPullRequestComment, params:Params) -> None:
         """
         extract_review_comment(data, params)
 
@@ -299,7 +335,7 @@ class PullRequests(Core):
         """
         review_comment_data = self.save_api_call(self.__extract_review_comment_data, data)
         self.__review_comment_list.append(review_comment_data)
-        if params["reactions"]:
+        if params.reactions:
             self.__reactions_list += self.extract_reactions(
                 data.get_reactions,
                 data.id,

@@ -85,7 +85,7 @@ class Version(Core):
         def to_dict() -> dict:
             return {Version.Files.DATA_DIR: Version.Files.to_list()}
 
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO, number_of_proceses:int = 1) -> None:
+    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO, number_of_proceses:int= os.cpu_count()) -> None:
         """
         __init__(self, github_connection, repo, data_root_dir, request_maximumlog_level, number_of_proceses)
 
@@ -103,7 +103,7 @@ class Version(Core):
             Maximum amount of returned informations for a general api call
         log_level : int
             Logging level (CRITICAL, ERROR, WARNING, INFO, DEBUG or NOTSET), default value is enumaration value logging.INFO
-        number_of_proceses : int, default=1
+        number_of_proceses : int, default=os.cpu_count()
             Number of processors used for crawling process.
 
         Notes
@@ -296,8 +296,8 @@ class Version(Core):
         if commit_count == 0:
             return False
         import tqdm
-        # exclude for now
-        if self.number_of_proceses == 0:
+        # only serial
+        if self.number_of_proceses == 1:
             # overwrite git2net progress bar
             def version_progress_bar(iterable=None, total:int=None, desc:str="", **kwargs):
                 if iterable is None:
@@ -312,7 +312,7 @@ class Version(Core):
         git2net.mine_git_repo(self.repo_dir, self.sqlite_db_file,
                                 # extract_complexity=True,
                                 # extract_text=True,
-                                # no_of_processes=self.number_of_proceses,
+                                no_of_processes=self.number_of_proceses,
                                 all_branches=True,
                                 max_modifications=1000)
         return True

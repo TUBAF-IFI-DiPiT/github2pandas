@@ -1,4 +1,5 @@
 import logging
+from tkinter.tix import Tree
 from pandas import DataFrame
 import pandas as pd
 from pathlib import Path
@@ -59,12 +60,38 @@ class Issues(Core):
         Extracts data of one issue event.
     
     """
-    EXTRACTION_PARAMS = {
-        "issues": True, # check for updates
-        "reactions": False,
-        "events": True,
-        "comments": True
-    }
+    class Params(Core.Params):
+        """
+        A parameter class that holds all possible parameters for the data extraction.
+
+        Methods
+        -------
+        __init__(self, issues, reactions, events, comments)
+            Initializes all parameters with a default.
+        
+        """
+        def __init__(self, issues: bool = True, reactions: bool = False, events: bool = True, comments: bool = True) -> None:
+            """
+            __init__(self, issues, reactions, events, comments)
+       
+            Initializes all parameters with a default.
+
+            Parameters
+            ----------
+            issues : bool, default=True
+                Extract issues?
+            reactions : bool, default=True
+                Extract reactions of issues?
+            events : bool, default=True
+                Extract events of issues?
+            comments : bool, default=True
+                Extract comments of issues?
+            
+            """
+            self.issues = issues
+            self.reactions = reactions
+            self.events = events
+            self.comments = comments
     
     class Files():
         DATA_DIR = "Issues"
@@ -125,17 +152,20 @@ class Issues(Core):
     @property
     def issues_df(self) -> pd.DataFrame:
         return Core.get_pandas_data_frame(self.current_dir, Issues.Files.ISSUES)
+    
     @property
     def comments_df(self) -> pd.DataFrame:
         return Core.get_pandas_data_frame(self.current_dir, Issues.Files.COMMENTS)
+    
     @property
     def events_df(self) -> pd.DataFrame:
         return Core.get_pandas_data_frame(self.current_dir, Issues.Files.EVENTS)
+    
     @property
     def reactions_df(self) -> pd.DataFrame:
         return Core.get_pandas_data_frame(self.current_dir, Issues.Files.ISSUES_REACTIONS)
 
-    def generate_pandas_tables(self, check_for_updates:bool = False, extraction_params:dict = {}) -> None:
+    def generate_pandas_tables(self, check_for_updates:bool = False, params:Params = Params()) -> None:
         """
         generate_pandas_tables(check_for_updates=False, extraction_params={})
 
@@ -150,14 +180,13 @@ class Issues(Core):
             Can hold extraction parameters, that define what will be extracted.
         
         """
-        params = self.copy_valid_params(self.EXTRACTION_PARAMS,extraction_params)
         extract_issues = False
-        if params["issues"] or params["reactions"]:
+        if params.issues or params.reactions:
             extract_issues = True
             issues = self.save_api_call(self.repo.get_issues, state='all', sort="updated")
             total_count = self.get_save_total_count(issues)
             if check_for_updates:
-                if params["reactions"]:
+                if params.reactions:
                     self.logger.warning("Check for update does not work when EXTRACTION_PARAMS \"reactions\" is True")
                 else:
                     old_issues = self.issues_df
@@ -165,7 +194,7 @@ class Issues(Core):
                         self.logger.info("No new Issue information!")
                         return
         events_overflow = False
-        if params["events"]:
+        if params.events:
             events = self.save_api_call(self.repo.get_issues_events)
             events_total_count = self.get_save_total_count(events)
             if events_total_count >= self.request_maximum:
@@ -188,14 +217,14 @@ class Issues(Core):
                 initial_data_list=issues,
                 initial_total_count=total_count,
                 state="all")
-        if params["events"]:
+        if params.events:
             # issue event data < request maximum
             if not events_overflow:
                 for i in self.progress_bar(range(events_total_count), "Issues Events:   "):
                     event = self.get_save_api_data(events, i)
                     event_data = self.save_api_call(self.__extract_event_data, event)
                     self.__event_list.append(event_data)
-        if params["comments"]:
+        if params.comments:
             self.extract_with_updated_and_since(
                 self.repo.get_issues_comments,
                 "Issues Comments",
@@ -205,17 +234,17 @@ class Issues(Core):
         if extract_issues:
             issues_df = DataFrame(self.__issue_list)
             self.save_pandas_data_frame(Issues.Files.ISSUES, issues_df)
-        if params["comments"]:
+        if params.comments:
             comments_df = DataFrame(self.__comment_list)
             self.save_pandas_data_frame(Issues.Files.COMMENTS, comments_df)
-        if params["events"]:
+        if params.events:
             events_df = DataFrame(self.__event_list)
             self.save_pandas_data_frame(Issues.Files.EVENTS, events_df)
-        if params["reactions"]:
+        if params.reactions:
             reactions_df = DataFrame(self.__reaction_list)
             self.save_pandas_data_frame(Issues.Files.ISSUES_REACTIONS, reactions_df)
     
-    def extract_issue(self, data:GitHubIssue, params:dict, events_overflow:bool) -> None:
+    def extract_issue(self, data:GitHubIssue, params:Params, events_overflow:bool) -> None:
         """
         extract_issue(data, params, events_overflow)
 
@@ -238,12 +267,12 @@ class Issues(Core):
         issue_data = self.__extract_issue_data(data)
         self.__issue_list.append(issue_data)
         # reaction data
-        if params["reactions"]:
+        if params.reactions:
             self.__reaction_list += self.extract_reactions(
                 data.get_reactions, 
                 data.id, 
                 "issue")
-        if params["events"]:
+        if params.events:
             # events data >= request maximum
             if events_overflow:
                 events = self.save_api_call(data.get_events)
@@ -255,7 +284,7 @@ class Issues(Core):
                     except IndexError:
                         break
 
-    def extract_comment(self, data:GitHubIssueComment, params:dict) -> None:
+    def extract_comment(self, data:GitHubIssueComment, params:Params) -> None:
         """
         extract_comment(data, params)
 
@@ -276,7 +305,7 @@ class Issues(Core):
         comment_data = self.save_api_call(self.__extract_comment_data, data)
         self.__comment_list.append(comment_data)
         # issue comment reaction data
-        if params["reactions"]:
+        if params.reactions:
             self.__reaction_list += self.extract_reactions(
                 data.get_reactions, 
                 data.id, 

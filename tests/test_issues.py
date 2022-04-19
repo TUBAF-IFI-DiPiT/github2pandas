@@ -31,11 +31,8 @@ class TestIssues(unittest.TestCase):
     def test_generate_pandas_tables(self):
         github2pandas = GitHub2Pandas(self.github_token,self.data_root_dir, log_level=self.log_level)
         repo = github2pandas.get_repo(self.git_repo_owner, self.git_repo_name)
-
-        issues = Issues(github2pandas.github_connection, repo, self.data_root_dir, log_level=self.log_level)
-        issues.print_calls("Start issues")
-        issues.generate_pandas_tables()
-        issues.print_calls("End issues")
+        params = Issues.Params(reactions=True)
+        issues = github2pandas.generate_issues_pandas_tables(repo, params)
 
     def test_get_data_frames(self):
         data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,Issues.Files.DATA_DIR)

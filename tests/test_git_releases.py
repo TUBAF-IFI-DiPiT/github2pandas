@@ -31,11 +31,7 @@ class TestGitReleases(unittest.TestCase):
     def test_generate_pandas_tables(self):
         github2pandas = GitHub2Pandas(self.github_token,self.data_root_dir, log_level=self.log_level)
         repo = github2pandas.get_repo(self.git_repo_owner, self.git_repo_name)
-
-        git_releases = GitReleases(github2pandas.github_connection, repo, self.data_root_dir, log_level=self.log_level)
-        git_releases.print_calls("Start git releases")
-        git_releases.generate_pandas_tables()
-        git_releases.print_calls("End git releases")
+        git_releases = github2pandas.generate_git_releases_pandas_tables(repo)
 
     def test_get_data_frames(self):
         data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,GitReleases.Files.DATA_DIR)

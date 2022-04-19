@@ -46,6 +46,30 @@ class Repository(Core):
         'file_security': "SECURITY.md", # ... gives instructions for how to report a security vulnerability in your project. 
         'file_support': "SUPPORT.md", # ... lets people know about ways to get help with your project.
     }
+    class Params(Core.Params):
+        """
+        A parameter class that holds all possible parameters for the data extraction.
+
+        Methods
+        -------
+        __init__(self, contributor_companies)
+            Initializes all parameters with a default.
+        
+        """
+        def __init__(self, contributor_companies: bool = True) -> None:
+            """
+            __init__(self, contributor_companies)
+       
+            Initializes all parameters with a default.
+
+            Parameters
+            ----------
+            contributor_companies : bool, default=True
+                Extract contributor companies?
+
+            """
+            self.contributor_companies = contributor_companies
+
     class Files():
         DATA_DIR = "Repository"
         REPOSITORY = "Repository.p"
@@ -104,7 +128,7 @@ class Repository(Core):
     def repository_df(self) -> pd.DataFrame:
         return Core.get_pandas_data_frame(self.current_dir, Repository.Files.REPOSITORY)
 
-    def generate_pandas_tables(self, contributor_companies_included:bool = False) -> None:
+    def generate_pandas_tables(self, params:Params = Params()) -> None:
         """
         generate_pandas_tables(contributor_companies_included = False)
 
@@ -117,12 +141,12 @@ class Repository(Core):
             
         """
         repository_data_list = []
-        repository_data = self.__extract_repository_data(contributor_companies_included)
+        repository_data = self.__extract_repository_data(params)
         repository_data_list.append(repository_data)
         repository_df = DataFrame(repository_data_list)
         self.save_pandas_data_frame(Repository.Files.REPOSITORY, repository_df)
 
-    def __extract_repository_data(self, contributor_companies_included:bool = False) -> dict:
+    def __extract_repository_data(self, params:Params) -> dict:
         """
         __extract_repository_data(contributor_companies_included)
 
@@ -179,7 +203,7 @@ class Repository(Core):
         if contributors_count > 500:
             print("Only first 500 Contributor can hold information!")
             contributors_count2 = 500
-        if contributor_companies_included:
+        if params.contributor_companies:
             for i in self.progress_bar(range(contributors_count2), "Contributor Companies: "):
                 contributor = self.get_save_api_data(contributors,i)
                 if not contributor._organizations_url == GithubObject.NotSet:

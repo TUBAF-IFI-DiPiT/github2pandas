@@ -97,7 +97,131 @@ class Core():
         Returns a pandas data frame stored in file.
 
     """
+    class Params():
+        """
+        A base class that holds methods for Params classes.
+
+        Methods
+        -------
+        set_all_true(self, subclasses)
+            Sets all parameters to true.
+        set_all_false(self, subclasses)
+            Sets all parameters to false.
+        reset(self)
+            Resets all parameters.
+        has_true(self)
+            Check if there are any true parameters.
+        has_false(self)
+            Check if there are any false parameters.
+
+        """
+        def set_all_true(self, subclasses: bool = True):
+            """
+            set_all_true(self, subclasses)
+
+            Sets all parameters to true.
+
+            Parameters
+            ----------
+            subclasses : int, default=True
+                Defines if all subparameter classes are set to true.
+
+            Returns
+            -------
+            Params
+                Returns Params class object.
+
+            """
+            def func(obj):
+                for var, value in vars(obj).items():
+                    if isinstance(value,bool):
+                        if value == False:
+                            obj.__setattr__(var,True)
+                    else:
+                        if value.__class__.__name__ == "Params" and subclasses:
+                            subobj = getattr(obj,var)
+                            func(subobj)
+            func(self)
+            return self
+
+        def set_all_false(self, subclasses: bool = True):
+            """
+            set_all_false(self, subclasses)
+
+            Sets all parameters to false.
+
+            Parameters
+            ----------
+            subclasses : int, default=True
+                Defines if all subparameter classes are set to false.
+
+            Returns
+            -------
+            Params
+                Returns Params class object.
+
+            """
+            def func(obj):
+                for var, value in vars(obj).items():
+                    if isinstance(value,bool):
+                        if value == True:
+                            obj.__setattr__(var,False)
+                    else:
+                        if value.__class__.__name__ == "Params" and subclasses:
+                            subobj = getattr(obj,var)
+                            func(subobj)
+            func(self)
+            return self
+
+        def reset(self):
+            """
+            reset(self)
+
+            Resets all parameters.
+
+            Returns
+            -------
+            Params
+                Returns Params class object.
+
+            """
+            self.__init__()
+            return self
     
+        def has_true(self):
+            """
+            has_true(self)
+
+            Check if there are any true parameters.
+
+            Returns
+            -------
+            bool
+                Returns true if there are any true parameters.
+
+            """
+            for value in vars(self).values():
+                if value == True:
+                    return True
+            return False
+
+        def has_false(self):
+            """
+            has_false(self)
+
+            Check if there are any false parameters.
+
+            Returns
+            -------
+            bool
+                Returns true if there are any false parameters.
+
+            """
+            for value in vars(self).values():
+                if value == False:
+                    return True
+            return False
+
     class Files():
         DATA_DIR = ""
         USERS = "Users.p"

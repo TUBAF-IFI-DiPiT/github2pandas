@@ -40,7 +40,6 @@ class TestPullRequests(unittest.TestCase):
         github2pandas.generate_pandas_tables(repo)
         GitHub2Pandas.save_tables_to_excel(Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name))
 
-
     def test_files_to_list(self):
         files = GitHub2Pandas.Files.to_list()
         pass
