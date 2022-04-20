@@ -211,7 +211,7 @@ class PullRequests(Core):
         extract_pull_requests = False
         if params.deep_pull_requests:
             params.pull_requests = True
-        if params.review_requested:
+        if params.review_requests:
             params.pull_requests = True
         if params.commits:
             params.pull_requests = True
@@ -310,7 +310,7 @@ class PullRequests(Core):
                     self.__reviews_list.append(review_data)
                 except IndexError:
                     break
-        if params.review_requested:
+        if params.review_requests:
             pull_request_data["review_requested_users"] = []
             review_requests_users, review_requests_teams = self.save_api_call(pull_request.get_review_requests)
             for i in range(self.request_maximum):
