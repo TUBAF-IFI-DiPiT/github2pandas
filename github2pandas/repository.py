@@ -18,25 +18,23 @@ class Repository(Core):
 
     Attributes
     ----------
-    DATA_DIR : str
-        Repository dir where all files are saved in.
-    REPOSITORY : str
-        Pandas table file for basic repository data.
-    TEMPLATES : str
+    TEMPLATES_TO_CHECK : str
         Names of relevant templates in Github repositories
+    repository_df : DataFrame
+        Pandas DataFrame object with repository data.
  
     Methods
     -------
-    generate_pandas_tables(contributor_companies_included = False)
+    __init__(self, github_connection, repo, data_root_dir, request_maximum=40000, log_level=logging.INFO)
+        Initializes git repository object with general information.
+    generate_pandas_tables(self, contributor_companies_included = False)
         Extracting the basic repository data.
-    extract_repository_data(contributor_companies_included)
-        Extracting general repository data.
-    get_repository_keyparameter(data_root_dir)
-        Get a generated pandas tables.
+    getFirstAppearance(self, template_to_check)
+        Get a timestamp for the first appearance of a file.
+    __extract_repository_data(self, params)
+        Extracts general data of repository.
         
     """
-    REPOSITORY_DIR = "Repository"
-    REPOSITORY = "pdRepository.p"
     TEMPLATES_TO_CHECK = {
         'file_readme': "README.md",
         'file_code_of_conduct': "CODE_OF_CONDUCT.md", # .... defines standards for how to engage in a community.
@@ -84,18 +82,10 @@ class Repository(Core):
         """
         DATA_DIR = "Repository"
         REPOSITORY = "Repository.p"
-   
-    def getFirstAppearance(self, templates_to_check):
-        commits = self.save_api_call(self.repo.get_commits, path=templates_to_check)
-        commit_count = self.get_save_total_count(commits)
-        if commit_count == 0:
-            return np.nan
-        first_commit = self.get_save_api_data(commits,commit_count - 1)
-        return first_commit.commit.author.date
           
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
+    def __init__(self, github_connection: Github, repo: GitHubRepository, data_root_dir: Path, request_maximum: int = 40000, log_level: int = logging.INFO) -> None:
         """
-        __init__(self, github_connection, repo, data_root_dir, request_maximum)
+        __init__(self, github_connection, repo, data_root_dir, request_maximum=40000, log_level=logging.INFO)
 
         Initializes git repository object with general information.
 
@@ -129,18 +119,29 @@ class Repository(Core):
 
     @property
     def repository_df(self) -> pd.DataFrame:
+        """
+        repository_df(self)
+
+        Pandas DataFrame object with general repository data.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame of repository.
+            
+        """
         return Core.get_pandas_data_frame(self.current_dir, Repository.Files.REPOSITORY)
 
-    def generate_pandas_tables(self, params:Params = Params()) -> None:
+    def generate_pandas_tables(self, params: Params = Params()) -> None:
         """
-        generate_pandas_tables(contributor_companies_included = False)
+        generate_pandas_tables(self, params=Params())
 
         Extracts the basic repository data.
 
         Parameters
         ----------
-        contributor_companies_included: bool, default=False
-            Regulates evaluation of contributor affiliations (huge effort in large projects).
+        params : Params, default=Params()
+            Can hold extraction parameters, that define what will be extracted.
             
         """
         repository_data_list = []
@@ -149,16 +150,40 @@ class Repository(Core):
         repository_df = DataFrame(repository_data_list)
         self.save_pandas_data_frame(Repository.Files.REPOSITORY, repository_df)
 
-    def __extract_repository_data(self, params:Params) -> dict:
+    def getFirstAppearance(self, template_to_check: str):
         """
-        __extract_repository_data(contributor_companies_included)
+        getFirstAppearance(self, template_to_check)
+
+        Get a timestamp for the first appearance of a file.
+
+        Parameters
+        ----------
+        template_to_check: str
+            Template name to check.
+
+        Returns
+        -------
+        datetime
+            Timestamp of the first appearance.
+
+        """
+        commits = self.save_api_call(self.repo.get_commits, path=template_to_check)
+        commit_count = self.get_save_total_count(commits)
+        if commit_count == 0:
+            return np.nan
+        first_commit = self.get_save_api_data(commits,commit_count - 1)
+        return first_commit.commit.author.date
+
+    def __extract_repository_data(self, params: Params) -> dict:
+        """
+        __extract_repository_data(self, params)
 
         Extracts general data of repository.
 
         Parameters
         ----------
-        contributor_companies_included: bool, default=False
-            Regulates evaluation of contributor affiliations (huge effort in large projects).
+        params : Params, default=Params()
+            Can hold extraction parameters, that define what will be extracted.
 
         Returns
         -------

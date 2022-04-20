@@ -19,15 +19,18 @@ class Version(Core):
 
     Attributes
     ----------
-    number_of_proceses : int
-        Number of processors used for crawling process.
     COMMIT_DELETEABLE_COLUMNS : list
         Commit colums from git2net which can be deleted.
     COMMIT_RENAMING_COLUMNS : dict
         Commit Colums from git2net which need to be renamed.
     EDIT_RENAMING_COLUMNS : dict
         Edit Colums from git2net which need to be renamed.
-    
+    number_of_processes : int
+        Number of processors used for crawling process.
+    repo_dir : Path
+        Path to the repository clone dir.
+    sqlite_db_file : Path
+        Path to the sqlite db from git2net.
     commits_df : DataFrame
         Pandas DataFrame object with git commits data.
     edits_df : DataFrame
@@ -37,14 +40,15 @@ class Version(Core):
 
     Methods
     -------
-    clone_repository(github_token=None,new_clone=False)
-        Clones repository from git.
-    __generate_data_base(data_root_dir)
-        Extracts version data from a local repository and stores them in a mysql data base.
-    generate_pandas_tables(check_for_updates=False)
+    __init__(self, github_connection, repo, data_root_dir, request_maximum=40000, log_level=logging.INFO, number_of_processes=os.cpu_count())
+        Initializes pull request object with general information.
+    generate_pandas_tables(self, check_for_updates=False)
         Extracts edits, commits and branches in a pandas table.
-    clone_repository(github_token=None,new_clone=False)
+    __generate_data_base(self, data_root_dir)
+        Extracts version data from a local repository and stores them in a mysql data base.
+    clone_repository(self, github_token=None,new_clone=False)
         Clones repository from git.
+        
     """  
     COMMIT_DELETEABLE_COLUMNS = ['author_email', 'author_name', 'committer_email', 'author_date', 'author_timezone', 'commit_message_len', 'project_name', 'merge']
 
@@ -79,9 +83,9 @@ class Version(Core):
         REPOSITORY_DIR = "repo"
         VERSION_DB = "Versions.db"
 
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO, number_of_proceses:int= os.cpu_count()) -> None:
+    def __init__(self, github_connection: Github, repo: GitHubRepository, data_root_dir: Path, request_maximum: int = 40000, log_level: int = logging.INFO, number_of_processes: int = os.cpu_count()) -> None:
         """
-        __init__(self, github_connection, repo, data_root_dir, request_maximumlog_level, number_of_proceses)
+        __init__(self, github_connection, repo, data_root_dir, request_maximum=40000, log_level=logging.INFO, number_of_processes=os.cpu_count())
 
         Initializes pull request object with general information.
 
@@ -97,7 +101,7 @@ class Version(Core):
             Maximum amount of returned informations for a general api call
         log_level : int
             Logging level (CRITICAL, ERROR, WARNING, INFO, DEBUG or NOTSET), default value is enumaration value logging.INFO
-        number_of_proceses : int, default=os.cpu_count()
+        number_of_processes : int, default=os.cpu_count()
             Number of processors used for crawling process.
 
         Notes
@@ -115,23 +119,58 @@ class Version(Core):
             request_maximum=request_maximum,
             log_level=log_level
         )
-        self.number_of_proceses = number_of_proceses
+        self.number_of_processes = number_of_processes
         self.repo_dir = self.current_dir.joinpath(Version.Files.REPOSITORY_DIR)
         self.sqlite_db_file = self.current_dir.joinpath(Version.Files.VERSION_DB)
 
     @property
     def commits_df(self) -> pd.DataFrame:
+        """
+        commits_df(self)
+
+        Pandas DataFrame object with commit data.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame of commits.
+            
+        """
         return Core.get_pandas_data_frame(self.current_dir, Version.Files.COMMITS)
+    
     @property
     def edits_df(self) -> pd.DataFrame:
+        """
+        commits_df(self)
+
+        Pandas DataFrame object with edit data.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame of edits.
+            
+        """
         return Core.get_pandas_data_frame(self.current_dir, Version.Files.EDITS)
+
     @property
     def branches_df(self) -> pd.DataFrame:
+        """
+        branches_df(self)
+
+        Pandas DataFrame object with branch data.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame of branches.
+            
+        """
         return Core.get_pandas_data_frame(self.current_dir, Version.Files.BRANCHES)
 
-    def generate_pandas_tables(self, check_for_updates:bool=False) -> None:
+    def generate_pandas_tables(self, check_for_updates: bool = False) -> None:
         """
-        generate_pandas_tables(check_for_updates=False)
+        generate_pandas_tables(self, check_for_updates=False)
 
         Extracts edits, commits and branches in a pandas table.
 
@@ -257,9 +296,9 @@ class Version(Core):
         self.save_pandas_data_frame(Version.Files.EDITS, pd_edits)
         self.save_pandas_data_frame(Version.Files.BRANCHES, pd_Branches)      
 
-    def __generate_data_base(self, new_extraction:bool=False) -> bool:
+    def __generate_data_base(self, new_extraction: bool = False) -> bool:
         """
-        __generate_data_base(new_extraction=False)
+        __generate_data_base(self, new_extraction=False)
 
         Extracts version data from a local repository and stores them in a mysql data base.
 
@@ -291,7 +330,7 @@ class Version(Core):
             return False
         import tqdm
         # only serial
-        if self.number_of_proceses == 1:
+        if self.number_of_processes == 1:
             # overwrite git2net progress bar
             def version_progress_bar(iterable=None, total:int=None, desc:str="", **kwargs):
                 if iterable is None:
@@ -306,14 +345,14 @@ class Version(Core):
         git2net.mine_git_repo(self.repo_dir, self.sqlite_db_file,
                                 # extract_complexity=True,
                                 # extract_text=True,
-                                no_of_processes=self.number_of_proceses,
+                                no_of_processes=self.number_of_processes,
                                 all_branches=True,
                                 max_modifications=1000)
         return True
 
-    def clone_repository(self, github_token:str=None, new_clone:bool=False) -> None:
+    def clone_repository(self, github_token: str = None, new_clone: bool = False) -> None:
         """
-        clone_repository(github_token=None,new_clone=False)
+        clone_repository(self, github_token=None,new_clone=False)
 
         Clones repository from git.
 

@@ -23,10 +23,6 @@ class GitHub2Pandas():
 
     Attributes
     ----------
-    EXTRACTION_PARAMS : dict
-        Extraction Parameter.
-    FILES : dict
-        Mappings from data directories to pandas table files.
     __github_token : str
         Github access token.
     github_connection : Github
@@ -43,21 +39,36 @@ class GitHub2Pandas():
     Methods
     -------
     __init__(self, github_token, data_root_dir, request_maximum = 40000, log_level=logging.INFO)
-        Initializes Github2Pandas object with general informations. 
+        Initializes Github2Pandas object with general informations.
+    generate_git_releases_pandas_tables(self, repo)
+        Generates git releases pandas tables for given Github repository depending on extraction parameters. 
+    generate_issues_pandas_tables(self, repo, issues_params=Issues.Params())
+        Generates issues pandas tables for given Github repository depending on extraction parameters.
+    generate_pull_requests_pandas_tables(self, repo, pull_requests_params=PullRequests.Params())
+        Generates pull requests pandas tables for given Github repository depending on extraction parameters.
+    generate_repository_pandas_tables(self, repo, repository_params=Repository.Params())
+        Generates repository pandas tables for given Github repository depending on extraction parameters.
+    generate_version_pandas_tables(self, repo, number_of_processes=os.cpu_count())
+        Generates version pandas tables for given Github repository depending on extraction parameters.
+    generate_workflows_pandas_tables(self, repo, workflows_params=Workflows.Params())
+        Generates workflows pandas tables for given Github repository depending on extraction parameters.
     generate_pandas_tables(self, repo, extraction_params)
         Generates pandas tables for given Github repository depending on extraction parameters.
-    define_unknown_user(self, unknown_user_name, uuid, data_root_dir, new_user=False)
-        Defines unknown user in commits pandas table.
-    get_unknown_users(self)
-        Gets all unknown users from commits.
     get_repos(self, whitelist_patterns=None, blacklist_patterns=None)
         Returns repositories corresponding with the pattern in the given lists.
     get_repo(self, repo_owner, repo_name)
         Gets a repository by owner and name.
+    save_tables_to_excel(repo_data_dir, filename)
+        Converts all pandas tables into one excel file.
     get_pandas_data_frame(repo_data_dir, data_dir_name, filename)
-        Returns a pandas data frame stored in file.      
+        Returns a pandas data frame stored in file.    
+    get_unknown_users(repo_data_dir)
+        Get all unknown users from commits.  
+    define_unknown_user(unknown_user_name, uuid, data_root_dir, new_user=False)
+        Define unknown user in commits pandas table.
     get_repo_informations(data_root_dir)
-        Gets a repository data (owner and name).
+        Gets repository data (owner and name) as list of strings.
+
     """
     REPOSITORIES_KEY = "repos"
 
@@ -185,7 +196,7 @@ class GitHub2Pandas():
                 d.update(files.to_dict())
             return d
 
-    def __init__(self, github_token:str, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
+    def __init__(self, github_token: str, data_root_dir: Path, request_maximum: int = 40000, log_level: int = logging.INFO) -> None:
         """
         __init__(self, github_token, data_root_dir, request_maximum = 40000, log_level=logging.INFO)
 
@@ -216,7 +227,27 @@ class GitHub2Pandas():
         self.log_level = log_level
         self.__core = Core(self.github_connection,None,self.data_root_dir,None,log_level=log_level)
 
-    def generate_git_releases_pandas_tables(self, repo:GitHubRepository) -> GitReleases:
+    def generate_git_releases_pandas_tables(self, repo: GitHubRepository) -> GitReleases:
+        """
+        generate_git_releases_pandas_tables(self, repo)
+
+        Generates git releases pandas tables for given Github repository depending on extraction parameters.
+
+        Parameters
+        ----------
+        repo : GitHubRepository
+            Repository object from pygithub.
+
+        Returns
+        -------
+        GitReleases
+            A GitReleases object.
+
+        Notes
+        -----
+            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
+
+        """
         git_releases = GitReleases(self.github_connection,repo,self.data_root_dir,self.request_maximum,self.log_level)
         try:
             git_releases.generate_pandas_tables()
@@ -224,7 +255,29 @@ class GitHub2Pandas():
             self.__core.logger.error("Error in releases. Releases are not extracted!", exc_info=e)
         return git_releases
 
-    def generate_issues_pandas_tables(self, repo:GitHubRepository, issues_params:Issues.Params = Issues.Params()) -> Issues:
+    def generate_issues_pandas_tables(self, repo: GitHubRepository, issues_params: Issues.Params = Issues.Params()) -> Issues:
+        """
+        generate_issues_pandas_tables(self, repo, issues_params=Issues.Params())
+
+        Generates issues pandas tables for given Github repository depending on extraction parameters.
+
+        Parameters
+        ----------
+        repo : GitHubRepository
+            Repository object from pygithub.
+        issues_params : Issues.Params, default=Issues.Params()
+            Parameters that define what should be extracted.
+
+        Returns
+        -------
+        Issues
+            A Issues object.
+
+        Notes
+        -----
+            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
+
+        """
         issues = Issues(self.github_connection,repo,self.data_root_dir,self.request_maximum,self.log_level)
         try:
             issues.generate_pandas_tables(params=issues_params)
@@ -232,7 +285,29 @@ class GitHub2Pandas():
             self.__core.logger.error("Error in issues. Issues are not extracted!", exc_info=e)
         return issues
         
-    def generate_pull_requests_pandas_tables(self, repo:GitHubRepository, pull_requests_params:PullRequests.Params = PullRequests.Params()) -> PullRequests:
+    def generate_pull_requests_pandas_tables(self, repo: GitHubRepository, pull_requests_params: PullRequests.Params = PullRequests.Params()) -> PullRequests:
+        """
+        generate_pull_requests_pandas_tables(self, repo, pull_requests_params=PullRequests.Params())
+
+        Generates pull requests pandas tables for given Github repository depending on extraction parameters.
+
+        Parameters
+        ----------
+        repo : GitHubRepository
+            Repository object from pygithub.
+        pull_requests_params : PullRequests.Params, default=PullRequests.Params()
+            Parameters that define what should be extracted.
+
+        Returns
+        -------
+        PullRequests
+            A PullRequests object.
+
+        Notes
+        -----
+            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
+
+        """
         pull_requests = PullRequests(self.github_connection,repo,self.data_root_dir,self.request_maximum,self.log_level)
         try:
             pull_requests.generate_pandas_tables(params=pull_requests_params)
@@ -240,7 +315,29 @@ class GitHub2Pandas():
             self.__core.logger.error("Error in pull requests. Pull requests are not extracted!", exc_info=e)
         return pull_requests
 
-    def generate_repository_pandas_tables(self, repo:GitHubRepository, repository_params:Repository.Params = Repository.Params()) -> Repository:
+    def generate_repository_pandas_tables(self, repo: GitHubRepository, repository_params: Repository.Params = Repository.Params()) -> Repository:
+        """
+        generate_repository_pandas_tables(self, repo, repository_params=Repository.Params())
+
+        Generates repository pandas tables for given Github repository depending on extraction parameters.
+
+        Parameters
+        ----------
+        repo : GitHubRepository
+            Repository object from pygithub.
+        repository_params : Repository.Params, default=Repository.Params()
+            Parameters that define what should be extracted.
+
+        Returns
+        -------
+        Repository
+            A Repository object.
+
+        Notes
+        -----
+            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
+
+        """
         repository = Repository(self.github_connection,repo,self.data_root_dir,self.request_maximum,self.log_level)
         try:
             repository.generate_pandas_tables(params=repository_params)
@@ -248,8 +345,30 @@ class GitHub2Pandas():
             self.__core.logger.error("Error in repository. Repository is not extracted!", exc_info=e)
         return repository
 
-    def generate_version_pandas_tables(self, repo:GitHubRepository, number_of_proceses:int = os.cpu_count()) -> Version:
-        version = Version(self.github_connection,repo,self.data_root_dir,self.request_maximum,self.log_level, number_of_proceses)
+    def generate_version_pandas_tables(self, repo: GitHubRepository, number_of_processes: int = os.cpu_count()) -> Version:
+        """
+        generate_version_pandas_tables(self, repo, number_of_processes=os.cpu_count())
+
+        Generates version pandas tables for given Github repository depending on extraction parameters.
+
+        Parameters
+        ----------
+        repo : GitHubRepository
+            Repository object from pygithub.
+        number_of_processes : int, default=os.cpu_count()
+            Number of processes to use
+
+        Returns
+        -------
+        Version
+            A Version object.
+
+        Notes
+        -----
+            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
+
+        """
+        version = Version(self.github_connection,repo,self.data_root_dir,self.request_maximum,self.log_level, number_of_processes)
         try:
             version.clone_repository(self.__github_token)
             version.generate_pandas_tables()
@@ -257,7 +376,29 @@ class GitHub2Pandas():
             self.__core.logger.error("Error in version. Version are not extracted!", exc_info=e)
         return version
 
-    def generate_workflows_pandas_tables(self, repo:GitHubRepository, workflows_params:Workflows.Params = Workflows.Params()) -> Version:
+    def generate_workflows_pandas_tables(self, repo: GitHubRepository, workflows_params: Workflows.Params = Workflows.Params()) -> Workflows:
+        """
+        generate_workflows_pandas_tables(self, repo, workflows_params=Workflows.Params())
+
+        Generates workflows pandas tables for given Github repository depending on extraction parameters.
+
+        Parameters
+        ----------
+        repo : GitHubRepository
+            Repository object from pygithub.
+        workflows_params : Workflows.Params, default=Workflows.Params()
+            Parameters that define what should be extracted.
+
+        Returns
+        -------
+        Workflows
+            A Workflows object.
+
+        Notes
+        -----
+            PyGithub Repository object structure: https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html
+
+        """
         workflows = Workflows(self.github_connection,repo,self.data_root_dir,self.request_maximum,self.log_level)
         try:
             workflows.generate_pandas_tables(params=workflows_params)
@@ -265,7 +406,7 @@ class GitHub2Pandas():
             self.__core.logger.error("Error in workflows. Workflows are not extracted!", exc_info=e)
         return workflows
 
-    def generate_pandas_tables(self, repo:GitHubRepository, params:Params = Params()) -> None:
+    def generate_pandas_tables(self, repo: GitHubRepository, params: Params = Params()) -> None:
         """
         generate_pandas_tables(self, repo, extraction_params)
 
@@ -275,8 +416,8 @@ class GitHub2Pandas():
         ----------
         repo : GitHubRepository
             Repository object from pygithub.
-        extraction_params : dict
-            Specifies the kind of data to be extracted.
+        params : Params, default=Params()
+            Parameters that define what should be extracted.
 
         """
         if params.git_releases:
@@ -292,7 +433,7 @@ class GitHub2Pandas():
         if params.workflows_params.has_true():
             workflows = self.generate_workflows_pandas_tables(repo)
      
-    def get_repos(self, whitelist_patterns:list = None, blacklist_patterns:list = None) -> list:
+    def get_repos(self, whitelist_patterns: list = None, blacklist_patterns: list = None) -> list:
         """
         get_repos(self, whitelist_patterns=None, blacklist_patterns=None)
 
@@ -348,7 +489,7 @@ class GitHub2Pandas():
                     relevant_repos.append(repo)
         return relevant_repos
     
-    def get_repo(self, repo_owner:str, repo_name:str) -> GitHubRepository:
+    def get_repo(self, repo_owner: str, repo_name: str) -> GitHubRepository:
         """
         get_repo(self, repo_owner, repo_name)
 
@@ -379,8 +520,21 @@ class GitHub2Pandas():
         return self.__core.save_api_call(self.github_connection.get_repo,repo_owner + "/" + repo_name)
 
     @staticmethod
-    def save_tables_to_excel(repo_data_dir, filename = "GitHub2Pandas"):
-        writer = pd.ExcelWriter(f'{filename}.xlsx', engine='xlsxwriter')
+    def save_tables_to_excel(repo_data_dir: Path, filename: str = "GitHub2Pandas") -> None:
+        """
+        save_tables_to_excel(repo_data_dir, filename)
+
+        Converts all pandas tables into one excel file.
+
+        Parameters
+        ----------
+        repo_data_dir : Path
+            Path to repository
+        filename : str
+            Filename
+
+        """
+        writer = pd.ExcelWriter(Path(repo_data_dir,f'{filename}.xlsx'), engine='xlsxwriter')
         for folder, files in GitHub2Pandas.Files.to_dict().items():
             for file in files:
                 if not isinstance(file,dict):
@@ -388,7 +542,8 @@ class GitHub2Pandas():
                     df.to_excel(writer, sheet_name=file[:-2])
         writer.save()
 
-    def get_pandas_data_frame(repo_data_dir:Path, data_dir_name:str,  filename:str) -> pd.DataFrame:
+    @staticmethod
+    def get_pandas_data_frame(repo_data_dir: Path, data_dir_name: str,  filename: str) -> pd.DataFrame:
         """
         get_pandas_data_frame(repo_data_dir, data_dir_name, filename)
 
@@ -412,11 +567,11 @@ class GitHub2Pandas():
         return Core.get_pandas_data_frame(Path(repo_data_dir,data_dir_name), filename)
     
     @staticmethod
-    def get_unknown_users(repo_data_dir):
+    def get_unknown_users(repo_data_dir: str):
         """
         get_unknown_users(repo_data_dir)
 
-        Get all unknown users in from commits.
+        Get all unknown users from commits.
 
         Parameters
         ----------
@@ -436,7 +591,7 @@ class GitHub2Pandas():
             return list(unknown_users)
     
     @staticmethod
-    def define_unknown_user(repo_data_dir:str, unknown_user_name:str, uuid:str, new_user:bool = False):
+    def define_unknown_user(repo_data_dir: str, unknown_user_name: str, uuid: str, new_user: bool = False):
         """
         define_unknown_user(unknown_user_name, uuid, data_root_dir, new_user=False)
 
@@ -490,11 +645,11 @@ class GitHub2Pandas():
             core.save_pandas_data_frame(Version.Files.COMMITS,pd_commits)
 
     @staticmethod      
-    def get_full_names_of_repositories(data_root_dir) -> list:
+    def get_full_names_of_repositories(data_root_dir: str) -> list:
         """
         get_repo_informations(data_root_dir)
 
-        Gets a repository data (owner and name).
+        Gets repository data (owner and name) as list of strings.
 
         Parameters
         ----------
@@ -503,8 +658,8 @@ class GitHub2Pandas():
         
         Returns
         -------
-        tuple
-            Returns a tuple of repository owner and repository name or (None,None) if repository path not exist.
+        list
+            Returns a list of strings for each repository owner and repository name.
 
         """
         repo_file = Path(data_root_dir, GitHub2Pandas.Files.REPOS)

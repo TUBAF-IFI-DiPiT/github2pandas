@@ -19,44 +19,30 @@ class PullRequests(Core):
 
     Attributes
     ----------
-    DATA_DIR : str
-        Pull request dir where all files are saved in.
-    PULL_REQUESTS : str
-        Pandas table file for pull request data.
-    REVIEWS_COMMENTS : str
-        Pandas table file for comments data in pull requests.
-    PULL_REQUESTS_REACTIONS : str
-        Pandas table file for reactions data in pull requests.
-    REVIEWS : str
-        Pandas table file for reviews data in pull requests.
-    EXTRACTION_PARAMS : dict
-        Holds all extraction parameters with a default setting.
-    FILES : dict
-        Mappings from data directories to pandas table files.
-    pull_request_df : DataFrame
+    pull_requests_df : DataFrame
         Pandas DataFrame object with general pull requests data.
-    review_comment_df : DataFrame
-        Pandas DataFrame object with review comments data.
+    review_comments_df : DataFrame
+        Pandas DataFrame object with pull request review comments data.
     reviews_df : DataFrame
-        Pandas DataFrame object with reviews data.
+        Pandas DataFrame object with pull request reviews data.
     reactions_df : DataFrame
-        Pandas DataFrame object with reactions data.
+        Pandas DataFrame object with pull request reactions data.
 
     Methods
     -------
-    __init__(self, github_connection, repo, data_root_dir, request_maximum)
+    __init__(self, github_connection, repo, data_root_dir, request_maximum=40000, log_level=logging.INFO)
         Initializes pull request object with general information.
-    generate_pandas_tables(check_for_updates=False, extraction_params={})
+    generate_pandas_tables(self, check_for_updates=False, params=Params())
         Extracts the complete pull request data from a repository.
-    extract_pull_request(pull_request, params)
+    extract_pull_request(self, pull_request, params)
         Extracts a pull request.
-    extract_review_comment(data, params)
+    extract_review_comment(self, data, params)
         Extracts a review comment from pull request.
-    __extract_pull_request_data(pull_request, additional_information=False)
+    __extract_pull_request_data(self, pull_request, additional_information=False)
         Extracts general data of one pull request.
-    __extract_review_comment_data(review_comment)
+    __extract_review_comment_data(self, review_comment)
         Extracts data of one review comment.
-    __extract_review_data(review, pull_request_id)
+    __extract_review_data(self, review, pull_request_id)
         Extracts general data of one review from a pull request.
     
     """
@@ -142,9 +128,9 @@ class PullRequests(Core):
         def to_dict() -> dict:
             return {PullRequests.Files.DATA_DIR: PullRequests.Files.to_list()}
 
-    def __init__(self, github_connection:Github, repo:GitHubRepository, data_root_dir:Path, request_maximum:int = 40000, log_level:int=logging.INFO) -> None:
+    def __init__(self, github_connection: Github, repo: GitHubRepository, data_root_dir: Path, request_maximum: int = 40000, log_level: int = logging.INFO) -> None:
         """
-        __init__(self, github_connection, repo, data_root_dir, request_maximum)
+        __init__(self, github_connection, repo, data_root_dir, request_maximum, log_level)
 
         Initial pull request object with general information.
 
@@ -178,24 +164,68 @@ class PullRequests(Core):
         )
     
     @property
-    def pull_request_df(self):
+    def pull_requests_df(self):
+        """
+        pull_requests_df(self)
+
+        Pandas DataFrame object with general pull requests data.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame of pull request.
+            
+        """
         return Core.get_pandas_data_frame(self.current_dir, PullRequests.Files.PULL_REQUESTS)
     
     @property
-    def review_comment_df(self):
+    def review_comments_df(self):
+        """
+        review_comments_df(self)
+
+        Pandas DataFrame object with general pull request comments data.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame of pull request comments.
+            
+        """
         return Core.get_pandas_data_frame(self.current_dir, PullRequests.Files.REVIEWS_COMMENTS)
     
     @property
     def reviews_df(self):
+        """
+        reviews_df(self)
+
+        Pandas DataFrame object with general pull request reviews data.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame of pull request reviews.
+            
+        """
         return Core.get_pandas_data_frame(self.current_dir, PullRequests.Files.REVIEWS)
     
     @property
     def reactions_df(self):
+        """
+        reactions_df(self)
+
+        Pandas DataFrame object with general pull request reactions data.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame of pull request reactions.
+            
+        """
         return Core.get_pandas_data_frame(self.current_dir, PullRequests.Files.PULL_REQUESTS_REACTIONS)
   
-    def generate_pandas_tables(self, check_for_updates:bool = False, params:Params = Params()) -> None:
+    def generate_pandas_tables(self, check_for_updates: bool = False, params: Params = Params()) -> None:
         """
-        generate_pandas_tables(check_for_updates=False, extraction_params={})
+        generate_pandas_tables(self, check_for_updates=False, params=Params())
 
         Extracts the complete pull request data from a repository. 
         Check first if there are any new pull requests information in dependence of parameter check_for_updates.
@@ -203,8 +233,8 @@ class PullRequests(Core):
         Parameters
         ----------
         check_for_updates : bool, default=False
-            Determines whether update is necessary. Does not work when EXTRACTION_PARAMS "reactions" is True.
-        extraction_params : dict, default={}
+            Determines whether update is necessary. Does not work when params "reactions" is True.
+        params : Params, default=Params()
             Can hold extraction parameters, that define what will be extracted.
 
         """
@@ -282,9 +312,9 @@ class PullRequests(Core):
             reactions_df = DataFrame(self.__reactions_list)
             self.save_pandas_data_frame(PullRequests.Files.PULL_REQUESTS_REACTIONS, reactions_df)
     
-    def extract_pull_request(self, pull_request:GitHubPullRequest, params:Params) -> None:
+    def extract_pull_request(self, pull_request: GitHubPullRequest, params: Params) -> None:
         """
-        extract_pull_request(pull_request, params)
+        extract_pull_request(self, pull_request, params)
 
         Extracts a pull request.
 
@@ -292,7 +322,7 @@ class PullRequests(Core):
         ----------
         pull_request : GitHubPullRequest
             PullRequest object from pygithub.
-        params : dict
+        params : Params
             Holds extraction parameters, that define what will be extracted.
         
         Notes
@@ -332,9 +362,9 @@ class PullRequests(Core):
                     break
         self.__pull_request_list.append(pull_request_data)
 
-    def extract_review_comment(self, data:GitHubPullRequestComment, params:Params) -> None:
+    def extract_review_comment(self, data: GitHubPullRequestComment, params: Params) -> None:
         """
-        extract_review_comment(data, params)
+        extract_review_comment(self, data, params)
 
         Extracts a review comment from pull request.
 
@@ -342,7 +372,7 @@ class PullRequests(Core):
         ----------
         data : GitHubPullRequestComment 
             PullRequestComment object from pygithub.
-        params : dict
+        params : Params
             Holds extraction parameters, that define what will be extracted.
         
         Notes
@@ -358,9 +388,9 @@ class PullRequests(Core):
                 data.id,
                 "review_comment")
 
-    def __extract_pull_request_data(self, pull_request:GitHubPullRequest, additional_information:bool = False) -> dict:
+    def __extract_pull_request_data(self, pull_request: GitHubPullRequest, additional_information: bool = False) -> dict:
         """
-        __extract_pull_request_data(pull_request, additional_information=False)
+        __extract_pull_request_data(self, pull_request, additional_information=False)
 
         Extracts general data of one pull request.
 
@@ -410,9 +440,9 @@ class PullRequests(Core):
         # state, title, author, assignee, (milestone)
         return pull_request_data
 
-    def __extract_review_comment_data(self, review_comment:GitHubPullRequestComment) -> dict:
+    def __extract_review_comment_data(self, review_comment: GitHubPullRequestComment) -> dict:
         """
-        __extract_review_comment_data(review_comment)
+        __extract_review_comment_data(self, review_comment)
 
         Extracts data of one review comment.
 
@@ -449,9 +479,9 @@ class PullRequests(Core):
             review_comment_data["author"] = self.extract_user_data(review_comment.user)
         return review_comment_data
 
-    def __extract_review_data(self, review:GitHubPullRequestReview, pull_request_id:int) -> dict:
+    def __extract_review_data(self, review: GitHubPullRequestReview, pull_request_id: int) -> dict:
         """
-        __extract_review_data(review, pull_request_id)
+        __extract_review_data(self, review, pull_request_id)
 
         Extracts data of one review from a pull request.
 
