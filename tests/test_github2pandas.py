@@ -51,17 +51,10 @@ class TestGitHub2Pandas(unittest.TestCase):
 
     def test_get_all_data_frames(self):
         repo_data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name)
-        for files in GitHub2Pandas.Files.to_list():
-            for file in files.to_list():
+        for folder, files in GitHub2Pandas.Files.to_dict().items():
+            for file in files:
                 if file.endswith(".p"):
-                    df = GitHub2Pandas.get_pandas_data_frame(repo_data_dir, files.DATA_DIR, file)
+                    df = GitHub2Pandas.get_pandas_data_frame(repo_data_dir,folder,file)
 
 if __name__ == "__main__":
-    #unittest.main()
-    files = GitHub2Pandas.Files.to_list()
-    files = GitHub2Pandas.Files.to_dict()
-    data_root_dir = Path("test_data")
-    git_repo_name = "github2pandas"
-    git_repo_owner = "TUBAF-IFI-DiPiT"
-    GitHub2Pandas.save_tables_to_excel(Path(data_root_dir,git_repo_owner,git_repo_name))
-    pass
+    unittest.main()
