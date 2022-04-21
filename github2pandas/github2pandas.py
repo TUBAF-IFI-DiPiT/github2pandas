@@ -113,14 +113,12 @@ class GitHub2Pandas():
             self.version = version
             self.workflows_params = workflows_params
 
-    class Files():
+    class Files(Core.Files):
         """
         A file class that holds all file names and the folder name.
 
         Attributes
         ----------
-        DATA_DIR : str
-            Folder name for this module.
         REPOS : str
             Filename of the repos json file.
         GIT_RELEASES : GitReleases.Files
@@ -135,8 +133,8 @@ class GitHub2Pandas():
             Folder and files for version.
         WORKFLOWS : Workflows.Files
             Folder and files for workflows.
-        CORE : Core.Files
-            Folder and files for core.
+        USER : Core.UserFiles
+            User pandas files.
 
         Methods
         -------
@@ -153,48 +151,27 @@ class GitHub2Pandas():
         REPOSITORY = Repository.Files
         VERSION = Version.Files
         WORKFLOWS = Workflows.Files
-        CORE = Core.Files
+        USER = Core.UserFiles
 
-        @staticmethod
-        def to_list() -> list:
+        @classmethod
+        def to_dict(cls) -> dict:
             """
-            to_list()
-
-            Returns a list of all filenames.
+            to_dict(cls)
             
-            Returns
-            -------
-            list
-                List of all filenames.
-
-            """
-            return [
-                GitHub2Pandas.Files.GIT_RELEASES,
-                GitHub2Pandas.Files.ISSUES,
-                GitHub2Pandas.Files.PULL_REQUESTS,
-                GitHub2Pandas.Files.REPOSITORY,
-                GitHub2Pandas.Files.VERSION,
-                GitHub2Pandas.Files.WORKFLOWS,
-                GitHub2Pandas.Files.CORE
-            ]
-
-        @staticmethod
-        def to_dict() -> dict:
-            """
-            to_dict()
-            
-            Returns a dict with the folder as key and the list of all filenames as value.
+            Returns a dict with the folder as key and the list of all pandas filenames as value.
             
             Returns
             -------
             dict
-                Dictionary with the folder as key and the list of all filenames as value.
+                Dictionary with the folder as key and the list of all pandas filenames as value.
 
             """
-            d = {}
-            for files in GitHub2Pandas.Files.to_list():
-                d.update(files.to_dict())
-            return d
+            files = {}
+            for var, value in vars(cls).items():
+                if not isinstance(value,str):
+                    if hasattr(value, "DATA_DIR"):
+                        files[value.DATA_DIR] = value.to_list()
+            return files
 
     def __init__(self, github_token: str, data_root_dir: Path, request_maximum: int = 40000, log_level: int = logging.INFO) -> None:
         """
@@ -537,7 +514,7 @@ class GitHub2Pandas():
         writer = pd.ExcelWriter(Path(repo_data_dir,f'{filename}.xlsx'), engine='xlsxwriter')
         for folder, files in GitHub2Pandas.Files.to_dict().items():
             for file in files:
-                if not isinstance(file,dict):
+                if file.endswith(".p"):
                     df = GitHub2Pandas.get_pandas_data_frame(repo_data_dir,folder,file)
                     df.to_excel(writer, sheet_name=file[:-2])
         writer.save()

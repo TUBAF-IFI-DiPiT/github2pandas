@@ -115,19 +115,6 @@ class PullRequests(Core):
         PULL_REQUESTS_REACTIONS = "PullRequestsReactions.p"
         REVIEWS = "Reviews.p"
 
-        @staticmethod
-        def to_list() -> list:
-            return [
-                PullRequests.Files.PULL_REQUESTS,
-                PullRequests.Files.REVIEWS_COMMENTS,
-                PullRequests.Files.PULL_REQUESTS_REACTIONS,
-                PullRequests.Files.REVIEWS
-            ]
-
-        @staticmethod
-        def to_dict() -> dict:
-            return {PullRequests.Files.DATA_DIR: PullRequests.Files.to_list()}
-
     def __init__(self, github_connection: Github, repo: GitHubRepository, data_root_dir: Path, request_maximum: int = 40000, log_level: int = logging.INFO) -> None:
         """
         __init__(self, github_connection, repo, data_root_dir, request_maximum, log_level)
@@ -292,7 +279,7 @@ class PullRequests(Core):
                     number = int(issues_df.loc[count,"number"])
                     pull_request = self.save_api_call(self.repo.get_pull, number)
                     self.extract_pull_request(pull_request, params)
-        if params.review_comment:
+        if params.review_comments:
             # extract comments
             self.extract_with_updated_and_since(
                 self.repo.get_pulls_comments,
@@ -302,7 +289,7 @@ class PullRequests(Core):
         if extract_pull_requests:
             pull_request_df = DataFrame(self.__pull_request_list)
             self.save_pandas_data_frame(PullRequests.Files.PULL_REQUESTS, pull_request_df)
-        if params.review_comment:
+        if params.review_comments:
             review_comment_df = DataFrame(self.__review_comment_list)
             self.save_pandas_data_frame(PullRequests.Files.REVIEWS_COMMENTS, review_comment_df)
         if params.reviews:
@@ -357,7 +344,7 @@ class PullRequests(Core):
             for i in range(self.request_maximum):
                 try:
                     commit = self.get_save_api_data(commits, i)
-                    pull_request_data["commits"].append(commit.sha)
+                    pull_request_data["commit_shas"].append(commit.sha)
                 except IndexError:
                     break
         self.__pull_request_list.append(pull_request_data)

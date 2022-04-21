@@ -230,9 +230,9 @@ class Core():
         Methods
         -------
         to_list()
-            Returns a list of all filenames.
+            Returns a list of all pandas filenames.
         to_dict()
-            Returns a dict with the folder as key and the list of all filenames as value.
+            Returns a dict with the folder as key and the list of all pandas filenames as value.
         
         """
         DATA_DIR = ""
@@ -242,18 +242,23 @@ class Core():
             """
             to_list(cls)
 
-            Returns a list of all filenames.
+            Returns a list of all pandas filenames.
             
             Returns
             -------
             list
-                List of all filenames.
+                List of all pandas filenames.
 
             """
             filenames = []
             for var, value in vars(cls).items():
-                if isinstance(value,str) and not "DIR" in var and not var.startswith("__"):
-                    filenames.append(value)
+                if isinstance(value,str):
+                    if value.endswith(".p") and not var.startswith("__"):
+                        filenames.append(value)
+                else:
+                    if hasattr(value, "to_list"):
+                        for item in value.to_list():
+                            filenames.append(item)
             return filenames
 
         @classmethod
@@ -261,15 +266,16 @@ class Core():
             """
             to_dict(cls)
             
-            Returns a dict with the folder as key and the list of all filenames as value.
+            Returns a dict with the folder as key and the list of all pandas filenames as value.
             
             Returns
             -------
             dict
-                Dictionary with the folder as key and the list of all filenames as value.
+                Dictionary with the folder as key and the list of all pandas filenames as value.
 
             """
             return {cls.DATA_DIR: cls.to_list()}
+
     
     class UserFiles(Files):
         """
