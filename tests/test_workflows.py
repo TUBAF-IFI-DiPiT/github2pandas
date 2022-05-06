@@ -1,72 +1,79 @@
+import logging
 import unittest
 import os
 from pathlib import Path
-import warnings
 import datetime
 import shutil
-
+# github2pandas imports
+from github2pandas.core import Core
+from github2pandas.github2pandas import GitHub2Pandas
 from github2pandas.workflows import Workflows
-from github2pandas.utility import Utility
 
 class TestWorkflows(unittest.TestCase):
     """
     Test case for Workflows class.
     """
-    
     github_token = os.environ['TOKEN']
+    if "NAME" in os.environ:
+        git_repo_name = os.environ['NAME']
+        git_repo_owner = os.environ['OWNER']
+    else:
+        git_repo_name = "github2pandas"
+        git_repo_owner = "TUBAF-IFI-DiPiT"
+    data_root_dir = Path("test_data")
+    log_level = logging.DEBUG
 
-    git_repo_name = "github2pandas"
-    git_repo_owner = "TUBAF-IFI-DiPiT"
+    def __init__(self, methodName: str = ...) -> None:
+        super().__init__(methodName)
+        if self.data_root_dir.exists() and self.data_root_dir.is_dir():
+            shutil.rmtree(self.data_root_dir, onerror=Core.file_error_handling)
+        self.data_root_dir.mkdir(parents=True, exist_ok=True)
 
-    default_data_folder = Path("test_data", git_repo_name)
-    repo = Utility.get_repo(git_repo_owner, git_repo_name, github_token, default_data_folder)
-
-    def test_generate_workflow_pandas_tables(self):
-        Workflows.generate_workflow_pandas_tables(self.repo, self.default_data_folder, check_for_updates=False)
-        Workflows.generate_workflow_pandas_tables(self.repo, self.default_data_folder)
+    def test_generate_pandas_tables(self):
+        github2pandas = GitHub2Pandas(self.github_token,self.data_root_dir, log_level=self.log_level)
+        repo = github2pandas.get_repo(self.git_repo_owner, self.git_repo_name)
+        workflows = github2pandas.generate_workflows_pandas_tables(repo)
         
-    def test_get_workflows(self):
-        pd_workflows_file = Workflows.get_workflows(self.default_data_folder)
-        pd_workflows_runs = Workflows.get_workflows(self.default_data_folder, Workflows.WORKFLOWS_RUNS)
+    def test_get_data_frames(self):
+        data_dir = Path(self.data_root_dir,self.git_repo_owner,self.git_repo_name,Workflows.Files.DATA_DIR)
+        workflows = Core.get_pandas_data_frame(data_dir, Workflows.Files.WORKFLOWS)
+        runs = Core.get_pandas_data_frame(data_dir, Workflows.Files.RUNS)
+        pass
 
-    def test_download_workflow_log_files(self):
-        self.skipTest("Skip Test Fr Workflow")
-        for workflow_run in self.repo.get_workflow_runs():
-            file_number = Workflows.download_workflow_log_files(self.repo,self.github_token, workflow_run.id, self.default_data_folder)
-            self.assertIsNotNone(file_number)
-            break
-        file_number = Workflows.download_workflow_log_files(self.repo,self.github_token, -1, self.default_data_folder)
-        self.assertIsNone(file_number)
+    # def test_download_workflow_log_files(self):
+    #     self.skipTest("Skip Test Fr Workflow")
+    #     for workflow_run in self.repo.get_workflow_runs():
+    #         file_number = Workflows.download_workflow_log_files(self.repo,self.github_token, workflow_run.id, self.default_data_folder)
+    #         self.assertIsNotNone(file_number)
+    #         break
+    #     file_number = Workflows.download_workflow_log_files(self.repo,self.github_token, -1, self.default_data_folder)
+    #     self.assertIsNone(file_number)
     
-    def test_extract_workflow_data(self):
-        class Workflow:
-            id = 0
-            name = "test_extract_workflow_data"
-            created_at = datetime.datetime.now()
-            updated_at = datetime.datetime.now()
-            state = "test_extract_workflow_data"
-        worflow_data = Workflows.extract_workflow_data(Workflow())
-        self.assertIsNotNone(worflow_data)
+    # def test_extract_workflow_data(self):
+    #     class Workflow:
+    #         id = 0
+    #         name = "test_extract_workflow_data"
+    #         created_at = datetime.datetime.now()
+    #         updated_at = datetime.datetime.now()
+    #         state = "test_extract_workflow_data"
+    #     workflows = Workflows(self.github_connection, self.repo, self.default_data_folder)
+    #     worflow_data = workflows.extract_workflow_data(Workflow())
+    #     self.assertIsNotNone(worflow_data)
 
-    def test_extract_workflow_run_data(self):
-        class WorkflowRun:
-            workflow_id = 0
-            id = 0
-            head_sha = "test_extract_workflow_data"
-            pull_requests = []
-            created_at = datetime.datetime.now()
-            updated_at = datetime.datetime.now()
-            status = "test_extract_workflow_data"
-            event = "test_extract_workflow_data"
-            conclusion = "test_extract_workflow_data"
-        worflow_run_data = Workflows.extract_workflow_run_data(WorkflowRun())
-        self.assertIsNotNone(worflow_run_data)
-
-    def setUp(self):
-        self.default_data_folder.mkdir(parents=True, exist_ok=True)
-
-    def tearDown(self):
-        shutil.rmtree("test_data")
+    # def test_extract_workflow_run_data(self):
+    #     class WorkflowRun:
+    #         workflow_id = 0
+    #         id = 0
+    #         head_sha = "test_extract_workflow_data"
+    #         pull_requests = []
+    #         created_at = datetime.datetime.now()
+    #         updated_at = datetime.datetime.now()
+    #         status = "test_extract_workflow_data"
+    #         event = "test_extract_workflow_data"
+    #         conclusion = "test_extract_workflow_data"
+    #     workflows = Workflows(self.github_connection, self.repo, self.default_data_folder)
+    #     worflow_run_data = workflows.extract_run_data(WorkflowRun())
+    #     self.assertIsNotNone(worflow_run_data)
 
 if "__main__" == __name__:
     unittest.main()

@@ -5,27 +5,20 @@ name = "pypi"
 
 [packages]
 pygit2 = "*"
-pyyaml = "*"
 requests = "*"
-datetime = "*"
 pygithub = "*"
-argparse = "*"
-pydriller = "<=1.15.2"
 git2net = "*"
 pysqlite3 = "*"
-selenium = "*"
-python-dotenv = "*"
 pandas = "*"
-sphinx = "*"
-m2r2 = "*"
-pypiwin32 = {sys_platform = "== 'win32'"}
 human-id = "*"
-psutil = "*"
-sphinx-rtd-theme = "*"
+xlsxwriter = "*"
 
 [dev-packages]
 github2pandas = {editable = true, path = "."}
 pipenv-setup = "*"
+sphinx = "*"
+build = "*"
+sphinx-rtd-theme = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"
