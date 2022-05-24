@@ -343,7 +343,7 @@ class Version(Core):
             tqdm.tqdm = version_progress_bar
         import git2net
         git2net.mine_git_repo(self.repo_dir, self.sqlite_db_file,
-                                extract_complexity=True,
+                                # extract_complexity=True,
                                 extract_text=True,
                                 no_of_processes=self.number_of_processes,
                                 all_branches=True,
