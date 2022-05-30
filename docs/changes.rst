@@ -137,3 +137,7 @@ Version 2.0.0 (April 14, 2022)
 * tests were reworked and extended
 * github2pandas is now a lot faster!!!
 * a good api call handling was implemented to save api calls
+
+Version 2.0.1 (Mai 30, 2022)
+-----------------------------------
+* HotFix: removing complexity of git2net calculation
