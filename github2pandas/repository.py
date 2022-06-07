@@ -209,8 +209,8 @@ class Repository(Core):
         contributors_count = self.get_save_total_count(contributors)
 
         companies = []
-        exclude_company_identification = True
-        if exclude_company_identification:
+        contributor_companies_included = False
+        if contributor_companies_included:
             contributors_count2 = contributors_count
             if contributors_count > 500:
                 print("Only first 500 Contributor can hold information!")
