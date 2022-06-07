@@ -204,48 +204,23 @@ class Repository(Core):
         else:
             last_commit = self.get_save_api_data(commits,0)
             last_commit_date = pd.to_datetime(last_commit.commit.committer.date , format="%Y-%m-%d M:%S")
-        # last_commit_date on main Branch
-
-        # commits = self.repo.get_commits()
-        # try:
-        #     # problem: No commits in repo
-        #     last_commit_date = pd.to_datetime(commits[0].commit.committer.date , format="%Y-%m-%d M:%S")
-        #     commit_count = commits.totalCount
-        # except GithubException:
-        #     commit_count = 0
-        #     last_commit_date = numpy.nan
-        #     print("No commits found!")  
-         
+        
         contributors = self.save_api_call(self.repo.get_contributors,"True")
         contributors_count = self.get_save_total_count(contributors)
-        # contributor = self.repo.get_contributors( 'all')
-        # try:
-        #     # problem: history or contributor is too large to list them via the API.
-        #     contributors_count = len (list (contributor))
-        # except GithubException:
-        #     print("Too many contributors, not covered by API!")   
-        #     contributors_count = numpy.nan
 
         companies = []
-        contributors_count2 = contributors_count
-        if contributors_count > 500:
-            print("Only first 500 Contributor can hold information!")
-            contributors_count2 = 500
-        if params.contributor_companies:
-            for i in self.progress_bar(range(contributors_count2), "Contributor Companies: "):
-                contributor = self.get_save_api_data(contributors,i)
-                if not contributor._organizations_url == GithubObject.NotSet:
-                    companies.append(contributor.company)
-        filtered_companies = list(filter(None.__ne__, companies))
-        # companies = []
-        # if contributor_companies_included:
-        #     for contributor in contributor:
-        #         try:
-        #             companies.append(contributor.company)
-        #         except GithubException:
-        #             print('Contributor does not exist anymore')
-        #             continue
-        # filtered_companies = list(filter(None.__ne__, companies))
+        exclude_company_identification = True
+        if exclude_company_identification:
+            contributors_count2 = contributors_count
+            if contributors_count > 500:
+                print("Only first 500 Contributor can hold information!")
+                contributors_count2 = 500
+            if params.contributor_companies:
+                for i in self.progress_bar(range(contributors_count2), "Contributor Companies: "):
+                    contributor = self.get_save_api_data(contributors,i)
+                    if not contributor._organizations_url == GithubObject.NotSet:
+                        companies.append(contributor.company)
+            filtered_companies = list(filter(None.__ne__, companies))
         
         read_me = self.save_api_call(self.repo.get_readme)
         if read_me is None or read_me._content == GithubObject.NotSet:
@@ -253,13 +228,6 @@ class Repository(Core):
             print("Readme does not exist")
         else:
             readme_content = read_me.content
-        # try:
-        #     # problem: readme.md does not exist
-        #     readme_content = self.repo.get_readme().content
-        # except GithubException:
-        #     readme_content = ""
-        #     print("Readme does not exist")
-        # problem: sometimes get_readme outputs a None result
         if readme_content is None:
             readme_length = 0
             print("Readme does not exist")
@@ -268,12 +236,6 @@ class Repository(Core):
         
         tags = self.save_api_call(self.repo.get_tags)
         tag_count = self.get_save_total_count(tags)
-        # try:
-        #     # problem: empty list of tags
-        #     tag_count = self.repo.get_tags().totalCount
-        # except GithubException:
-        #     tag_count = 0
-        #     print("No tags assigned to repository")
 
         if self.repo._organization == GithubObject.NotSet:
             organization_name = "not known"
@@ -282,32 +244,12 @@ class Repository(Core):
         else:
             organization_name = self.repo.organization.name
             repo_type = self.repo.organization.type
-        # try:
-        #     # problem: organization entry empty
-        #     organization_name = self.repo.organization.name
-        #     repo_type = self.repo.organization.type
-        # except:
-        #     organization_name = "not known"
-        #     repo_type = "not known"
-        #     print("Organization not valid")
         
         pulls_review_comments_obj = self.save_api_call(self.repo.get_pulls_review_comments)
         pulls_review_comments = self.get_save_total_count(pulls_review_comments_obj)
-        # try:
-        #     # problem: no pull request comments
-        #     pulls_review_comments = self.repo.get_pulls_review_comments().totalCount
-        # except GithubException:
-        #     pulls_review_comments = "not known"
-        #     print("No pull request comments")
 
         releases = self.save_api_call(self.repo.get_releases)
         release_count = self.get_save_total_count(releases)
-        # try:
-        #     # problem: ???
-        #     release_count = self.repo.get_releases().totalCount,
-        # except GithubException:
-        #     release_count = 0
-        #     print("Wrong release count output")
 
         branches = self.save_api_call(self.repo.get_branches)
         branches_count = self.get_save_total_count(branches)
