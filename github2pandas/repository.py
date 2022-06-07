@@ -220,7 +220,7 @@ class Repository(Core):
                     contributor = self.get_save_api_data(contributors,i)
                     if not contributor._organizations_url == GithubObject.NotSet:
                         companies.append(contributor.company)
-            filtered_companies = list(filter(None.__ne__, companies))
+        filtered_companies = list(filter(None.__ne__, companies))
         
         read_me = self.save_api_call(self.repo.get_readme)
         if read_me is None or read_me._content == GithubObject.NotSet:
