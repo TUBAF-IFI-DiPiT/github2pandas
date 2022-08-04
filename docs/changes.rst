@@ -141,3 +141,8 @@ Version 2.0.0 (April 14, 2022)
 Version 2.0.1 (Mai 30, 2022)
 -----------------------------------
 * HotFix: removing complexity of git2net calculation
+
+
+Version 2.0.2 (August 1, 2022)
+-----------------------------------
+* HotFix: fix wait for reset request limit

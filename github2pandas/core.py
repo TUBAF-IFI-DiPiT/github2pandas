@@ -433,7 +433,7 @@ class Core():
         self.logger.debug("Waiting for request limit refresh ...")
         self.github_connection.get_rate_limit()
         reset_timestamp = self.github_connection.rate_limiting_resettime
-        seconds_until_reset = reset_timestamp - time()
+        seconds_until_reset = reset_timestamp - time.time()
         sleep_step_width = 1
         sleeping_range = range(math.ceil(seconds_until_reset / sleep_step_width))
         for i in self.progress_bar(sleeping_range, "Sleeping : ", 60):
